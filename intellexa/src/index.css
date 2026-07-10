@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-surface-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-void-100 text-ink font-body antialiased;
+    background-image: radial-gradient(circle at 20% -10%, rgba(79,124,255,0.12), transparent 45%),
+      radial-gradient(circle at 85% 0%, rgba(168,85,247,0.10), transparent 40%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    @apply bg-neon-blue/40 text-white;
+  }
+  :focus-visible {
+    outline: 2px solid #4F7CFF;
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #232B47; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2E3A63; }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface/60 backdrop-blur-xl border border-surface-border;
+  }
+  .glass-strong {
+    @apply bg-surface/85 backdrop-blur-2xl border border-surface-border;
+  }
+  .text-gradient {
+    @apply bg-aurora bg-clip-text text-transparent;
+  }
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-light rounded-lg;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    background-size: 500px 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

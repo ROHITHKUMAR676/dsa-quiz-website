@@ -1,0 +1,145 @@
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { AppProvider, useApp } from "./context/AppContext";
+import { ToastProvider } from "./context/ToastContext";
+
+import Splash from "./pages/Splash";
+import Login from "./pages/auth/Login";
+import ProfileSetup from "./pages/auth/ProfileSetup";
+import Tutorial from "./components/layout/Tutorial";
+
+import StudentLayout from "./components/layout/StudentLayout";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import CodingArena from "./pages/student/CodingArena";
+import QuizAttempt from "./pages/student/QuizAttempt";
+import CodingEditor from "./pages/student/CodingEditor";
+import Leaderboard from "./pages/student/Leaderboard";
+import Profile from "./pages/student/Profile";
+import Notifications from "./pages/student/Notifications";
+import StudentSettings from "./pages/student/Settings";
+
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import CreateQuiz from "./pages/admin/CreateQuiz";
+import CreateChallenge from "./pages/admin/CreateChallenge";
+import ScheduledQuizzes from "./pages/admin/ScheduledQuizzes";
+import Participants from "./pages/admin/Participants";
+import AdminLeaderboard from "./pages/admin/AdminLeaderboard";
+import Analytics from "./pages/admin/Analytics";
+import AdminSettings from "./pages/admin/AdminSettings";
+
+function RequireAuth({ children, role }: { children: React.ReactNode; role?: "admin" | "student" }) {
+  const { isAuthenticated, role: currentRole } = useApp();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (role && currentRole !== role) return <Navigate to={currentRole === "admin" ? "/admin" : "/student"} replace />;
+  return <>{children}</>;
+}
+
+function StudentGate({ children }: { children: React.ReactNode }) {
+  const { hasCompletedProfile, hasSeenTutorial } = useApp();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    if (hasCompletedProfile && !hasSeenTutorial) {
+      const t = setTimeout(() => setShowTutorial(true), 500);
+      return () => clearTimeout(t);
+    }
+  }, [hasCompletedProfile, hasSeenTutorial]);
+
+  if (!hasCompletedProfile) return <Navigate to="/onboarding/profile" replace />;
+
+  return (
+    <>
+      {children}
+      <AnimatePresence>{showTutorial && <TutorialGate onDone={() => setShowTutorial(false)} />}</AnimatePresence>
+    </>
+  );
+}
+
+function TutorialGate({ onDone }: { onDone: () => void }) {
+  const { hasSeenTutorial } = useApp();
+  if (hasSeenTutorial) {
+    onDone();
+    return null;
+  }
+  return <Tutorial />;
+}
+
+function RootRedirect() {
+  const { isAuthenticated, hasSeenSplash, role } = useApp();
+  if (!hasSeenSplash) return <Navigate to="/splash" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <Navigate to={role === "admin" ? "/admin" : "/student"} replace />;
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <Routes location={location} key={location.pathname}>
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="/splash" element={<Splash />} />
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/onboarding/profile"
+        element={
+          <RequireAuth role="student">
+            <ProfileSetup />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/student"
+        element={
+          <RequireAuth role="student">
+            <StudentGate>
+              <StudentLayout />
+            </StudentGate>
+          </RequireAuth>
+        }
+      >
+        <Route index element={<StudentDashboard />} />
+        <Route path="coding" element={<CodingArena />} />
+        <Route path="quiz/:id" element={<QuizAttempt />} />
+        <Route path="coding/:id" element={<CodingEditor />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="settings" element={<StudentSettings />} />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <RequireAuth role="admin">
+            <AdminLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="create-quiz" element={<CreateQuiz />} />
+        <Route path="create-challenge" element={<CreateChallenge />} />
+        <Route path="scheduled" element={<ScheduledQuizzes />} />
+        <Route path="participants" element={<Participants />} />
+        <Route path="leaderboard" element={<AdminLeaderboard />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppProvider>
+        <ToastProvider>
+          <AnimatedRoutes />
+        </ToastProvider>
+      </AppProvider>
+    </BrowserRouter>
+  );
+}
