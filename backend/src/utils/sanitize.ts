@@ -15,6 +15,8 @@ export function sanitizeUser(user: User) {
     avatar: user.avatar,
     xp: user.xp,
     coins: user.coins,
+    totalCompetitionPoints: user.totalCompetitionPoints,
+    totalCorrectAnswers: user.totalCorrectAnswers,
     currentStreak: user.currentStreak,
     longestStreak: user.longestStreak,
     lastActiveAt: user.lastActiveAt,

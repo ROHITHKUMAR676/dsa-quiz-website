@@ -13,16 +13,41 @@ export interface BackendUser {
   bio: string | null;
   xp: number;
   coins: number;
+  totalCompetitionPoints: number;
+  totalCorrectAnswers: number;
   currentStreak: number;
   longestStreak: number;
+  preferredLanguage: string | null;
+  lastActiveAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const authApi = {
-  register: (input: { fullName: string; email: string; password: string }) =>
+  register: (input: {
+    fullName: string;
+    email: string;
+    password: string;
+    department?: string;
+    year?: string;
+    registerNumber?: string;
+    phone?: string;
+    preferredLanguage?: string;
+  }) =>
     api.post<{ user: BackendUser; token: string }>("/auth/register", input),
   login: (input: { email: string; password: string }) =>
     api.post<{ user: BackendUser; token: string }>("/auth/login", input),
   me: () => api.get<{ user: BackendUser }>("/auth/me"),
+  updateProfile: (input: {
+    fullName?: string;
+    department?: string | null;
+    year?: string | null;
+    registerNumber?: string | null;
+    phone?: string | null;
+    preferredLanguage?: string | null;
+    bio?: string | null;
+    avatar?: string | null;
+  }) => api.patch<{ user: BackendUser }>("/auth/me", input),
 };
 
 export type BackendQuizAvailability = "LIVE" | "SCHEDULED" | "CLOSED" | "FINALIZED" | "ARCHIVED" | "DRAFT";
@@ -38,6 +63,8 @@ export interface BackendQuizSummary {
   startsAt: string | null;
   endsAt: string | null;
   competitionDate: string | null;
+  timeLimit?: number;
+  timeLimitPerQuestion?: number | null;
   hasAttempted: boolean;
   attemptStatus: string | null;
 }
@@ -133,4 +160,118 @@ export interface BackendGlobalLeaderboardEntry {
 export const leaderboardApi = {
   daily: (quizId: string) => api.get<{ leaderboard: BackendDailyLeaderboard }>(`/student/leaderboard/daily/${quizId}`),
   global: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[] }>("/student/leaderboard/global"),
+};
+
+export interface BackendNotification {
+  id: string;
+  type: "QUIZ" | "BADGE" | "LEVEL" | "RANK" | "STREAK" | "SYSTEM";
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface BackendBadge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  xpReward: number;
+  coinReward: number;
+  earned: boolean;
+  earnedAt: string | null;
+}
+
+export const studentGamificationApi = {
+  notifications: () => api.get<{ notifications: BackendNotification[] }>("/student/notifications"),
+  markNotificationRead: (id: string) => api.post<void>(`/student/notifications/${id}/read`),
+  markAllNotificationsRead: () => api.post<void>("/student/notifications/read-all"),
+  badges: () => api.get<{ badges: BackendBadge[] }>("/student/badges"),
+};
+
+export interface BackendAdminQuiz {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  status: "DRAFT" | "SCHEDULED" | "LIVE" | "CLOSED" | "FINALIZED" | "ARCHIVED";
+  startsAt: string | null;
+  endsAt: string | null;
+  competitionDate: string | null;
+  timezone: string;
+  timeLimit: number;
+  timeLimitPerQuestion: number | null;
+  createdAt: string;
+  updatedAt: string;
+  questions: Array<{ id: string }>;
+}
+
+export interface BackendPlatformStats {
+  totalStudents: number;
+  totalQuizzes: number;
+  totalSubmittedAttempts: number;
+  activeStudentsLast7Days: number;
+  totalBadgesAwarded: number;
+  liveParticipants: number;
+  completedQuizzes: number;
+  pendingScheduled: number;
+  todaysQuiz: string | null;
+  weeklyActivity: Array<{ day: string; users: number; submissions: number }>;
+  difficultyBreakdown: Array<{ name: "EASY" | "MEDIUM" | "HARD"; value: number; color: string }>;
+  categoryPerformance: Array<{ category: string; avgScore: number }>;
+}
+
+export interface BackendParticipant {
+  rank: number;
+  id: string;
+  fullName: string;
+  email: string;
+  avatar: string | null;
+  department: string | null;
+  year: string | null;
+  registerNumber: string | null;
+  xp: number;
+  coins: number;
+  totalCompetitionPoints: number;
+  totalCorrectAnswers: number;
+  currentStreak: number;
+  _count: { badges: number; attempts: number };
+}
+
+export const adminApi = {
+  platformStats: () => api.get<{ stats: BackendPlatformStats }>("/admin/analytics/platform"),
+  listQuizzes: (status?: BackendAdminQuiz["status"]) =>
+    api.get<{ quizzes: BackendAdminQuiz[] }>(status ? `/admin/quizzes?status=${encodeURIComponent(status)}` : "/admin/quizzes"),
+  createQuiz: (input: {
+    title: string;
+    description?: string | null;
+    category: string;
+    difficulty: "EASY" | "MEDIUM" | "HARD";
+    competitionDate?: string | null;
+    startsAt?: string | null;
+    endsAt?: string | null;
+    timezone?: string;
+    timeLimit: number;
+    timeLimitPerQuestion?: number | null;
+  }) => api.post<{ quiz: BackendAdminQuiz }>("/admin/quizzes", input),
+  createQuestion: (
+    quizId: string,
+    input: {
+      questionText: string;
+      difficulty: "EASY" | "MEDIUM" | "HARD";
+      points: number;
+      order: number;
+      options: Array<{ optionText: string; optionOrder: number; isCorrect: boolean }>;
+    }
+  ) => api.post<{ question: unknown }>(`/admin/quizzes/${quizId}/questions`, input),
+  scheduleQuiz: (
+    quizId: string,
+    input: { competitionDate: string; startsAt: string; endsAt?: string | null; timezone?: string; defaultWindowMinutes?: number | null }
+  ) => api.post<{ quiz: BackendAdminQuiz }>(`/admin/quizzes/${quizId}/schedule`, input),
+  publishQuiz: (quizId: string) => api.post<{ quiz: BackendAdminQuiz }>(`/admin/quizzes/${quizId}/publish`, {}),
+  deleteQuiz: (quizId: string) => api.delete<void>(`/admin/quizzes/${quizId}`),
+  participants: () => api.get<{ participants: BackendParticipant[] }>("/admin/participants"),
+  leaderboard: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[] }>("/admin/leaderboard/global"),
 };

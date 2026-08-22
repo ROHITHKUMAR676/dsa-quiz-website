@@ -7,6 +7,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "../repositories/notification.repository.js";
+import { listBadgesForUser } from "../repositories/badge.repository.js";
 
 export async function dailyLeaderboardController(req: Request, res: Response) {
   const leaderboard = await getDailyLeaderboard(req.params.id);
@@ -37,6 +38,11 @@ export async function dailyRevealController(req: Request, res: Response) {
 export async function listNotificationsController(req: Request, res: Response) {
   const notifications = await listNotificationsForUser(req.auth!.userId, req.query.unread === "true");
   return res.json({ notifications });
+}
+
+export async function listBadgesController(req: Request, res: Response) {
+  const badges = await listBadgesForUser(req.auth!.userId);
+  return res.json({ badges });
 }
 
 export async function markNotificationReadController(req: Request, res: Response) {

@@ -56,7 +56,7 @@ export interface Quiz {
   timeLimitPerQuestion: number;
   status: "live" | "upcoming" | "completed";
   scheduledAt?: string;
-  participants: number;
+  participants?: number;
 }
 
 export interface LeaderboardEntry {

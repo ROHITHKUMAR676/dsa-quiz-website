@@ -1,11 +1,41 @@
-import { Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Trophy, Loader2, TriangleAlert } from "lucide-react";
 import Podium from "../../components/domain/Podium";
 import LeaderboardRow from "../../components/domain/LeaderboardRow";
-import { leaderboard } from "../../data/mockData";
+import Card from "../../components/ui/Card";
+import EmptyState from "../../components/ui/EmptyState";
+import { adminApi } from "../../lib/backend";
+import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
+import { ApiError } from "../../lib/api";
+import type { LeaderboardEntry } from "../../types";
 
 export default function AdminLeaderboard() {
-  const top3 = leaderboard.slice(0, 3);
-  const rest = leaderboard.slice(3);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    adminApi
+      .leaderboard()
+      .then(({ leaderboard }) => {
+        if (cancelled) return;
+        setEntries(leaderboard.map(mapBackendGlobalEntryToLegacy));
+        setStatus("ready");
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setErrorMessage(error instanceof ApiError ? error.message : "Couldn't load leaderboard. Please try again.");
+        setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const top3 = entries.slice(0, 3);
+  const rest = entries.slice(3);
+
   return (
     <div className="space-y-6">
       <div>
@@ -14,10 +44,30 @@ export default function AdminLeaderboard() {
         </h1>
         <p className="text-ink-dim text-sm">Platform-wide student rankings.</p>
       </div>
-      <Podium top3={top3} />
-      <div className="space-y-2">
-        {rest.map((entry) => <LeaderboardRow key={entry.userId} entry={entry} />)}
-      </div>
+
+      {status === "loading" && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-6 h-6 text-neon-blue animate-spin" />
+        </div>
+      )}
+
+      {status === "error" && (
+        <Card className="p-6 text-center">
+          <TriangleAlert className="w-6 h-6 text-state-warning mx-auto mb-2" />
+          <p className="text-ink text-sm">{errorMessage}</p>
+        </Card>
+      )}
+
+      {status === "ready" && entries.length === 0 ? (
+        <EmptyState icon={Trophy} title="No rankings yet" description="Students will appear after finalized quiz rewards are recorded." />
+      ) : status === "ready" ? (
+        <>
+          <Podium top3={top3} />
+          <div className="space-y-2">
+            {rest.map((entry) => <LeaderboardRow key={entry.userId} entry={entry} />)}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

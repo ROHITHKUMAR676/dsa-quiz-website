@@ -5,7 +5,8 @@ import { Camera, User, ChevronRight } from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
-import { currentUser } from "../../data/mockData";
+import { ApiError } from "../../lib/api";
+import { authApi } from "../../lib/backend";
 
 const departments = ["Computer Science", "Information Technology", "Electronics", "AI & Data Science", "Mechanical", "Civil"];
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -13,26 +14,48 @@ const languages = ["C++", "Python", "Java", "JavaScript", "Go", "Rust"];
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
-  const { completeProfile } = useApp();
+  const { completeProfile, updateUser, user } = useApp();
   const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    department: departments[0],
-    year: years[0],
-    registerNumber: "",
-    email: currentUser.email,
-    phone: "",
-    bio: "",
-    preferredLanguage: languages[0],
+    fullName: user?.fullName ?? "",
+    department: user?.department ?? departments[0],
+    year: user?.year ?? years[0],
+    registerNumber: user?.registerNumber ?? "",
+    email: user?.email ?? "",
+    phone: user?.phone ?? "",
+    bio: user?.bio ?? "",
+    preferredLanguage: user?.preferredLanguage ?? languages[0],
   });
 
-  const update = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const update = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    completeProfile();
-    showToast("Profile set up. Welcome to Intellexa!", "success");
-    navigate("/student");
+    setLoading(true);
+    try {
+      const { user: updatedUser } = await authApi.updateProfile({
+        fullName: form.fullName.trim(),
+        department: form.department,
+        year: form.year,
+        registerNumber: form.registerNumber.trim(),
+        phone: form.phone.trim(),
+        bio: form.bio.trim() || null,
+        preferredLanguage: form.preferredLanguage,
+      });
+      updateUser(updatedUser);
+      completeProfile();
+      showToast("Profile saved. Welcome to Intellexa!", "success");
+      navigate("/student");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Couldn't save your profile. Please check your connection and try again.";
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,8 +89,8 @@ export default function ProfileSetup() {
               <label className="text-xs text-ink-dim mb-1 block">Full name</label>
               <input
                 required
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
+                value={form.fullName}
+                onChange={(e) => update("fullName", e.target.value)}
                 placeholder="Your full name"
                 className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint focus:border-neon-blue/50 outline-none"
               />
@@ -151,8 +174,8 @@ export default function ProfileSetup() {
             />
           </div>
 
-          <Button type="submit" fullWidth size="lg" className="mt-2">
-            Enter Dashboard <ChevronRight className="w-4 h-4" />
+          <Button type="submit" fullWidth size="lg" className="mt-2" disabled={loading}>
+            {loading ? "Saving profile..." : "Enter Dashboard"} <ChevronRight className="w-4 h-4" />
           </Button>
         </form>
       </motion.div>

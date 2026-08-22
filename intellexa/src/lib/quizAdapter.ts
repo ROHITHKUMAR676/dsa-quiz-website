@@ -17,11 +17,7 @@ export function mapBackendQuizToLegacy(quiz: BackendQuizSummary): Quiz {
     description: quiz.description ?? "",
     difficulty: difficultyMap[quiz.difficulty] ?? "Medium",
     category: quiz.category,
-    // The backend doesn't track a per-question timer or a live headcount
-    // (spec has no such requirement) - these are cosmetic placeholders
-    // until QuizCard is redesigned around the real contract.
-    timeLimitPerQuestion: 30,
-    participants: 0,
+    timeLimitPerQuestion: quiz.timeLimitPerQuestion ?? quiz.timeLimit ?? 0,
     status: toLegacyStatus(quiz.availability),
     scheduledAt: quiz.startsAt ?? undefined,
     questions: [],

@@ -23,6 +23,7 @@ import {
   dailyLeaderboardController,
   dailyRevealController,
   globalLeaderboardController,
+  listBadgesController,
   listNotificationsController,
   markAllNotificationsReadController,
   markNotificationReadController,
@@ -51,6 +52,7 @@ studentRouter.get("/leaderboard/weekly/:id", validate(weeklyIdParamSchema), asyn
 studentRouter.get("/quizzes/:id/reveal", validate(quizIdParamSchema), asyncHandler(dailyRevealController));
 
 // Phase 8: notifications
+studentRouter.get("/badges", asyncHandler(listBadgesController));
 studentRouter.get("/notifications", asyncHandler(listNotificationsController));
 studentRouter.post("/notifications/:id/read", asyncHandler(markNotificationReadController));
 studentRouter.post("/notifications/read-all", asyncHandler(markAllNotificationsReadController));

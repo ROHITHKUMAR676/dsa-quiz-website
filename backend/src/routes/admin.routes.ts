@@ -35,6 +35,8 @@ import {
 import {
   finalizeWeeklyController,
   getOrCreateCurrentWeeklyController,
+  adminGlobalLeaderboardController,
+  participantsController,
   listWeeklyCompetitionsController,
   platformAnalyticsController,
   quizAnalyticsController,
@@ -82,5 +84,7 @@ adminRouter.post("/weekly/current", validate(optionalDateBodySchema), asyncHandl
 adminRouter.post("/weekly/:id/finalize", validate(weeklyIdParamSchema), asyncHandler(finalizeWeeklyController));
 
 // Phase 8: analytics
+adminRouter.get("/participants", asyncHandler(participantsController));
+adminRouter.get("/leaderboard/global", asyncHandler(adminGlobalLeaderboardController));
 adminRouter.get("/analytics/quizzes/:id", validate(quizIdParamSchema), asyncHandler(quizAnalyticsController));
 adminRouter.get("/analytics/platform", asyncHandler(platformAnalyticsController));

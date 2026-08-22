@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getAuthenticatedUser, login, register } from "../services/auth.service.js";
+import { getAuthenticatedUser, login, register, updateAuthenticatedUser } from "../services/auth.service.js";
 
 export async function registerController(req: Request, res: Response) {
   const result = await register(req.body);
@@ -17,5 +17,10 @@ export async function logoutController(_req: Request, res: Response) {
 
 export async function meController(req: Request, res: Response) {
   const user = await getAuthenticatedUser(req.auth!.userId);
+  return res.json({ user });
+}
+
+export async function updateMeController(req: Request, res: Response) {
+  const user = await updateAuthenticatedUser(req.auth!.userId, req.body);
   return res.json({ user });
 }

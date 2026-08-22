@@ -28,6 +28,11 @@ function toRole(backendRole: BackendUser["role"]): Role {
   return backendRole === "ADMIN" ? "admin" : "student";
 }
 
+function hasRequiredStudentProfile(user: BackendUser) {
+  if (user.role === "ADMIN") return true;
+  return Boolean(user.fullName && user.department && user.year && user.registerNumber && user.phone);
+}
+
 interface AppContextValue {
   isAuthenticated: boolean;
   isBootstrapping: boolean;
@@ -38,6 +43,7 @@ interface AppContextValue {
   hasSeenTutorial: boolean;
   /** Called after a successful /auth/login or /auth/register response. */
   login: (user: BackendUser, token: string) => void;
+  updateUser: (user: BackendUser) => void;
   logout: () => void;
   completeProfile: () => void;
   markSplashSeen: () => void;
@@ -71,7 +77,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUser(me);
         setRole(toRole(me.role));
         setIsAuthenticated(true);
-        setHasCompletedProfile(true);
+        setHasCompletedProfile(hasRequiredStudentProfile(me));
       })
       .catch(() => {
         setToken(null);
@@ -84,6 +90,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser(backendUser);
     setRole(toRole(backendUser.role));
     setIsAuthenticated(true);
+    setHasCompletedProfile(hasRequiredStudentProfile(backendUser));
+  };
+  const updateUser = (backendUser: BackendUser) => {
+    setUser(backendUser);
+    setRole(toRole(backendUser.role));
+    setHasCompletedProfile(hasRequiredStudentProfile(backendUser));
   };
   const logout = () => {
     setToken(null);
@@ -117,6 +129,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasSeenSplash,
         hasSeenTutorial,
         login,
+        updateUser,
         logout,
         completeProfile,
         markSplashSeen,

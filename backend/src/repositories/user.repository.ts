@@ -13,6 +13,10 @@ export function createUser(data: Prisma.UserCreateInput) {
   return prisma.user.create({ data });
 }
 
+export function updateUser(id: string, data: Prisma.UserUpdateInput) {
+  return prisma.user.update({ where: { id }, data });
+}
+
 export function updateLastActiveAt(id: string) {
   return prisma.user.update({
     where: { id },

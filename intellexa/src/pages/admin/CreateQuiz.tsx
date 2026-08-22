@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Send, CalendarClock, FilePlus2 } from "lucide-react";
+import { Plus, Trash2, Send, CalendarClock, FilePlus2, Loader2 } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
+import { adminApi } from "../../lib/backend";
+import { ApiError } from "../../lib/api";
 
 interface DraftQuestion {
   id: number;
@@ -35,6 +37,7 @@ export default function CreateQuiz() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateQuestion = (id: number, patch: Partial<DraftQuestion>) =>
     setQuestions((qs) => qs.map((q) => (q.id === id ? { ...q, ...patch } : q)));
@@ -52,13 +55,71 @@ export default function CreateQuiz() {
   const addQuestion = () => setQuestions((qs) => [...qs, newQuestion()]);
   const removeQuestion = (id: number) => setQuestions((qs) => qs.filter((q) => q.id !== id));
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
-    showToast(
-      scheduleMode === "now" ? `"${title || "Quiz"}" published to all students` : `"${title || "Quiz"}" scheduled successfully`,
-      "success"
-    );
-    navigate("/admin");
+    if (questions.some((question) => !question.question.trim() || question.options.some((option) => !option.trim()))) {
+      showToast("Please complete every question and option before publishing.", "error");
+      return;
+    }
+
+    const now = new Date();
+    const startsAt = scheduleMode === "later" ? new Date(`${date}T${time}`) : now;
+    if (Number.isNaN(startsAt.getTime())) {
+      showToast("Please choose a valid schedule time.", "error");
+      return;
+    }
+    const totalSeconds = Math.max(timeLimit * questions.length, 60);
+    const endsAt = new Date(startsAt.getTime() + totalSeconds * 1000);
+
+    setIsSubmitting(true);
+    try {
+      const { quiz } = await adminApi.createQuiz({
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category.trim(),
+        difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
+        competitionDate: startsAt.toISOString(),
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
+        timezone: "Asia/Kolkata",
+        timeLimit: totalSeconds,
+        timeLimitPerQuestion: timeLimit,
+      });
+
+      await Promise.all(
+        questions.map((question, index) =>
+          adminApi.createQuestion(quiz.id, {
+            questionText: question.question.trim(),
+            difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
+            points: question.points,
+            order: index + 1,
+            options: question.options.map((option, optionIndex) => ({
+              optionText: option.trim(),
+              optionOrder: optionIndex + 1,
+              isCorrect: question.correctAnswer === optionIndex,
+            })),
+          })
+        )
+      );
+
+      if (scheduleMode === "later") {
+        await adminApi.scheduleQuiz(quiz.id, {
+          competitionDate: startsAt.toISOString(),
+          startsAt: startsAt.toISOString(),
+          endsAt: endsAt.toISOString(),
+          timezone: "Asia/Kolkata",
+        });
+      } else {
+        await adminApi.publishQuiz(quiz.id);
+      }
+
+      showToast(scheduleMode === "now" ? `"${title}" published to students` : `"${title}" scheduled successfully`, "success");
+      navigate("/admin");
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't save the quiz. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -201,6 +262,7 @@ export default function CreateQuiz() {
           <button
             type="button"
             onClick={() => setScheduleMode("now")}
+            disabled={isSubmitting}
             className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "now" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
           >
             Publish Now
@@ -208,6 +270,7 @@ export default function CreateQuiz() {
           <button
             type="button"
             onClick={() => setScheduleMode("later")}
+            disabled={isSubmitting}
             className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "later" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
           >
             Schedule Later
@@ -239,8 +302,9 @@ export default function CreateQuiz() {
         )}
       </Card>
 
-      <Button type="submit" size="lg">
-        <Send className="w-4 h-4" /> {scheduleMode === "now" ? "Publish Quiz" : "Schedule Quiz"}
+      <Button type="submit" size="lg" disabled={isSubmitting}>
+        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        {scheduleMode === "now" ? "Publish Quiz" : "Schedule Quiz"}
       </Button>
     </form>
   );

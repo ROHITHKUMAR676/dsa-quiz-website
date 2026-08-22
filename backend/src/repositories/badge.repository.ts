@@ -11,6 +11,26 @@ export function findUserBadgeIds(userId: string) {
   return prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true } });
 }
 
+export async function listBadgesForUser(userId: string) {
+  const [badges, earned] = await Promise.all([
+    prisma.badge.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true, awardedAt: true } }),
+  ]);
+  const earnedByBadgeId = new Map(earned.map((badge) => [badge.badgeId, badge.awardedAt]));
+
+  return badges.map((badge) => ({
+    id: badge.id,
+    name: badge.name,
+    description: badge.description,
+    icon: badge.icon,
+    category: badge.category,
+    xpReward: badge.xpReward,
+    coinReward: badge.coinReward,
+    earned: earnedByBadgeId.has(badge.id),
+    earnedAt: earnedByBadgeId.get(badge.id) ?? null,
+  }));
+}
+
 /**
  * Awards a badge idempotently: @@unique([userId, badgeId]) on UserBadge
  * guarantees a badge can never be awarded twice to the same user, even on

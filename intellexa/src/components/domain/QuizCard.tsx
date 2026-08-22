@@ -40,9 +40,11 @@ export default function QuizCard({ quiz }: { quiz: Quiz }) {
         <span className="flex items-center gap-1">
           <Clock className="w-3.5 h-3.5" /> {quiz.timeLimitPerQuestion}s/question
         </span>
-        <span className="flex items-center gap-1">
-          <Users className="w-3.5 h-3.5" /> {quiz.participants}
-        </span>
+        {typeof quiz.participants === "number" && (
+          <span className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5" /> {quiz.participants}
+          </span>
+        )}
       </div>
 
       <Button

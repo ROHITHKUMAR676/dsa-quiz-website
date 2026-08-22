@@ -6,6 +6,7 @@ import { ToastProvider } from "./context/ToastContext";
 
 import Splash from "./pages/Splash";
 import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
 import ProfileSetup from "./pages/auth/ProfileSetup";
 import Tutorial from "./components/layout/Tutorial";
 
@@ -79,6 +80,7 @@ function AnimatedRoutes() {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/splash" element={<Splash />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route
         path="/onboarding/profile"
         element={

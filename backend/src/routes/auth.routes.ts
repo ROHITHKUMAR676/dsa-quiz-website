@@ -4,10 +4,11 @@ import {
   logoutController,
   meController,
   registerController,
+  updateMeController,
 } from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
 import { validate } from "../middleware/validate.js";
-import { loginSchema, registerSchema } from "../validators/auth.validators.js";
+import { loginSchema, registerSchema, updateProfileSchema } from "../validators/auth.validators.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { authRateLimiter } from "../config/security.js";
 
@@ -17,3 +18,4 @@ authRouter.post("/register", authRateLimiter, validate(registerSchema), asyncHan
 authRouter.post("/login", authRateLimiter, validate(loginSchema), asyncHandler(loginController));
 authRouter.post("/logout", authenticate, asyncHandler(logoutController));
 authRouter.get("/me", authenticate, asyncHandler(meController));
+authRouter.patch("/me", authenticate, validate(updateProfileSchema), asyncHandler(updateMeController));

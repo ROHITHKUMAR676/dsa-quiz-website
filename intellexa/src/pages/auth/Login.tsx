@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useApp } from "../../context/AppContext";
@@ -107,6 +107,13 @@ export default function Login() {
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+
+        <p className="text-center text-sm text-ink-dim mt-5">
+          New to Intellexa?{" "}
+          <Link to="/signup" className="text-neon-cyan hover:text-neon-blue transition-colors">
+            Create an account
+          </Link>
+        </p>
       </motion.div>
     </div>
   );
