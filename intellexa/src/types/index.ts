@@ -34,7 +34,6 @@ export interface UserProfile {
   tier: "Bronze" | "Silver" | "Gold" | "Elite" | "Legend" | "Grandmaster" | "Champion";
   accuracy: number;
   questionsSolved: number;
-  challengesCompleted: number;
   fastestResponseSec: number;
   badges: Badge[];
 }
@@ -60,22 +59,6 @@ export interface Quiz {
   participants: number;
 }
 
-export interface CodingChallenge {
-  id: string;
-  title: string;
-  description: string;
-  problemStatement: string;
-  inputFormat: string;
-  outputFormat: string;
-  constraints: string;
-  examples: { input: string; output: string }[];
-  difficulty: Difficulty;
-  starterCode: string;
-  timeLimit: number;
-  status: "live" | "upcoming" | "completed";
-  participants: number;
-}
-
 export interface LeaderboardEntry {
   rank: number;
   previousRank: number;
@@ -92,7 +75,7 @@ export interface LeaderboardEntry {
 
 export interface NotificationItem {
   id: string;
-  type: "quiz" | "coding" | "badge" | "level" | "rank" | "streak" | "system";
+  type: "quiz" | "badge" | "level" | "rank" | "streak" | "system";
   title: string;
   message: string;
   time: string;

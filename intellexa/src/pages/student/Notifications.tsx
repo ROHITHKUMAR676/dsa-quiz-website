@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bell, Trophy, Code2, Award, TrendingUp, Flame, Radio, BellOff } from "lucide-react";
+import { Bell, Trophy, Award, TrendingUp, Flame, Radio, BellOff } from "lucide-react";
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { notifications as initialNotifications } from "../../data/mockData";
@@ -9,7 +9,6 @@ import { cn } from "../../lib/utils";
 
 const iconMap: Record<NotificationItem["type"], any> = {
   quiz: Radio,
-  coding: Code2,
   badge: Award,
   level: TrendingUp,
   rank: Trophy,

@@ -1,4 +1,4 @@
-import { Users, Radio, Activity, CheckSquare, CalendarClock, Code2, TrendingUp, Clock } from "lucide-react";
+import { Users, Radio, Activity, CheckSquare, CalendarClock, TrendingUp, Clock } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import StatCard from "../../components/ui/StatCard";
 import Card from "../../components/ui/Card";
@@ -7,7 +7,7 @@ import { adminStats, weeklyActivity, difficultyBreakdown, leaderboard } from "..
 
 const recentActivity = [
   { text: "Meera Iyer completed React Hooks Deep Dive", time: "2m ago" },
-  { text: "45 new participants joined the coding round", time: "12m ago" },
+  { text: "45 new participants joined today's quiz", time: "12m ago" },
   { text: "Rohan Das earned DSA Warrior badge", time: "28m ago" },
   { text: "Graph Traversals quiz scheduled for Jul 12", time: "1h ago" },
 ];
@@ -25,7 +25,6 @@ export default function AdminDashboard() {
         <StatCard label="Live Participants" value={adminStats.liveParticipants} icon={Radio} accent="danger" />
         <StatCard label="Completed Quizzes" value={adminStats.completedQuizzes} icon={CheckSquare} accent="success" />
         <StatCard label="Pending Scheduled" value={adminStats.pendingScheduled} icon={CalendarClock} accent="warning" />
-        <StatCard label="Coding Challenges" value={adminStats.codingChallenges} icon={Code2} accent="purple" />
         <StatCard label="Weekly Active Users" value={adminStats.weeklyActiveUsers} icon={TrendingUp} accent="cyan" trend="+12% vs last week" />
         <Card className="p-4 sm:p-5 col-span-2">
           <div className="flex items-center gap-2 mb-1">

@@ -1,0 +1,33 @@
+import dotenv from "dotenv";
+import { z } from "zod";
+
+dotenv.config();
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  PORT: z.coerce.number().int().positive().default(4000),
+  DATABASE_URL: z.string().min(1),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+  JWT_EXPIRES_IN: z.string().default("1d"),
+  FRONTEND_URL: z.string().url().default("http://localhost:5173"),
+  APP_TIMEZONE: z.string().default("Asia/Kolkata"),
+  DEFAULT_DAILY_QUIZ_WINDOW_MINUTES: z.coerce.number().int().positive().default(60),
+  ALLOWED_EMAIL_DOMAIN: z.string().min(1).default("rajalakshmi.edu.in"),
+  // Spec section 9: results publish this many minutes AFTER the quiz closes,
+  // not after it starts. Per-quiz override: Quiz.resultReleaseDelayMinutes.
+  RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(60),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+});
+
+const testDefaults = process.env.NODE_ENV === "test"
+  ? {
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/intellexa_test?schema=public",
+      JWT_SECRET: "test-secret-with-at-least-thirty-two-characters",
+      FRONTEND_URL: "http://localhost:5173",
+      APP_TIMEZONE: "Asia/Kolkata",
+      DEFAULT_DAILY_QUIZ_WINDOW_MINUTES: "60",
+    }
+  : {};
+
+export const env = envSchema.parse({ ...testDefaults, ...process.env });

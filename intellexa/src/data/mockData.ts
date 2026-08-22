@@ -1,12 +1,11 @@
-import type { Badge, CodingChallenge, LeaderboardEntry, NotificationItem, Quiz, UserProfile } from "../types";
+import type { Badge, LeaderboardEntry, NotificationItem, Quiz, UserProfile } from "../types";
 
 export const badgeCatalog: Badge[] = [
-  { id: "coding-champion", name: "Coding Champion", description: "Win a coding round", icon: "trophy", earned: true, earnedAt: "2026-06-02", rarity: "epic" },
-  { id: "night-owl", name: "Night Owl", description: "Solve a challenge after midnight", icon: "moon", earned: true, earnedAt: "2026-06-10", rarity: "rare" },
+  { id: "night-owl", name: "Night Owl", description: "Complete a quiz after midnight", icon: "moon", earned: true, earnedAt: "2026-06-10", rarity: "rare" },
   { id: "early-bird", name: "Early Bird", description: "Complete a quiz before 8 AM", icon: "sunrise", earned: false, rarity: "rare" },
   { id: "bug-hunter", name: "Bug Hunter", description: "Pass all hidden test cases first try", icon: "bug", earned: true, earnedAt: "2026-06-14", rarity: "epic" },
   { id: "quiz-master", name: "Quiz Master", description: "Score 100% on 5 quizzes", icon: "brain", earned: false, rarity: "epic" },
-  { id: "dsa-warrior", name: "DSA Warrior", description: "Complete 50 coding challenges", icon: "swords", earned: false, rarity: "legendary" },
+  { id: "dsa-warrior", name: "DSA Warrior", description: "Complete 50 daily quizzes", icon: "swords", earned: false, rarity: "legendary" },
   { id: "frontend-ninja", name: "Frontend Ninja", description: "Top 3 in a WebDev quiz", icon: "code", earned: true, earnedAt: "2026-05-28", rarity: "rare" },
   { id: "consistency", name: "Consistency", description: "Maintain a 7-day streak", icon: "flame", earned: true, earnedAt: "2026-06-20", rarity: "common" },
 ];
@@ -33,7 +32,6 @@ export const currentUser: UserProfile = {
   tier: "Elite",
   accuracy: 87,
   questionsSolved: 342,
-  challengesCompleted: 28,
   fastestResponseSec: 3.2,
   badges: badgeCatalog,
 };
@@ -93,39 +91,6 @@ export const quizzes: Quiz[] = [
   },
 ];
 
-export const codingChallenges: CodingChallenge[] = [
-  {
-    id: "c-201",
-    title: "Longest Palindromic Substring",
-    description: "Find the longest palindromic substring within a given string.",
-    problemStatement: "Given a string s, return the longest palindromic substring in s.",
-    inputFormat: "A single line containing string s (1 <= |s| <= 1000).",
-    outputFormat: "The longest palindromic substring.",
-    constraints: "1 <= s.length <= 1000\ns consists of digits and English letters.",
-    examples: [{ input: "babad", output: "bab" }, { input: "cbbd", output: "bb" }],
-    difficulty: "Medium",
-    starterCode: "function longestPalindrome(s) {\n  // your code here\n}",
-    timeLimit: 45,
-    status: "live",
-    participants: 64,
-  },
-  {
-    id: "c-202",
-    title: "Minimum Spanning Tree Builder",
-    description: "Implement Kruskal's algorithm to connect all nodes at minimum cost.",
-    problemStatement: "Given a weighted undirected graph, find the minimum cost to connect all nodes.",
-    inputFormat: "n, edges[[u, v, weight]]",
-    outputFormat: "Minimum total weight to connect all nodes.",
-    constraints: "1 <= n <= 10^4",
-    examples: [{ input: "n=4, edges=[[0,1,10],[0,2,6],[0,3,5],[1,3,15],[2,3,4]]", output: "19" }],
-    difficulty: "Hard",
-    starterCode: "function minCostConnect(n, edges) {\n  // your code here\n}",
-    timeLimit: 60,
-    status: "upcoming",
-    participants: 0,
-  },
-];
-
 export const leaderboard: LeaderboardEntry[] = [
   { rank: 1, previousRank: 1, userId: "u-1", name: "Meera Iyer", avatar: "https://api.dicebear.com/9.x/thumbs/svg?seed=Meera&backgroundColor=1A2038", department: "CSE", xp: 8920, points: 12400, streak: 21, badges: 14, tier: "Grandmaster" },
   { rank: 2, previousRank: 3, userId: "u-2", name: "Rohan Das", avatar: "https://api.dicebear.com/9.x/thumbs/svg?seed=Rohan&backgroundColor=1A2038", department: "IT", xp: 8410, points: 11800, streak: 15, badges: 12, tier: "Champion" },
@@ -144,7 +109,6 @@ export const notifications: NotificationItem[] = [
   { id: "n2", type: "rank", title: "You entered the Top 10", message: "You climbed to rank #7 on the leaderboard.", time: "1h ago", read: false },
   { id: "n3", type: "badge", title: "Badge unlocked", message: "You earned the Consistency badge.", time: "5h ago", read: false },
   { id: "n4", type: "streak", title: "Streak maintained", message: "9-day streak. Keep the fire burning.", time: "1d ago", read: true },
-  { id: "n5", type: "coding", title: "Coding round starting soon", message: "Minimum Spanning Tree Builder starts in 30 minutes.", time: "1d ago", read: true },
   { id: "n6", type: "level", title: "Level up!", message: "You reached Level 14.", time: "2d ago", read: true },
 ];
 
@@ -154,7 +118,6 @@ export const adminStats = {
   liveParticipants: 128,
   completedQuizzes: 46,
   pendingScheduled: 5,
-  codingChallenges: 18,
   weeklyActiveUsers: 812,
 };
 

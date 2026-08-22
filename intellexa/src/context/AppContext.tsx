@@ -1,14 +1,43 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Role } from "../types";
-import { currentUser } from "../data/mockData";
+import { authApi, type BackendUser } from "../lib/backend";
+import { getToken, setToken } from "../lib/api";
+
+const TUTORIAL_STORAGE_KEY = "intellexa:hasSeenTutorial";
+
+function readTutorialSeen(): boolean {
+  try {
+    return window.localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+  } catch {
+    // localStorage can throw in private-browsing/blocked-storage contexts -
+    // fail safe by treating the tutorial as unseen rather than crashing.
+    return false;
+  }
+}
+
+function writeTutorialSeen(seen: boolean) {
+  try {
+    if (seen) window.localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+    else window.localStorage.removeItem(TUTORIAL_STORAGE_KEY);
+  } catch {
+    // Ignore - worst case the tutorial reappears once more than intended.
+  }
+}
+
+function toRole(backendRole: BackendUser["role"]): Role {
+  return backendRole === "ADMIN" ? "admin" : "student";
+}
 
 interface AppContextValue {
   isAuthenticated: boolean;
+  isBootstrapping: boolean;
   role: Role;
+  user: BackendUser | null;
   hasCompletedProfile: boolean;
   hasSeenSplash: boolean;
   hasSeenTutorial: boolean;
-  login: (role: Role) => void;
+  /** Called after a successful /auth/login or /auth/register response. */
+  login: (user: BackendUser, token: string) => void;
   logout: () => void;
   completeProfile: () => void;
   markSplashSeen: () => void;
@@ -20,29 +49,70 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [role, setRole] = useState<Role>("student");
+  const [user, setUser] = useState<BackendUser | null>(null);
   const [hasCompletedProfile, setHasCompletedProfile] = useState(false);
   const [hasSeenSplash, setHasSeenSplash] = useState(false);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
+  const [hasSeenTutorial, setHasSeenTutorial] = useState(readTutorialSeen);
 
-  const login = (r: Role) => {
-    setRole(r);
+  // Restore a session from a previously-stored JWT (e.g. after a page
+  // reload). The token is only ever trusted after the backend confirms it
+  // via /auth/me - never decoded/trusted client-side.
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setIsBootstrapping(false);
+      return;
+    }
+    authApi
+      .me()
+      .then(({ user: me }) => {
+        setUser(me);
+        setRole(toRole(me.role));
+        setIsAuthenticated(true);
+        setHasCompletedProfile(true);
+      })
+      .catch(() => {
+        setToken(null);
+      })
+      .finally(() => setIsBootstrapping(false));
+  }, []);
+
+  const login = (backendUser: BackendUser, token: string) => {
+    setToken(token);
+    setUser(backendUser);
+    setRole(toRole(backendUser.role));
     setIsAuthenticated(true);
   };
   const logout = () => {
+    setToken(null);
+    setUser(null);
     setIsAuthenticated(false);
     setHasCompletedProfile(false);
   };
   const completeProfile = () => setHasCompletedProfile(true);
   const markSplashSeen = () => setHasSeenSplash(true);
-  const finishTutorial = () => setHasSeenTutorial(true);
-  const restartTutorial = () => setHasSeenTutorial(false);
+  // Persisted (spec section 26: must NOT reappear on every visit). This is
+  // a client-side fallback until the profile-update endpoint on the
+  // backend exposes UserSettings.tutorialCompleted as the durable,
+  // per-account source of truth.
+  const finishTutorial = () => {
+    setHasSeenTutorial(true);
+    writeTutorialSeen(true);
+  };
+  const restartTutorial = () => {
+    setHasSeenTutorial(false);
+    writeTutorialSeen(false);
+  };
 
   return (
     <AppContext.Provider
       value={{
         isAuthenticated,
+        isBootstrapping,
         role,
+        user,
         hasCompletedProfile,
         hasSeenSplash,
         hasSeenTutorial,
@@ -54,7 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         restartTutorial,
       }}
     >
-      {currentUser && children}
+      {children}
     </AppContext.Provider>
   );
 }

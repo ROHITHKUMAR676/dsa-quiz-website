@@ -1,15 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Trophy, User, Bell, Settings, Code2, LogOut, Zap } from "lucide-react";
+import { LayoutDashboard, Trophy, User, Bell, Settings, LogOut, Zap } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "../../lib/utils";
 
 const links = [
   { to: "/student", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/student/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { to: "/student/coding", icon: Code2, label: "Coding Arena" },
+  { to: "/student/leaderboard", icon: Trophy, label: "Leaderboard", tour: "nav-leaderboard" },
   { to: "/student/notifications", icon: Bell, label: "Notifications" },
-  { to: "/student/profile", icon: User, label: "Profile" },
+  { to: "/student/profile", icon: User, label: "Profile", tour: "nav-profile" },
   { to: "/student/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -33,6 +32,7 @@ export default function StudentSidebar() {
             key={link.to}
             to={link.to}
             end={link.end}
+            data-tour={link.tour}
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors relative",

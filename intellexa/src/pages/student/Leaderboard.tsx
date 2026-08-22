@@ -1,18 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Filter } from "lucide-react";
+import { Trophy, Loader2, TriangleAlert } from "lucide-react";
 import Podium from "../../components/domain/Podium";
 import LeaderboardRow from "../../components/domain/LeaderboardRow";
 import Card from "../../components/ui/Card";
-import { leaderboard, currentUser } from "../../data/mockData";
+import EmptyState from "../../components/ui/EmptyState";
+import { leaderboardApi } from "../../lib/backend";
+import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
+import { ApiError } from "../../lib/api";
+import { useApp } from "../../context/AppContext";
+import type { LeaderboardEntry } from "../../types";
 import { cn } from "../../lib/utils";
 
-const filters = ["Overall", "Weekly", "WebDev", "DSA"];
+type Status = "loading" | "ready" | "error";
 
 export default function Leaderboard() {
-  const [filter, setFilter] = useState("Overall");
-  const top3 = leaderboard.slice(0, 3);
-  const rest = leaderboard.slice(3);
+  const { user } = useApp();
+  const [status, setStatus] = useState<Status>("loading");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { leaderboard } = await leaderboardApi.global();
+        if (cancelled) return;
+        setEntries(leaderboard.map(mapBackendGlobalEntryToLegacy));
+        setStatus("ready");
+      } catch (error) {
+        if (cancelled) return;
+        setErrorMessage(error instanceof ApiError ? error.message : "Couldn't load the leaderboard. Please try again.");
+        setStatus("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const top3 = entries.slice(0, 3);
+  const rest = entries.slice(3);
+  const me = user ? entries.find((entry) => entry.userId === user.id) : undefined;
 
   return (
     <div className="space-y-6">
@@ -21,43 +50,55 @@ export default function Leaderboard() {
           <h1 className="font-display font-bold text-2xl text-ink flex items-center gap-2">
             <Trophy className="w-6 h-6 text-state-gold" /> Leaderboard
           </h1>
-          <p className="text-ink-dim text-sm">See where you stand among Intellexa's finest.</p>
-        </div>
-        <div className="flex items-center gap-2 glass rounded-xl p-1">
-          <Filter className="w-3.5 h-3.5 text-ink-faint ml-2" />
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                filter === f ? "bg-aurora text-white shadow-glow" : "text-ink-dim hover:text-ink"
-              )}
-            >
-              {f}
-            </button>
-          ))}
+          <p className="text-ink-dim text-sm">Ranked by total XP across every finalized daily quiz.</p>
         </div>
       </div>
 
-      <Podium top3={top3} />
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-        {rest.map((entry) => (
-          <LeaderboardRow key={entry.userId} entry={entry} highlight={entry.userId === currentUser.id} />
-        ))}
-      </motion.div>
-
-      <Card className="p-4 sm:p-5 flex items-center justify-between gap-3 border-neon-blue/30 bg-neon-blue/5 sticky bottom-20 lg:bottom-4">
-        <div className="flex items-center gap-3">
-          <img src={currentUser.avatar} className="w-9 h-9 rounded-full" alt="you" />
-          <div>
-            <p className="text-sm text-ink font-medium">You're rank #{currentUser.rank}</p>
-            <p className="text-xs text-ink-dim">Climb 3 more spots to hit the top 5</p>
-          </div>
+      {status === "loading" && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-6 h-6 text-neon-blue animate-spin" />
         </div>
-        <span className="font-mono text-neon-cyan text-sm shrink-0">{currentUser.xp.toLocaleString()} XP</span>
-      </Card>
+      )}
+
+      {status === "error" && (
+        <Card className="p-6 text-center">
+          <TriangleAlert className="w-6 h-6 text-state-warning mx-auto mb-2" />
+          <p className="text-ink text-sm">{errorMessage}</p>
+        </Card>
+      )}
+
+      {status === "ready" && entries.length === 0 && (
+        <EmptyState icon={Trophy} title="No rankings yet" description="Complete a quiz to appear on the leaderboard." />
+      )}
+
+      {status === "ready" && entries.length > 0 && (
+        <>
+          <Podium top3={top3} />
+
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+            {rest.map((entry) => (
+              <LeaderboardRow key={entry.userId} entry={entry} highlight={user ? entry.userId === user.id : false} />
+            ))}
+          </motion.div>
+
+          {me && (
+            <Card
+              className={cn(
+                "p-4 sm:p-5 flex items-center justify-between gap-3 border-neon-blue/30 bg-neon-blue/5 sticky bottom-20 lg:bottom-4"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <img src={me.avatar} className="w-9 h-9 rounded-full" alt="you" />
+                <div>
+                  <p className="text-sm text-ink font-medium">You're rank #{me.rank}</p>
+                  <p className="text-xs text-ink-dim">Keep it up to climb higher</p>
+                </div>
+              </div>
+              <span className="font-mono text-neon-cyan text-sm shrink-0">{me.xp.toLocaleString()} XP</span>
+            </Card>
+          )}
+        </>
+      )}
     </div>
   );
 }

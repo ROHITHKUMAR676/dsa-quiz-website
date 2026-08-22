@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Pencil, Target, CheckSquare, Zap, TrendingUp, Award } from "lucide-react";
+import { Pencil, Target, CheckSquare, TrendingUp, Award } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import BadgePill from "../../components/ui/BadgePill";
@@ -10,7 +10,6 @@ import { currentUser } from "../../data/mockData";
 const stats = [
   { label: "Accuracy", value: `${currentUser.accuracy}%`, icon: Target },
   { label: "Questions Solved", value: currentUser.questionsSolved, icon: CheckSquare },
-  { label: "Challenges Done", value: currentUser.challengesCompleted, icon: Zap },
   { label: "Fastest Response", value: `${currentUser.fastestResponseSec}s`, icon: TrendingUp },
 ];
 

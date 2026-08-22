@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FilePlus2,
-  Code2,
   CalendarClock,
   Users,
   Trophy,
@@ -20,7 +19,6 @@ import { cn } from "../../lib/utils";
 const links = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/create-quiz", icon: FilePlus2, label: "Create Quiz" },
-  { to: "/admin/create-challenge", icon: Code2, label: "Create Challenge" },
   { to: "/admin/scheduled", icon: CalendarClock, label: "Scheduled Quizzes" },
   { to: "/admin/participants", icon: Users, label: "Participants" },
   { to: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },

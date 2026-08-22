@@ -25,7 +25,7 @@ export default function AdminSettings() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-ink font-medium">Anti-cheat detection</p>
-            <p className="text-xs text-ink-faint">Deduct points on tab switch during coding rounds</p>
+            <p className="text-xs text-ink-faint">Deduct points on tab switch during a live quiz</p>
           </div>
           <Toggle checked />
         </div>

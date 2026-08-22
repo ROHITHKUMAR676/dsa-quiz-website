@@ -1,0 +1,395 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuizStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  CLOSED
+  FINALIZED
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
+  CANCELLED
+}
+
+enum RewardSource {
+  QUIZ_ANSWER
+  QUIZ_COMPLETION
+  PERFECT_QUIZ
+  QUIZ_RANK
+  WEEKLY_RANK
+  BADGE
+  STREAK
+  ADMIN_ADJUSTMENT
+}
+
+enum ResultRevealType {
+  DAILY
+  WEEKLY
+}
+
+enum WeeklyStatus {
+  OPEN
+  CLOSED
+  FINALIZED
+}
+
+enum NotificationType {
+  QUIZ
+  BADGE
+  LEVEL
+  RANK
+  STREAK
+  SYSTEM
+}
+
+enum BadgeRuleType {
+  FIRST_BLOOD
+  PERFECT_SCORE
+  SPEEDSTER
+  THREE_DAY_STREAK
+  SEVEN_DAY_STREAK
+  QUIZ_MASTER
+  ACCURACY_KING
+  TOP_THREE
+  CHAMPION
+  CATEGORY_MASTER
+  CONSISTENT_PERFORMER
+  RISING_STAR
+}
+
+model User {
+  id                     String       @id @default(cuid())
+  fullName               String
+  email                  String       @unique
+  passwordHash           String?
+  role                   Role         @default(STUDENT)
+  authProvider           AuthProvider @default(PASSWORD)
+  googleSub              String?      @unique
+  department             String?
+  year                   String?
+  registerNumber         String?      @unique
+  phone                  String?
+  preferredLanguage      String?
+  bio                    String?
+  avatar                 String?
+  xp                     Int          @default(0)
+  coins                  Int          @default(0)
+  totalCompetitionPoints Int          @default(0)
+  totalCorrectAnswers    Int          @default(0)
+  currentStreak          Int          @default(0)
+  longestStreak          Int          @default(0)
+  lastQualifyingDate     DateTime?
+  scoreAchievedAt        DateTime?
+  lastActiveAt           DateTime?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  quizzesCreated         Quiz[]            @relation("QuizCreator")
+  attempts               QuizAttempt[]
+  badges                 UserBadge[]
+  xpTransactions         XpTransaction[]
+  coinTransactions       CoinTransaction[]
+  notifications          Notification[]
+  settings               UserSettings?
+  weeklyResults          WeeklyResult[]
+
+  @@index([email])
+  @@index([registerNumber])
+  @@index([role])
+}
+
+model UserSettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  soundEffects        Boolean  @default(true)
+  reducedMotion       Boolean  @default(false)
+  tutorialCompleted   Boolean  @default(false)
+  tutorialCompletedAt DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Quiz {
+  id                   String     @id @default(cuid())
+  title                String
+  description          String?
+  category             String
+  difficulty           Difficulty
+  status               QuizStatus @default(DRAFT)
+  competitionDate      DateTime?
+  startsAt             DateTime?
+  endsAt               DateTime?
+  timezone             String     @default("Asia/Kolkata")
+  defaultWindowMinutes Int?
+  timeLimit            Int
+  timeLimitPerQuestion Int?
+  maxAttempts          Int        @default(1)
+  publishedAt          DateTime?
+  closedAt             DateTime?
+  finalizedAt          DateTime?
+  archivedAt           DateTime?
+  // Overrides env RESULT_RELEASE_DELAY_MINUTES for this quiz. See spec
+  // section 9 - results publish `resultReleaseDelayMinutes` after closedAt,
+  // independent of when the quiz actually closed.
+  resultReleaseDelayMinutes Int?
+  createdById          String
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  createdBy            User          @relation("QuizCreator", fields: [createdById], references: [id])
+  questions            Question[]
+  attempts             QuizAttempt[]
+  resultReveal         ResultReveal?
+
+  @@index([status])
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([competitionDate])
+  @@index([category])
+}
+
+model Question {
+  id           String     @id @default(cuid())
+  quizId       String
+  questionText String
+  difficulty   Difficulty
+  points       Int
+  order        Int
+  explanation  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  quiz          Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  answers       Answer[]
+
+  @@unique([quizId, order])
+  @@index([quizId])
+}
+
+model QuestionOption {
+  id          String @id @default(cuid())
+  questionId  String
+  optionText  String
+  optionOrder Int
+  isCorrect   Boolean @default(false)
+
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+
+  @@unique([questionId, optionOrder])
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id                  String        @id @default(cuid())
+  quizId              String
+  userId              String
+  startedAt           DateTime      @default(now())
+  submittedAt         DateTime?
+  status              AttemptStatus @default(IN_PROGRESS)
+  totalQuestions      Int           @default(0)
+  correctAnswers      Int           @default(0)
+  incorrectAnswers    Int           @default(0)
+  unansweredQuestions Int           @default(0)
+  score               Int           @default(0)
+  accuracy            Decimal       @default(0)
+  xpEarned            Int           @default(0)
+  coinsEarned         Int           @default(0)
+  completionTimeMs    Int?
+  scoreAchievedAt     DateTime?
+  idempotencyKey      String?
+
+  quiz                Quiz     @relation(fields: [quizId], references: [id])
+  user                User     @relation(fields: [userId], references: [id])
+  answers             Answer[]
+
+  @@unique([quizId, userId])
+  @@unique([idempotencyKey])
+  @@index([userId, quizId])
+  @@index([quizId, score, correctAnswers, completionTimeMs, scoreAchievedAt])
+}
+
+model Answer {
+  id               String   @id @default(cuid())
+  attemptId        String
+  questionId       String
+  selectedOptionId String?
+  isCorrect        Boolean  @default(false)
+  responseTimeMs   Int?
+  pointsAwarded    Int      @default(0)
+  answeredAt       DateTime @default(now())
+
+  attempt          QuizAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         Question        @relation(fields: [questionId], references: [id])
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+}
+
+model Badge {
+  id          String        @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  category    String
+  ruleType    BadgeRuleType
+  ruleConfig  Json
+  xpReward    Int           @default(0)
+  coinReward  Int           @default(20)
+  repeatable  Boolean       @default(false)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+
+  users       UserBadge[]
+
+  @@index([ruleType])
+  @@index([isActive])
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+  metadata  Json?
+
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model XpTransaction {
+  id          String       @id @default(cuid())
+  userId      String
+  amount      Int
+  source      RewardSource
+  referenceId String
+  createdAt   DateTime     @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, source, referenceId])
+  @@index([userId])
+}
+
+model CoinTransaction {
+  id          String       @id @default(cuid())
+  userId      String
+  amount      Int
+  source      RewardSource
+  referenceId String
+  createdAt   DateTime     @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, source, referenceId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  metadata  Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+// Spec section 13: weekly aggregation window over finalized daily quizzes.
+model WeeklyCompetition {
+  id          String       @id @default(cuid())
+  weekStart   DateTime
+  weekEnd     DateTime
+  status      WeeklyStatus @default(OPEN)
+  finalizedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  results      WeeklyResult[]
+  resultReveal ResultReveal?
+
+  @@unique([weekStart, weekEnd])
+  @@index([status])
+}
+
+// Immutable snapshot of the official weekly ranking, computed only from
+// FINALIZED/ARCHIVED daily quizzes at the moment the week is finalized.
+// Never recomputed on the fly so a later admin edit can't silently change
+// history (see spec section 13: "Do not calculate weekly rankings from
+// temporary/unpublished results").
+model WeeklyResult {
+  id                  String   @id @default(cuid())
+  weeklyCompetitionId String
+  userId              String
+  rank                Int
+  totalScore          Int
+  totalCorrectAnswers Int
+  quizzesCompleted    Int
+  createdAt           DateTime @default(now())
+
+  weeklyCompetition WeeklyCompetition @relation(fields: [weeklyCompetitionId], references: [id], onDelete: Cascade)
+  user              User              @relation(fields: [userId], references: [id])
+
+  @@unique([weeklyCompetitionId, userId])
+  @@index([weeklyCompetitionId, rank])
+}
+
+// Spec sections 14-15: abstraction for a daily or weekly reveal video.
+// Deliberately thin - admin-uploaded/associated URL, no video generation.
+model ResultReveal {
+  id                  String            @id @default(cuid())
+  type                ResultRevealType
+  quizId              String?           @unique
+  weeklyCompetitionId String?           @unique
+  videoUrl            String?
+  thumbnailUrl        String?
+  duration            Int?
+  publishedAt         DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  quiz              Quiz?              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  weeklyCompetition WeeklyCompetition? @relation(fields: [weeklyCompetitionId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+}
