@@ -14,6 +14,7 @@ import Tutorial from "./components/layout/Tutorial";
 import StudentLayout from "./components/layout/StudentLayout";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import QuizAttempt from "./pages/student/QuizAttempt";
+import QuizResults from "./pages/student/QuizResults";
 import Leaderboard from "./pages/student/Leaderboard";
 import Profile from "./pages/student/Profile";
 import Notifications from "./pages/student/Notifications";
@@ -103,6 +104,7 @@ function AnimatedRoutes() {
       >
         <Route index element={<StudentDashboard />} />
         <Route path="quiz/:id" element={<QuizAttempt />} />
+        <Route path="quiz/:id/results" element={<QuizResults />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />

@@ -57,6 +57,12 @@ export interface Quiz {
   status: "live" | "upcoming" | "completed";
   scheduledAt?: string;
   participants?: number;
+  /** ISO timestamp the quiz opens. Powers the dashboard's daily timer challenge. */
+  startsAt?: string | null;
+  /** ISO timestamp the quiz auto-closes (defaults to 1hr after startsAt). */
+  endsAt?: string | null;
+  /** Whether the signed-in student has already attempted this quiz. */
+  hasAttempted?: boolean;
 }
 
 export interface LeaderboardEntry {

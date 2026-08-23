@@ -55,8 +55,10 @@ export default function QuizAttempt() {
           setDeadline(attempt.deadline);
           setStage("playing");
         } else if (attempt && attempt.status !== "IN_PROGRESS") {
-          setStage("unavailable");
-          setErrorMessage("You've already attempted this quiz. Results are revealed after the official release.");
+          // Already attempted - send them to the results page, which shows
+          // the "come back after 1hr" banner until results are published.
+          navigate(`/student/quiz/${quizId}/results`, { replace: true });
+          return;
         } else {
           setStage("intro");
         }
@@ -70,7 +72,7 @@ export default function QuizAttempt() {
     return () => {
       cancelled = true;
     };
-  }, [quizId]);
+  }, [quizId, navigate]);
 
   // Tick once a second while an attempt is in progress, purely to drive the
   // countdown display - the backend, not this timer, is what actually
@@ -206,9 +208,14 @@ export default function QuizAttempt() {
                 Your answers are locked in. Results, XP, and rank will be revealed once the official reveal happens -
                 check the leaderboard then.
               </p>
-              <Button fullWidth size="lg" onClick={() => navigate("/student")}>
-                Back to Dashboard
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button fullWidth size="lg" variant="secondary" onClick={() => navigate(`/student/quiz/${quizId}/results`)}>
+                  View Results
+                </Button>
+                <Button fullWidth size="lg" onClick={() => navigate("/student")}>
+                  Back to Dashboard
+                </Button>
+              </div>
             </div>
           </Card>
         </motion.div>

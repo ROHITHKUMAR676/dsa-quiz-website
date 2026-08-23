@@ -51,9 +51,21 @@ export default function QuizCard({ quiz }: { quiz: Quiz }) {
         variant={quiz.status === "live" ? "primary" : "secondary"}
         fullWidth
         disabled={quiz.status === "upcoming"}
-        onClick={() => navigate(`/student/quiz/${quiz.id}`)}
+        onClick={() =>
+          navigate(
+            quiz.status === "completed" || (quiz.status === "live" && quiz.hasAttempted)
+              ? `/student/quiz/${quiz.id}/results`
+              : `/student/quiz/${quiz.id}`
+          )
+        }
       >
-        {quiz.status === "live" ? "Enter Arena" : quiz.status === "upcoming" ? `Starts ${quiz.scheduledAt ? new Date(quiz.scheduledAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "soon"}` : "View Results"}
+        {quiz.status === "live"
+          ? quiz.hasAttempted
+            ? "View Results"
+            : "Enter Arena"
+          : quiz.status === "upcoming"
+          ? `Starts ${quiz.scheduledAt ? new Date(quiz.scheduledAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "soon"}`
+          : "View Results"}
       </Button>
     </Card>
   );

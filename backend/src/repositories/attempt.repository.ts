@@ -66,6 +66,7 @@ export function markAttemptExpired(id: string) {
   });
 }
 
+
 export function updateAttemptRewards(id: string, data: { xpEarned: number; coinsEarned: number }) {
   return prisma.quizAttempt.update({ where: { id }, data });
 }

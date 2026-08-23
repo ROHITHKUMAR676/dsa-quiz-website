@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import BadgePill from "../../components/ui/BadgePill";
 import QuizCard from "../../components/domain/QuizCard";
 import AchievementCard from "../../components/domain/AchievementCard";
+import DailyChallengeTimer from "../../components/domain/DailyChallengeTimer";
 import { useApp } from "../../context/AppContext";
 import { studentQuizApi, leaderboardApi, studentGamificationApi } from "../../lib/backend";
 import { mapBackendQuizToLegacy } from "../../lib/quizAdapter";
@@ -58,6 +59,30 @@ export default function StudentDashboard() {
     };
   }, []);
 
+  /**
+   * The moment the daily timer challenge's countdown reaches zero, ping the
+   * quiz's daily leaderboard once in the background. The backend
+   * auto-finalizes results (awarding rank/points) the first time that
+   * endpoint is hit after the quiz's window + release delay elapse - so
+   * without this, points/rank only ever appeared once *some* student
+   * happened to open a results page. Then refresh the dashboard's own
+   * quizzes + leaderboard so the change shows up without a manual reload.
+   */
+  const handleLiveQuizClosed = async (quizId: string) => {
+    try {
+      await leaderboardApi.daily(quizId);
+      const [{ quizzes: backendQuizzes }, { leaderboard: globalLeaderboard }] = await Promise.all([
+        studentQuizApi.list(),
+        leaderboardApi.global(),
+      ]);
+      setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
+      setTopRanks(globalLeaderboard.slice(0, 5).map(mapBackendGlobalEntryToLegacy));
+    } catch {
+      // Best-effort - the next visit to the results page will finalize and
+      // refresh things regardless.
+    }
+  };
+
   const liveQuiz = quizzes.find((q) => q.status === "live");
   const upcomingQuizzes = quizzes.filter((q) => q.status === "upcoming");
 
@@ -106,6 +131,11 @@ export default function StudentDashboard() {
             </div>
           </div>
         </Card>
+      </motion.div>
+
+      {/* Daily timer challenge */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <DailyChallengeTimer liveQuiz={liveQuiz} upcomingQuiz={upcomingQuizzes[0]} onLiveQuizClosed={handleLiveQuizClosed} />
       </motion.div>
 
       {/* Live sections */}

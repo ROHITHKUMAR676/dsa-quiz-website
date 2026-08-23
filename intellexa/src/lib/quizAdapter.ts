@@ -20,6 +20,9 @@ export function mapBackendQuizToLegacy(quiz: BackendQuizSummary): Quiz {
     timeLimitPerQuestion: quiz.timeLimitPerQuestion ?? quiz.timeLimit ?? 0,
     status: toLegacyStatus(quiz.availability),
     scheduledAt: quiz.startsAt ?? undefined,
+    startsAt: quiz.startsAt,
+    endsAt: quiz.endsAt,
+    hasAttempted: quiz.hasAttempted,
     questions: [],
   };
 }
