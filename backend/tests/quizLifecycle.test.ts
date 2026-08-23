@@ -1,6 +1,13 @@
 import { QuizStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
-import { assertQuizEditable, assertTransitionAllowed, getEffectiveEndsAt, getServerAvailabilityState } from "../src/services/quizLifecycle.service.js";
+import {
+  assertQuizEditable,
+  assertTransitionAllowed,
+  getEffectiveEndsAt,
+  getResultReleaseAt,
+  getResultState,
+  getServerAvailabilityState,
+} from "../src/services/quizLifecycle.service.js";
 
 describe("quiz lifecycle", () => {
   it("calculates deterministic effective end time from the default window", () => {
@@ -11,6 +18,19 @@ describe("quiz lifecycle", () => {
     });
 
     expect(endsAt?.toISOString()).toBe("2026-08-15T15:00:00.000Z");
+  });
+
+  it("releases default quiz results one hour after scheduled start", () => {
+    const quiz = {
+      status: QuizStatus.FINALIZED,
+      startsAt: new Date("2026-08-15T19:00:00+05:30"),
+      endsAt: null,
+      defaultWindowMinutes: 60,
+      resultReleaseDelayMinutes: null,
+    };
+
+    expect(getResultReleaseAt(quiz)?.toISOString()).toBe("2026-08-15T14:30:00.000Z");
+    expect(getResultState(quiz, new Date("2026-08-15T20:00:00+05:30"))).toBe("PUBLISHED");
   });
 
   it("reports scheduled quizzes as live once server time reaches startsAt", () => {

@@ -91,8 +91,11 @@ export async function finalizeWeeklyCompetition(weeklyCompetitionId: string) {
 export async function getWeeklyLeaderboardForStudent(weeklyCompetitionId: string) {
   const weekly = await weeklyRepository.findWeeklyCompetitionById(weeklyCompetitionId);
   if (!weekly) throw new ApiError(404, "Weekly competition not found", "WEEKLY_NOT_FOUND");
+  if (new Date() < weekly.weekEnd) {
+    return { weekly, entries: [], message: "Weekly leaderboard opens after this week ends." };
+  }
   if (weekly.status !== WeeklyStatus.FINALIZED) {
-    return { weekly, entries: [], message: "This week's results have not been finalized yet." };
+    return { weekly, entries: [], message: "This week's results are being prepared." };
   }
   const leaderboard = await weeklyRepository.getWeeklyLeaderboard(weeklyCompetitionId);
   return {

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const attemptRepository = vi.hoisted(() => ({ findSubmittedAttemptsRankedForQuiz: vi.fn() }));
 const ledgerRepository = vi.hoisted(() => ({ awardXp: vi.fn(), awardCoins: vi.fn() }));
-const userRepository = vi.hoisted(() => ({ incrementCompetitionTotals: vi.fn() }));
+const userRepository = vi.hoisted(() => ({ incrementCompetitionTotalsOnce: vi.fn() }));
 const notificationRepository = vi.hoisted(() => ({ createNotification: vi.fn() }));
 const badgeService = vi.hoisted(() => ({ evaluateFinalizationBadges: vi.fn().mockResolvedValue([]) }));
 
@@ -67,10 +67,11 @@ describe("finalizeQuizResults", () => {
 
     await finalizeQuizResults("quiz-1");
 
-    expect(userRepository.incrementCompetitionTotals).toHaveBeenCalledTimes(4);
-    expect(userRepository.incrementCompetitionTotals).toHaveBeenCalledWith(
+    expect(userRepository.incrementCompetitionTotalsOnce).toHaveBeenCalledTimes(4);
+    expect(userRepository.incrementCompetitionTotalsOnce).toHaveBeenCalledWith(
       "u4",
-      expect.objectContaining({ competitionPoints: 70 })
+      expect.objectContaining({ competitionPoints: 70 }),
+      "quizCompetitionPoints:quiz-1:u4"
     );
   });
 });

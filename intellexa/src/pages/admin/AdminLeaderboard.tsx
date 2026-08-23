@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Trophy, Loader2, TriangleAlert } from "lucide-react";
 import Podium from "../../components/domain/Podium";
 import LeaderboardRow from "../../components/domain/LeaderboardRow";
@@ -8,6 +9,13 @@ import { adminApi } from "../../lib/backend";
 import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { ApiError } from "../../lib/api";
 import type { LeaderboardEntry } from "../../types";
+
+function getLeaderboardErrorMessage(error: unknown) {
+  if (error instanceof ApiError && error.status === 403) {
+    return "Admin leaderboard access requires an admin account. Please switch to an admin session to view platform rankings.";
+  }
+  return error instanceof ApiError ? error.message : "Couldn't load leaderboard. Please try again.";
+}
 
 export default function AdminLeaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -25,7 +33,7 @@ export default function AdminLeaderboard() {
       })
       .catch((error) => {
         if (cancelled) return;
-        setErrorMessage(error instanceof ApiError ? error.message : "Couldn't load leaderboard. Please try again.");
+        setErrorMessage(getLeaderboardErrorMessage(error));
         setStatus("error");
       });
     return () => {
@@ -58,16 +66,18 @@ export default function AdminLeaderboard() {
         </Card>
       )}
 
-      {status === "ready" && entries.length === 0 ? (
+      <AnimatePresence mode="wait">
+        {status === "ready" && entries.length === 0 ? (
         <EmptyState icon={Trophy} title="No rankings yet" description="Students will appear after finalized quiz rewards are recorded." />
       ) : status === "ready" ? (
         <>
           <Podium top3={top3} />
-          <div className="space-y-2">
-            {rest.map((entry) => <LeaderboardRow key={entry.userId} entry={entry} />)}
-          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ delay: 0.15 }} className="space-y-2">
+            {rest.map((entry, index) => <LeaderboardRow key={entry.userId} entry={entry} index={index} />)}
+          </motion.div>
         </>
       ) : null}
+      </AnimatePresence>
     </div>
   );
 }

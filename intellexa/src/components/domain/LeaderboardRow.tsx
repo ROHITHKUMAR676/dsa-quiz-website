@@ -4,7 +4,7 @@ import type { LeaderboardEntry } from "../../types";
 import { cn } from "../../lib/utils";
 import BadgePill from "../ui/BadgePill";
 
-export default function LeaderboardRow({ entry, highlight }: { entry: LeaderboardEntry; highlight?: boolean }) {
+export default function LeaderboardRow({ entry, highlight, index = 0 }: { entry: LeaderboardEntry; highlight?: boolean; index?: number }) {
   const delta = entry.previousRank - entry.rank;
   const DeltaIcon = delta > 0 ? ArrowUp : delta < 0 ? ArrowDown : Minus;
   const deltaColor = delta > 0 ? "text-state-success" : delta < 0 ? "text-state-danger" : "text-ink-faint";
@@ -12,10 +12,12 @@ export default function LeaderboardRow({ entry, highlight }: { entry: Leaderboar
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -2 }}
+      transition={{ delay: Math.min(index * 0.045, 0.32), type: "spring", stiffness: 260, damping: 24 }}
       className={cn(
-        "flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 rounded-xl2 border transition-colors",
+        "flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 rounded-xl2 border transition-colors will-change-transform",
         highlight
           ? "bg-neon-blue/10 border-neon-blue/40 shadow-glow"
           : "bg-surface/40 border-surface-border hover:border-neon-blue/20"

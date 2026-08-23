@@ -1,7 +1,9 @@
-import { Settings as SettingsIcon, RotateCcw, Volume2, Moon, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, RotateCcw, Volume2, Moon, LogOut, Palette } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import { ThemeSwatch } from "../../components/ui/ThemeSwatch";
 import { useApp } from "../../context/AppContext";
+import { useTheme } from "../../context/ThemeContext";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 
@@ -20,6 +22,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export default function Settings() {
   const { restartTutorial, logout } = useApp();
+  const { theme, setTheme } = useTheme();
   const { showToast } = useToast();
   const [sound, setSound] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -32,6 +35,34 @@ export default function Settings() {
         </h1>
         <p className="text-ink-dim text-sm">Manage your experience preferences.</p>
       </div>
+
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <Palette className="w-4.5 h-4.5 text-ink-dim" />
+          <div>
+            <p className="text-sm text-ink font-medium">Theme</p>
+            <p className="text-xs text-ink-faint">Switch between Nebula and White Smokey</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ThemeSwatch
+            active={theme === "dark"}
+            label="Nebula"
+            sublabel="Current dark design"
+            previewBg="linear-gradient(135deg, #080B14, #12172A)"
+            previewAccent="#22D3EE"
+            onClick={() => setTheme("dark")}
+          />
+          <ThemeSwatch
+            active={theme === "light"}
+            label="White Smokey"
+            sublabel="Clean bright system"
+            previewBg="linear-gradient(135deg, #FFFFFF, #EEF3F7)"
+            previewAccent="#2563EB"
+            onClick={() => setTheme("light")}
+          />
+        </div>
+      </Card>
 
       <Card className="p-5 space-y-5">
         <div className="flex items-center justify-between">

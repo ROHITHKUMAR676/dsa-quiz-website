@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Flame, Coins, Zap } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { studentGamificationApi } from "../../lib/backend";
+import ThemeToggle from "../ui/ThemeToggle";
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function TopBar() {
       <div className="hidden lg:block" />
 
       <div className="flex items-center gap-2 sm:gap-3">
+        <ThemeToggle compact />
         <div className="hidden sm:flex items-center gap-1.5 glass px-3 py-1.5 rounded-full text-xs">
           <Flame className="w-3.5 h-3.5 text-state-warning" />
           <span className="font-mono text-ink">{streak}</span>

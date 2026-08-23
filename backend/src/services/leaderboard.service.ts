@@ -1,8 +1,10 @@
+import { QuizStatus } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import { ApiError } from "../utils/apiError.js";
 import * as quizRepository from "../repositories/quiz.repository.js";
 import * as attemptRepository from "../repositories/attempt.repository.js";
-import { getResultReleaseAt, getResultState } from "./quizLifecycle.service.js";
+import { finalizeQuizResults } from "./finalization.service.js";
+import { getEffectiveEndsAt, getResultReleaseAt, getResultState } from "./quizLifecycle.service.js";
 
 function toDailyLeaderboardEntries(
   attempts: Awaited<ReturnType<typeof attemptRepository.findSubmittedAttemptsRankedForQuiz>>
@@ -40,12 +42,38 @@ async function findPreviousOfficialLeaderboard(quiz: { id: string; competitionDa
   };
 }
 
+async function finalizeQuizIfReleaseIsDue(quiz: Awaited<ReturnType<typeof quizRepository.findQuizForAttempt>>) {
+  if (!quiz) return quiz;
+  if (quiz.status === QuizStatus.FINALIZED || quiz.status === QuizStatus.ARCHIVED || quiz.status === QuizStatus.DRAFT) {
+    return quiz;
+  }
+
+  const now = new Date();
+  const effectiveEndsAt = getEffectiveEndsAt(quiz);
+  const resultReleaseAt = getResultReleaseAt(quiz);
+  if (!effectiveEndsAt || !resultReleaseAt || now < effectiveEndsAt || now < resultReleaseAt) {
+    return quiz;
+  }
+
+  await finalizeQuizResults(quiz.id);
+  await prisma.quiz.update({
+    where: { id: quiz.id },
+    data: {
+      status: QuizStatus.FINALIZED,
+      closedAt: quiz.closedAt ?? effectiveEndsAt,
+      finalizedAt: quiz.finalizedAt ?? now,
+    },
+  });
+
+  return quizRepository.findQuizForAttempt(quiz.id);
+}
+
 /**
  * The single source of truth for "what can a student see right now" on the
  * daily leaderboard. Never exposes an unpublished ranking (spec section 33).
  */
 export async function getDailyLeaderboard(quizId: string) {
-  const quiz = await quizRepository.findQuizForAttempt(quizId);
+  const quiz = await finalizeQuizIfReleaseIsDue(await quizRepository.findQuizForAttempt(quizId));
   if (!quiz) throw new ApiError(404, "Quiz not found", "QUIZ_NOT_FOUND");
 
   const now = new Date();

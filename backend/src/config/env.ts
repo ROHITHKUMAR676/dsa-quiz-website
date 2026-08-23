@@ -13,9 +13,11 @@ const envSchema = z.object({
   APP_TIMEZONE: z.string().default("Asia/Kolkata"),
   DEFAULT_DAILY_QUIZ_WINDOW_MINUTES: z.coerce.number().int().positive().default(60),
   ALLOWED_EMAIL_DOMAIN: z.string().min(1).default("rajalakshmi.edu.in"),
-  // Spec section 9: results publish this many minutes AFTER the quiz closes,
-  // not after it starts. Per-quiz override: Quiz.resultReleaseDelayMinutes.
-  RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(60),
+  // Results publish this many minutes after the quiz closes. The default is
+  // immediate release at close; with the default 60-minute quiz window, that
+  // means leaderboard results release one hour after the scheduled start.
+  // Per-quiz override: Quiz.resultReleaseDelayMinutes.
+  RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(0),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
 });

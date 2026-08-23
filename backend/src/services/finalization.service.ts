@@ -26,12 +26,14 @@ export async function finalizeQuizResults(quizId: string) {
     const attempt = rankedAttempts[index];
     const rank = index + 1;
 
-    // Global leaderboard totals - safe to increment every finalize run
-    // because it's driven by score, which stays fixed per attempt.
-    await userRepository.incrementCompetitionTotals(attempt.userId, {
-      competitionPoints: attempt.score,
-      correctAnswers: 0, // already credited at submission time
-    });
+    await userRepository.incrementCompetitionTotalsOnce(
+      attempt.userId,
+      {
+        competitionPoints: attempt.score,
+        correctAnswers: 0, // already credited at submission time
+      },
+      `quizCompetitionPoints:${quizId}:${attempt.userId}`
+    );
 
     if (rank <= 3) {
       const referenceId = `quizRankReward:${quizId}:${rank}:${attempt.userId}`;

@@ -1,4 +1,4 @@
-import type { BackendGlobalLeaderboardEntry } from "./backend";
+import type { BackendGlobalLeaderboardEntry, BackendWeeklyLeaderboardEntry } from "./backend";
 import type { LeaderboardEntry } from "../types";
 
 function tierFromXp(xp: number): LeaderboardEntry["tier"] {
@@ -31,5 +31,22 @@ export function mapBackendGlobalEntryToLegacy(entry: BackendGlobalLeaderboardEnt
     streak: entry.currentStreak,
     badges: 0,
     tier: tierFromXp(entry.xp),
+  };
+}
+
+export function mapBackendWeeklyEntryToLegacy(entry: BackendWeeklyLeaderboardEntry): LeaderboardEntry {
+  const xp = entry.totalScore;
+  return {
+    rank: entry.rank,
+    previousRank: entry.rank,
+    userId: entry.userId,
+    name: entry.fullName,
+    avatar: entry.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
+    department: entry.department ?? "Department pending",
+    xp,
+    points: entry.totalScore,
+    streak: entry.quizzesCompleted,
+    badges: entry.totalCorrectAnswers,
+    tier: tierFromXp(xp),
   };
 }

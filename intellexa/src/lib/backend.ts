@@ -157,9 +157,35 @@ export interface BackendGlobalLeaderboardEntry {
   currentStreak: number;
 }
 
+export interface BackendWeeklyCompetition {
+  id: string;
+  weekStart: string;
+  weekEnd: string;
+  status: "OPEN" | "CLOSED" | "FINALIZED";
+  finalizedAt?: string | null;
+}
+
+export interface BackendWeeklyLeaderboardEntry {
+  rank: number;
+  userId: string;
+  fullName: string;
+  avatar: string | null;
+  department: string | null;
+  totalScore: number;
+  totalCorrectAnswers: number;
+  quizzesCompleted: number;
+}
+
+export interface BackendWeeklyLeaderboard {
+  weekly: BackendWeeklyCompetition;
+  entries: BackendWeeklyLeaderboardEntry[];
+  message?: string;
+}
+
 export const leaderboardApi = {
   daily: (quizId: string) => api.get<{ leaderboard: BackendDailyLeaderboard }>(`/student/leaderboard/daily/${quizId}`),
   global: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[] }>("/student/leaderboard/global"),
+  weeklyCurrent: () => api.get<BackendWeeklyLeaderboard>("/student/leaderboard/weekly/current"),
 };
 
 export interface BackendNotification {

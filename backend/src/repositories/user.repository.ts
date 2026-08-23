@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js";
-import type { Prisma } from "@prisma/client";
+import { Prisma, RewardSource } from "@prisma/client";
 
 export function findUserByEmail(email: string) {
   return prisma.user.findUnique({ where: { email } });
@@ -40,6 +40,38 @@ export function incrementCompetitionTotals(id: string, data: { competitionPoints
       totalCorrectAnswers: { increment: data.correctAnswers },
     },
   });
+}
+
+export async function incrementCompetitionTotalsOnce(
+  id: string,
+  data: { competitionPoints: number; correctAnswers: number },
+  referenceId: string
+) {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.xpTransaction.create({
+        data: {
+          userId: id,
+          amount: 0,
+          source: RewardSource.QUIZ_RANK,
+          referenceId,
+        },
+      });
+      await tx.user.update({
+        where: { id },
+        data: {
+          totalCompetitionPoints: { increment: data.competitionPoints },
+          totalCorrectAnswers: { increment: data.correctAnswers },
+        },
+      });
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return false;
+    }
+    throw error;
+  }
 }
 
 export function findUserSelect<T extends Prisma.UserSelect>(id: string, select: T) {

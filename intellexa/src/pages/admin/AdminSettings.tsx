@@ -1,7 +1,9 @@
-import { Settings as SettingsIcon, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, LogOut, Palette } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import { ThemeSwatch } from "../../components/ui/ThemeSwatch";
 import { useApp } from "../../context/AppContext";
+import { useTheme } from "../../context/ThemeContext";
 
 function Toggle({ checked }: { checked: boolean }) {
   return (
@@ -13,6 +15,7 @@ function Toggle({ checked }: { checked: boolean }) {
 
 export default function AdminSettings() {
   const { logout } = useApp();
+  const { theme, setTheme } = useTheme();
   return (
     <div className="max-w-xl space-y-6">
       <div>
@@ -21,6 +24,33 @@ export default function AdminSettings() {
         </h1>
         <p className="text-ink-dim text-sm">Platform configuration.</p>
       </div>
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <Palette className="w-4.5 h-4.5 text-ink-dim" />
+          <div>
+            <p className="text-sm text-ink font-medium">Theme</p>
+            <p className="text-xs text-ink-faint">Switch between Nebula and White Smokey</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ThemeSwatch
+            active={theme === "dark"}
+            label="Nebula"
+            sublabel="Current dark design"
+            previewBg="linear-gradient(135deg, #080B14, #12172A)"
+            previewAccent="#22D3EE"
+            onClick={() => setTheme("dark")}
+          />
+          <ThemeSwatch
+            active={theme === "light"}
+            label="White Smokey"
+            sublabel="Clean bright system"
+            previewBg="linear-gradient(135deg, #FFFFFF, #EEF3F7)"
+            previewAccent="#2563EB"
+            onClick={() => setTheme("light")}
+          />
+        </div>
+      </Card>
       <Card className="p-5 space-y-5">
         <div className="flex items-center justify-between">
           <div>

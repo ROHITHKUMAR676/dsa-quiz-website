@@ -11,15 +11,21 @@ const podiumStyle = {
 
 export default function Podium({ top3 }: { top3: LeaderboardEntry[] }) {
   return (
-    <div className="flex items-end justify-center gap-3 sm:gap-6 mb-8 px-2">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      className="flex items-end justify-center gap-3 sm:gap-6 mb-8 px-2"
+    >
       {top3.map((entry, i) => {
         const rank = entry.rank as 1 | 2 | 3;
         const style = podiumStyle[rank];
         return (
           <motion.div
             key={entry.userId}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 42, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            whileHover={{ y: -4 }}
             transition={{ delay: i * 0.15, type: "spring", stiffness: 200, damping: 18 }}
             className={cn("flex flex-col items-center", style.order)}
           >
@@ -48,6 +54,6 @@ export default function Podium({ top3 }: { top3: LeaderboardEntry[] }) {
           </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 }

@@ -3,6 +3,81 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+    --color-void: 8 11 20;
+    --color-void-100: 10 14 26;
+    --color-void-200: 13 18 32;
+    --color-void-300: 17 23 40;
+    --color-void-400: 22 29 51;
+    --color-void-500: 27 35 64;
+    --color-surface: 18 23 42;
+    --color-surface-light: 26 32 56;
+    --color-surface-border: 35 43 71;
+    --color-neon-blue: 79 124 255;
+    --color-neon-blue2: 59 95 224;
+    --color-neon-purple: 168 85 247;
+    --color-neon-violet: 139 92 246;
+    --color-neon-cyan: 34 211 238;
+    --color-state-success: 52 211 153;
+    --color-state-warning: 251 191 36;
+    --color-state-danger: 248 113 113;
+    --color-state-gold: 255 201 77;
+    --color-state-silver: 201 211 224;
+    --color-state-bronze: 224 164 103;
+    --color-ink: 232 236 247;
+    --color-ink-dim: 154 164 194;
+    --color-ink-faint: 91 100 136;
+    --body-wash:
+      radial-gradient(circle at 20% -10%, rgba(79,124,255,0.12), transparent 45%),
+      radial-gradient(circle at 85% 0%, rgba(168,85,247,0.10), transparent 40%);
+    --selection-bg: rgba(79,124,255,0.40);
+    --selection-text: #ffffff;
+    --focus-ring: #4F7CFF;
+    --scrollbar-thumb: #232B47;
+    --scrollbar-thumb-hover: #2E3A63;
+    --glass-shadow: 0 18px 48px rgba(0,0,0,0.22);
+    --shimmer-highlight: rgba(255,255,255,0.06);
+  }
+
+  .theme-light {
+    color-scheme: light;
+    --color-void: 255 255 255;
+    --color-void-100: 250 251 252;
+    --color-void-200: 246 248 250;
+    --color-void-300: 240 244 247;
+    --color-void-400: 232 238 242;
+    --color-void-500: 220 228 234;
+    --color-surface: 255 255 255;
+    --color-surface-light: 244 247 249;
+    --color-surface-border: 214 224 232;
+    --color-neon-blue: 37 99 235;
+    --color-neon-blue2: 29 78 216;
+    --color-neon-purple: 124 58 237;
+    --color-neon-violet: 109 40 217;
+    --color-neon-cyan: 8 145 178;
+    --color-state-success: 5 150 105;
+    --color-state-warning: 217 119 6;
+    --color-state-danger: 220 38 38;
+    --color-state-gold: 202 138 4;
+    --color-state-silver: 100 116 139;
+    --color-state-bronze: 180 83 9;
+    --color-ink: 17 24 39;
+    --color-ink-dim: 75 85 99;
+    --color-ink-faint: 126 139 152;
+    --body-wash:
+      linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96)),
+      radial-gradient(circle at 22% -8%, rgba(226,232,240,0.9), transparent 42%),
+      radial-gradient(circle at 86% 4%, rgba(207,216,224,0.65), transparent 38%);
+    --selection-bg: rgba(37,99,235,0.18);
+    --selection-text: #111827;
+    --focus-ring: #2563EB;
+    --scrollbar-thumb: #CBD5E1;
+    --scrollbar-thumb-hover: #94A3B8;
+    --glass-shadow: 0 18px 42px rgba(100,116,139,0.14);
+    --shimmer-highlight: rgba(255,255,255,0.68);
+  }
+
   * {
     @apply border-surface-border;
   }
@@ -11,8 +86,7 @@
   }
   body {
     @apply bg-void-100 text-ink font-body antialiased;
-    background-image: radial-gradient(circle at 20% -10%, rgba(79,124,255,0.12), transparent 45%),
-      radial-gradient(circle at 85% 0%, rgba(168,85,247,0.10), transparent 40%);
+    background-image: var(--body-wash);
     background-attachment: fixed;
     min-height: 100dvh;
   }
@@ -20,24 +94,27 @@
     @apply font-display tracking-tight;
   }
   ::selection {
-    @apply bg-neon-blue/40 text-white;
+    background: var(--selection-bg);
+    color: var(--selection-text);
   }
   :focus-visible {
-    outline: 2px solid #4F7CFF;
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #232B47; border-radius: 8px; }
-  ::-webkit-scrollbar-thumb:hover { background: #2E3A63; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 }
 
 @layer components {
   .glass {
     @apply bg-surface/60 backdrop-blur-xl border border-surface-border;
+    box-shadow: var(--glass-shadow);
   }
   .glass-strong {
     @apply bg-surface/85 backdrop-blur-2xl border border-surface-border;
+    box-shadow: var(--glass-shadow);
   }
   .text-gradient {
     @apply bg-aurora bg-clip-text text-transparent;
@@ -49,7 +126,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    background: linear-gradient(90deg, transparent, var(--shimmer-highlight), transparent);
     background-size: 500px 100%;
     animation: shimmer 1.6s linear infinite;
   }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AppProvider, useApp } from "./context/AppContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 
 import Splash from "./pages/Splash";
@@ -133,11 +134,13 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppProvider>
-        <ToastProvider>
-          <AnimatedRoutes />
-        </ToastProvider>
-      </AppProvider>
+      <ThemeProvider>
+        <AppProvider>
+          <ToastProvider>
+            <AnimatedRoutes />
+          </ToastProvider>
+        </AppProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
