@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() || "http://localhost:4000";
+const normalizedApiUrl = configuredApiUrl.replace(/\/+$/, "");
+const API_BASE_URL = normalizedApiUrl.endsWith("/api")
+  ? normalizedApiUrl
+  : `${normalizedApiUrl}/api`;
 const TOKEN_STORAGE_KEY = "intellexa:token";
 
 export class ApiError extends Error {
@@ -40,14 +44,23 @@ interface RequestOptions {
  */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const token = getToken();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      "Couldn't reach the server. Please check your connection and try again.",
+      0,
+      "NETWORK_ERROR"
+    );
+  }
 
   if (response.status === 204) return undefined as T;
 
@@ -59,7 +72,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (!response.ok) {
-    const message = payload?.error?.message ?? "Something went wrong. Please try again.";
+    const message = response.status >= 500
+      ? "The server is temporarily unavailable. Please try again later."
+      : payload?.error?.message ?? "Something went wrong. Please try again.";
     const code = payload?.error?.code;
     throw new ApiError(message, response.status, code);
   }

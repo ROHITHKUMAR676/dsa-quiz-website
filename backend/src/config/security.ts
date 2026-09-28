@@ -6,7 +6,7 @@ import { env } from "./env.js";
 export const helmetMiddleware = helmet();
 
 export const corsMiddleware = cors({
-  origin: env.FRONTEND_URL,
+  origin: new URL(env.FRONTEND_URL).origin,
   credentials: true,
 });
 
