@@ -46,7 +46,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const token = getToken();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    const normalizedPath = path.replace(/^\/+/, "");
+    response = await fetch(`${API_BASE_URL}/${normalizedPath}`, {
       method: options.method ?? "GET",
       headers: {
         "Content-Type": "application/json",
