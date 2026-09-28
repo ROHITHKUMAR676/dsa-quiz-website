@@ -68,8 +68,15 @@ export default function CreateQuiz() {
       showToast("Please choose a valid schedule time.", "error");
       return;
     }
+    // The quiz stays open for a fixed 1-hour window after it goes live -
+    // this is completely separate from `timeLimit`, which is only the
+    // per-question countdown a student sees once they've entered the
+    // arena. Do NOT derive endsAt from timeLimit * questionCount: that
+    // made the quiz's entire availability window as short as a single
+    // question's timer, closing it to students within minutes.
+    const QUIZ_WINDOW_MINUTES = 60;
+    const endsAt = new Date(startsAt.getTime() + QUIZ_WINDOW_MINUTES * 60 * 1000);
     const totalSeconds = Math.max(timeLimit * questions.length, 60);
-    const endsAt = new Date(startsAt.getTime() + totalSeconds * 1000);
 
     setIsSubmitting(true);
     try {
@@ -108,6 +115,7 @@ export default function CreateQuiz() {
           startsAt: startsAt.toISOString(),
           endsAt: endsAt.toISOString(),
           timezone: "Asia/Kolkata",
+          defaultWindowMinutes: QUIZ_WINDOW_MINUTES,
         });
       } else {
         await adminApi.publishQuiz(quiz.id);

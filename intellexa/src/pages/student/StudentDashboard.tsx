@@ -85,6 +85,13 @@ export default function StudentDashboard() {
 
   const liveQuiz = quizzes.find((q) => q.status === "live");
   const upcomingQuizzes = quizzes.filter((q) => q.status === "upcoming");
+  // Most recently closed quiz, kept visible in the daily timer widget for a
+  // full day after it closes (or until a new quiz is scheduled, whichever
+  // comes first - once `upcomingQuizzes` has something, that takes over).
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const recentlyClosedQuiz = quizzes
+    .filter((q) => q.status === "completed" && q.endsAt && Date.now() - new Date(q.endsAt).getTime() < ONE_DAY_MS)
+    .sort((a, b) => new Date(b.endsAt as string).getTime() - new Date(a.endsAt as string).getTime())[0];
 
   const displayName = user?.fullName ?? "Student";
   const xp = user?.xp ?? 0;
@@ -135,7 +142,12 @@ export default function StudentDashboard() {
 
       {/* Daily timer challenge */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <DailyChallengeTimer liveQuiz={liveQuiz} upcomingQuiz={upcomingQuizzes[0]} onLiveQuizClosed={handleLiveQuizClosed} />
+        <DailyChallengeTimer
+          liveQuiz={liveQuiz}
+          upcomingQuiz={upcomingQuizzes[0]}
+          closedQuiz={recentlyClosedQuiz}
+          onLiveQuizClosed={handleLiveQuizClosed}
+        />
       </motion.div>
 
       {/* Live sections */}
@@ -186,7 +198,7 @@ export default function StudentDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-ink truncate">{entry.name}</p>
                 </div>
-                <span className="font-mono text-xs text-neon-cyan">{entry.points.toLocaleString()}</span>
+                <span className="font-mono text-xs text-neon-cyan">{entry.xp.toLocaleString()}</span>
               </div>
             ))}
             {!loading && topRanks.length === 0 && <p className="text-ink-faint text-xs text-center py-4">No rankings yet.</p>}

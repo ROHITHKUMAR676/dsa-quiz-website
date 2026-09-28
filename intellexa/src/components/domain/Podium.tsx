@@ -40,7 +40,7 @@ export default function Podium({ top3 }: { top3: LeaderboardEntry[] }) {
               />
             </div>
             <p className="text-ink font-medium text-xs sm:text-sm text-center max-w-[80px] sm:max-w-[100px] truncate">{entry.name}</p>
-            <p className="font-mono text-neon-cyan text-xs mb-2">{entry.points.toLocaleString()}</p>
+            <p className="font-mono text-neon-cyan text-xs mb-2">{entry.xp.toLocaleString()} XP</p>
             <div
               className={cn(
                 "w-20 sm:w-28 rounded-t-xl2 glass-strong flex items-start justify-center pt-2 relative overflow-hidden",

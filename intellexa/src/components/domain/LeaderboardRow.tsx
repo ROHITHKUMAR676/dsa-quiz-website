@@ -42,8 +42,8 @@ export default function LeaderboardRow({ entry, highlight, index = 0 }: { entry:
       </div>
       <BadgePill variant="blue" className="hidden xs:inline-flex shrink-0">{entry.tier}</BadgePill>
       <div className="text-right shrink-0 w-16 sm:w-20">
-        <p className="font-mono font-semibold text-ink text-sm">{entry.points.toLocaleString()}</p>
-        <p className="text-ink-faint text-[10px]">points</p>
+        <p className="font-mono font-semibold text-ink text-sm">{entry.xp.toLocaleString()}</p>
+        <p className="text-ink-faint text-[10px]">XP</p>
       </div>
     </motion.div>
   );
