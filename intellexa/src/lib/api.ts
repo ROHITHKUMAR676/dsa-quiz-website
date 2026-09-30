@@ -82,9 +82,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (!response.ok) {
-    const message = response.status >= 500
-      ? "The server is temporarily unavailable. Please try again later."
-      : payload?.error?.message ?? "Something went wrong. Please try again.";
+    const message = payload?.error?.message
+      ?? (response.status >= 500
+        ? "The server is temporarily unavailable. Please try again later."
+        : "Something went wrong. Please try again.");
     const code = payload?.error?.code;
     throw new ApiError(message, response.status, code);
   }

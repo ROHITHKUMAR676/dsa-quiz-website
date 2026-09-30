@@ -115,8 +115,30 @@ async function issueCode(
     });
   });
 
-  // Send the email after the database transaction has committed.
-  await sendAuthCode(email, code, purpose);
+  // Send after committing the challenge. If SMTP fails, release its cooldown
+  // so the user can retry without waiting or using a code they never received.
+  try {
+    await sendAuthCode(email, code, purpose);
+  } catch (error) {
+    try {
+      await prisma.authChallenge.updateMany({
+        where: {
+          email,
+          purpose: kind,
+          codeHash: digest(code),
+        },
+        data: {
+          lastSentAt: new Date(Date.now() - RESEND_WAIT - 1),
+        },
+      });
+    } catch (releaseError) {
+      logger.error(
+        { purpose, errorName: (releaseError as Error)?.name },
+        "Could not release auth email retry cooldown",
+      );
+    }
+    throw error;
+  }
 }
 
 interface RegistrationInput {
@@ -340,34 +362,23 @@ export async function beginPasswordReset(emailInput: string) {
     try {
       await issueCode(email, "PASSWORD_RESET");
     } catch (error) {
-      if (
-        error instanceof ApiError &&
-        error.code === "RESEND_COOLDOWN"
-      ) {
-        return {
-          message:
-            "If an account exists for this email, a verification code has been sent.",
-        };
-      }
-
-      if (
-        error instanceof ApiError &&
-        (error.code === "EMAIL_UNAVAILABLE" ||
-          error.code === "EMAIL_DELIVERY_FAILED")
-      ) {
-        return {
-          message:
-            "If an account exists for this email, a verification code has been sent.",
-        };
-      }
-
-      throw error;
+      if (!(error instanceof ApiError) || ![
+        "RESEND_COOLDOWN",
+        "EMAIL_UNAVAILABLE",
+        "EMAIL_DELIVERY_FAILED",
+        "EMAIL_RECIPIENT_REJECTED",
+      ].includes(error.code)) throw error;
     }
+  } else {
+    logger.info(
+      { purpose: "PASSWORD_RESET" },
+      "Password reset email not attempted for ineligible account",
+    );
   }
 
   return {
     message:
-      "If an account exists for this email, a verification code has been sent.",
+      "If this address is eligible, an email code may be sent. If it does not arrive, check spam or try again later.",
   };
 }
 
@@ -384,12 +395,21 @@ export async function resendPasswordResetCode(emailInput: string) {
   });
 
   if (challenge && challenge.expiresAt > new Date()) {
-    await issueCode(email, "PASSWORD_RESET");
+    try {
+      await issueCode(email, "PASSWORD_RESET");
+    } catch (error) {
+      if (!(error instanceof ApiError) || ![
+        "RESEND_COOLDOWN",
+        "EMAIL_UNAVAILABLE",
+        "EMAIL_DELIVERY_FAILED",
+        "EMAIL_RECIPIENT_REJECTED",
+      ].includes(error.code)) throw error;
+    }
   }
 
   return {
     message:
-      "If an account exists for this email, a verification code has been sent.",
+      "If this address is eligible, an email code may be sent. If it does not arrive, check spam or try again later.",
     resendAfterSeconds: 60,
   };
 }

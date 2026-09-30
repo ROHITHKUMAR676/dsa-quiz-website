@@ -8,9 +8,10 @@ interface OtpVerificationProps {
   onBack: () => void;
   busy: boolean;
   title?: string;
+  deliveryMessage?: string;
 }
 
-export default function OtpVerification({ email, onVerify, onResend, onBack, busy, title = "Verify your email" }: OtpVerificationProps) {
+export default function OtpVerification({ email, onVerify, onResend, onBack, busy, title = "Verify your email", deliveryMessage }: OtpVerificationProps) {
   const [digits, setDigits] = useState(Array(6).fill(""));
   const [seconds, setSeconds] = useState(60);
   const [resending, setResending] = useState(false);
@@ -54,7 +55,7 @@ export default function OtpVerification({ email, onVerify, onResend, onBack, bus
     <form onSubmit={(event) => { event.preventDefault(); void onVerify(digits.join("")); }} className="space-y-5">
       <div className="text-center">
         <h1 className="font-display font-bold text-2xl text-ink">{title}</h1>
-        <p className="text-ink-dim text-sm mt-2">Enter the 6-digit code sent to <span className="text-ink">{email}</span></p>
+        <p className="text-ink-dim text-sm mt-2">{deliveryMessage ?? <>Enter the 6-digit code sent to <span className="text-ink">{email}</span></>}</p>
       </div>
       <div className="flex justify-center gap-2 sm:gap-3" aria-label="6-digit verification code">
         {digits.map((digit, index) => (

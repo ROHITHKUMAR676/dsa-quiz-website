@@ -28,7 +28,7 @@ export default function ForgotPassword() {
       await authApi.forgotPassword(normalizedEmail);
       setEmail(normalizedEmail);
       setStep("code");
-      showToast("If an account exists for this email, a verification code has been sent.", "success");
+      showToast("If this address is eligible, an email code may be sent. If it does not arrive, check spam or try again later.", "success");
     } catch (error) {
       showToast(error instanceof ApiError ? error.message : "Couldn't send the code. Please try again.", "error");
     } finally {
@@ -52,7 +52,7 @@ export default function ForgotPassword() {
   const resend = async () => {
     try {
       await authApi.resendResetCode(email);
-      showToast("If an account exists for this email, a new code has been sent.", "success");
+      showToast("If this address is eligible, an email code may be sent. If it does not arrive, check spam or try again later.", "success");
     } catch (error) {
       showToast(error instanceof ApiError ? error.message : "Couldn't resend the code. Please try again.", "error");
       throw error;
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
           </div>
           {step === "email" && <>
             <h1 className="font-display font-bold text-2xl text-ink">Reset your password</h1>
-            <p className="text-ink-dim text-sm mt-2 text-center">Enter your account email and we’ll send a verification code.</p>
+            <p className="text-ink-dim text-sm mt-2 text-center">Enter your account email. If it is eligible, an email code may be sent.</p>
           </>}
           {step === "password" && <>
             <h1 className="font-display font-bold text-2xl text-ink">Create a new password</h1>
@@ -101,7 +101,7 @@ export default function ForgotPassword() {
           <Button type="submit" fullWidth size="lg" disabled={loading}>{loading ? "Sending..." : "Send verification code"}</Button>
         </form>}
 
-        {step === "code" && <OtpVerification email={email} onVerify={verify} onResend={resend} onBack={() => setStep("email")} busy={loading} title="Verify your code" />}
+        {step === "code" && <OtpVerification email={email} onVerify={verify} onResend={resend} onBack={() => setStep("email")} busy={loading} title="Verify your code" deliveryMessage={`If this address is eligible, an email code may be sent to ${email}.`} />}
 
         {step === "password" && <form onSubmit={updatePassword} className="space-y-4">
           <div>
