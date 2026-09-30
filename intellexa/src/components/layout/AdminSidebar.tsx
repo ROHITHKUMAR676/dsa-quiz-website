@@ -82,6 +82,7 @@ function Content({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function AdminSidebar() {
   const [open, setOpen] = useState(false);
+  const { logout } = useApp();
   return (
     <>
       <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 glass border-r border-surface-border px-4 py-6">
@@ -95,9 +96,14 @@ export default function AdminSidebar() {
           </div>
           <span className="font-display font-bold text-ink text-sm">INTELLEXA ADMIN</span>
         </div>
-        <button onClick={() => setOpen(true)} className="p-2 rounded-lg hover:bg-surface-light">
-          <Menu className="w-5 h-5 text-ink" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={logout} aria-label="Log out" title="Log out" className="p-2 rounded-lg hover:bg-state-danger/10 text-ink-dim hover:text-state-danger">
+            <LogOut className="w-5 h-5" />
+          </button>
+          <button onClick={() => setOpen(true)} aria-label="Open admin menu" className="p-2 rounded-lg hover:bg-surface-light">
+            <Menu className="w-5 h-5 text-ink" />
+          </button>
+        </div>
       </div>
 
       {open && (

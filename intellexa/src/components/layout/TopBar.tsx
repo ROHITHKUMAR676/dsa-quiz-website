@@ -4,14 +4,14 @@ import { Bell, Flame, Coins, Zap } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { studentGamificationApi } from "../../lib/backend";
 import ThemeToggle from "../ui/ThemeToggle";
+import { resolveApiAsset } from "../../lib/api";
 
 export default function TopBar() {
   const navigate = useNavigate();
   const { user } = useApp();
   const [unread, setUnread] = useState(0);
   const displayName = user?.fullName ?? "Student";
-  const avatar =
-    user?.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=1A2038`;
+  const avatar = resolveApiAsset(user?.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=1A2038`;
   const streak = user?.currentStreak ?? 0;
   const coins = user?.coins ?? 0;
 

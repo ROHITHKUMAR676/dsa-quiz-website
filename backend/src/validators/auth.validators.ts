@@ -20,6 +20,18 @@ export const loginSchema = z.object({
   }),
 });
 
+export const emailCodeSchema = z.object({
+  body: z.object({ email: z.string().email().toLowerCase() }),
+});
+
+export const verifyCodeSchema = z.object({
+  body: z.object({ email: z.string().email().toLowerCase(), code: z.string().regex(/^\d{6}$/) }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({ token: z.string().min(32), password: z.string().min(8).max(128) }),
+});
+
 export const updateProfileSchema = z.object({
   body: z.object({
     fullName: z.string().min(2).max(120).optional(),

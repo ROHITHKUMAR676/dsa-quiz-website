@@ -103,6 +103,9 @@ export default function Login() {
               className="w-full pl-10 pr-3 py-3 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint focus:border-neon-blue/50 outline-none transition-colors"
             />
           </div>
+          <div className="flex justify-end -mt-1">
+            <Link to="/forgot-password" className="text-xs text-neon-cyan hover:text-neon-blue transition-colors">Forgot Password?</Link>
+          </div>
           <Button type="submit" fullWidth size="lg" disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </Button>

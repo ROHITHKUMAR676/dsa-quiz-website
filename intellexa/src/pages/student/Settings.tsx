@@ -6,21 +6,27 @@ import { useApp } from "../../context/AppContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-label={label}
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${checked ? "bg-aurora" : "bg-surface-border"}`}
+      className={`relative inline-flex w-11 h-6 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-emerald-600" : "bg-surface-border"}`}
     >
       <span
-        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
+        className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`}
       />
     </button>
   );
 }
 
 export default function Settings() {
+  const navigate = useNavigate();
   const { restartTutorial, logout } = useApp();
   const { theme, setTheme } = useTheme();
   const { showToast } = useToast();
@@ -65,32 +71,32 @@ export default function Settings() {
       </Card>
 
       <Card className="p-5 space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <Volume2 className="w-4.5 h-4.5 text-ink-dim" />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-ink font-medium">Sound effects</p>
               <p className="text-xs text-ink-faint">Correct answers, level ups, badges</p>
             </div>
           </div>
-          <Toggle checked={sound} onChange={setSound} />
+          <Toggle checked={sound} onChange={setSound} label="Sound effects" />
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <Moon className="w-4.5 h-4.5 text-ink-dim" />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-ink font-medium">Reduced motion</p>
               <p className="text-xs text-ink-faint">Minimize animations across the app</p>
             </div>
           </div>
-          <Toggle checked={reducedMotion} onChange={setReducedMotion} />
+          <Toggle checked={reducedMotion} onChange={setReducedMotion} label="Reduced motion" />
         </div>
       </Card>
 
-      <Card className="p-5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <Card className="p-5 flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <RotateCcw className="w-4.5 h-4.5 text-ink-dim" />
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-ink font-medium">Show Tutorial Again</p>
             <p className="text-xs text-ink-faint">Replay the onboarding walkthrough</p>
           </div>
@@ -98,9 +104,11 @@ export default function Settings() {
         <Button
           variant="secondary"
           size="sm"
+          className="shrink-0"
           onClick={() => {
             restartTutorial();
-            showToast("Tutorial will show on next dashboard visit", "info");
+            navigate("/student");
+            showToast("Starting the walkthrough", "info");
           }}
         >
           Replay

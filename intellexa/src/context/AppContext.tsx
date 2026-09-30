@@ -5,9 +5,13 @@ import { getToken, setToken } from "../lib/api";
 
 const TUTORIAL_STORAGE_KEY = "intellexa:hasSeenTutorial";
 
-function readTutorialSeen(): boolean {
+function tutorialStorageKey(userId: string) {
+  return `${TUTORIAL_STORAGE_KEY}:${userId}`;
+}
+
+function readTutorialSeen(userId: string): boolean {
   try {
-    return window.localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+    return window.localStorage.getItem(tutorialStorageKey(userId)) === "true";
   } catch {
     // localStorage can throw in private-browsing/blocked-storage contexts -
     // fail safe by treating the tutorial as unseen rather than crashing.
@@ -15,10 +19,11 @@ function readTutorialSeen(): boolean {
   }
 }
 
-function writeTutorialSeen(seen: boolean) {
+function writeTutorialSeen(userId: string, seen: boolean) {
   try {
-    if (seen) window.localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
-    else window.localStorage.removeItem(TUTORIAL_STORAGE_KEY);
+    const key = tutorialStorageKey(userId);
+    if (seen) window.localStorage.setItem(key, "true");
+    else window.localStorage.removeItem(key);
   } catch {
     // Ignore - worst case the tutorial reappears once more than intended.
   }
@@ -60,7 +65,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<BackendUser | null>(null);
   const [hasCompletedProfile, setHasCompletedProfile] = useState(false);
   const [hasSeenSplash, setHasSeenSplash] = useState(false);
-  const [hasSeenTutorial, setHasSeenTutorial] = useState(readTutorialSeen);
+  const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
 
   // Restore a session from a previously-stored JWT (e.g. after a page
   // reload). The token is only ever trusted after the backend confirms it
@@ -78,6 +83,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setRole(toRole(me.role));
         setIsAuthenticated(true);
         setHasCompletedProfile(hasRequiredStudentProfile(me));
+        setHasSeenTutorial(readTutorialSeen(me.id));
       })
       .catch(() => {
         setToken(null);
@@ -91,6 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRole(toRole(backendUser.role));
     setIsAuthenticated(true);
     setHasCompletedProfile(hasRequiredStudentProfile(backendUser));
+    setHasSeenTutorial(readTutorialSeen(backendUser.id));
   };
   const updateUser = (backendUser: BackendUser) => {
     setUser(backendUser);
@@ -102,20 +109,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setIsAuthenticated(false);
     setHasCompletedProfile(false);
+    setHasSeenTutorial(false);
   };
   const completeProfile = () => setHasCompletedProfile(true);
   const markSplashSeen = () => setHasSeenSplash(true);
-  // Persisted (spec section 26: must NOT reappear on every visit). This is
-  // a client-side fallback until the profile-update endpoint on the
-  // backend exposes UserSettings.tutorialCompleted as the durable,
-  // per-account source of truth.
+  // Keep completion per account so a new user on the same browser still gets
+  // the required walkthrough.
   const finishTutorial = () => {
     setHasSeenTutorial(true);
-    writeTutorialSeen(true);
+    if (user) writeTutorialSeen(user.id, true);
   };
   const restartTutorial = () => {
     setHasSeenTutorial(false);
-    writeTutorialSeen(false);
+    if (user) writeTutorialSeen(user.id, false);
   };
 
   return (

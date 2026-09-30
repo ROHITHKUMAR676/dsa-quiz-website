@@ -2,9 +2,10 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Clock3 } from "lucide-react";
 import type { BackendDailyLeaderboardEntry } from "../../lib/backend";
 import { cn } from "../../lib/utils";
+import { resolveApiAsset } from "../../lib/api";
 
 function avatarFor(entry: BackendDailyLeaderboardEntry) {
-  return entry.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`;
+  return resolveApiAsset(entry.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`;
 }
 
 function formatCompletionTime(ms: number | null) {

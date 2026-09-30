@@ -1,5 +1,6 @@
 import type { BackendGlobalLeaderboardEntry, BackendWeeklyLeaderboardEntry } from "./backend";
 import type { LeaderboardEntry } from "../types";
+import { resolveApiAsset } from "./api";
 
 function tierFromXp(xp: number): LeaderboardEntry["tier"] {
   if (xp >= 8000) return "Grandmaster";
@@ -24,7 +25,7 @@ export function mapBackendGlobalEntryToLegacy(entry: BackendGlobalLeaderboardEnt
     previousRank: entry.rank,
     userId: entry.id,
     name: entry.fullName,
-    avatar: entry.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
+    avatar: resolveApiAsset(entry.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
     department: entry.department ?? "—",
     xp: entry.xp,
     points: entry.totalCompetitionPoints,
@@ -41,7 +42,7 @@ export function mapBackendWeeklyEntryToLegacy(entry: BackendWeeklyLeaderboardEnt
     previousRank: entry.rank,
     userId: entry.userId,
     name: entry.fullName,
-    avatar: entry.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
+    avatar: resolveApiAsset(entry.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
     department: entry.department ?? "Department pending",
     xp,
     points: entry.totalScore,

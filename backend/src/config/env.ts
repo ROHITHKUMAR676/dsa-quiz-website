@@ -20,11 +20,14 @@ const envSchema = z.object({
   RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(0),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GMAIL_USER: z.string().email().optional(),
+  GMAIL_APP_PASSWORD: z.string().optional(),
 });
 
 const testDefaults = process.env.NODE_ENV === "test"
   ? {
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/intellexa_test?schema=public",
+      PORT: "4000",
       JWT_SECRET: "test-secret-with-at-least-thirty-two-characters",
       FRONTEND_URL: "http://localhost:5173",
       APP_TIMEZONE: "Asia/Kolkata",
@@ -32,4 +35,7 @@ const testDefaults = process.env.NODE_ENV === "test"
     }
   : {};
 
-export const env = envSchema.parse({ ...testDefaults, ...process.env });
+const environment = { ...testDefaults, ...process.env };
+if (process.env.NODE_ENV === "test" && !(Number(environment.PORT) > 0)) environment.PORT = "4000";
+
+export const env = envSchema.parse(environment);

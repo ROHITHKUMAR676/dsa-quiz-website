@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Camera, User, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Button from "../../components/ui/Button";
+import AvatarPicker from "../../components/auth/AvatarPicker";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { ApiError } from "../../lib/api";
@@ -17,6 +18,7 @@ export default function ProfileSetup() {
   const { completeProfile, updateUser, user } = useApp();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: user?.fullName ?? "",
     department: user?.department ?? departments[0],
@@ -29,6 +31,20 @@ export default function ProfileSetup() {
   });
 
   const update = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const uploadAvatar = async (file: File) => {
+    setAvatarLoading(true);
+    try {
+      const { user: updatedUser } = await authApi.uploadAvatar(file);
+      updateUser(updatedUser);
+      showToast("Profile photo updated.", "success");
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't upload the photo. Please try again.", "error");
+      throw error;
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,18 +89,8 @@ export default function ProfileSetup() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-surface-light border border-surface-border flex items-center justify-center overflow-hidden">
-                <User className="w-7 h-7 text-ink-faint" />
-              </div>
-              <button
-                type="button"
-                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-aurora flex items-center justify-center shadow-glow"
-              >
-                <Camera className="w-3 h-3 text-white" />
-              </button>
-            </div>
+          <div className="flex min-w-0 items-center gap-4">
+            <AvatarPicker value={user?.avatar} onSelect={uploadAvatar} label="Upload profile photo" size="setup" disabled={avatarLoading} />
             <div className="flex-1">
               <label className="text-xs text-ink-dim mb-1 block">Full name</label>
               <input

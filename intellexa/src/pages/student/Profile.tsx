@@ -8,10 +8,12 @@ import BadgePill from "../../components/ui/BadgePill";
 import XPBar from "../../components/ui/XPBar";
 import AchievementCard from "../../components/domain/AchievementCard";
 import { useApp } from "../../context/AppContext";
-import { studentGamificationApi } from "../../lib/backend";
+import { authApi, studentGamificationApi } from "../../lib/backend";
 import { mapBackendBadgeToLegacy } from "../../lib/badgeAdapter";
 import { ApiError } from "../../lib/api";
 import type { Badge } from "../../types";
+import AvatarPicker from "../../components/auth/AvatarPicker";
+import { useToast } from "../../context/ToastContext";
 
 function levelFromXp(xp: number) {
   return Math.max(1, Math.floor(xp / 250) + 1);
@@ -19,7 +21,9 @@ function levelFromXp(xp: number) {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, updateUser } = useApp();
+  const { showToast } = useToast();
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [badgeStatus, setBadgeStatus] = useState<"loading" | "ready" | "error">("loading");
   const [badgeError, setBadgeError] = useState("");
@@ -44,8 +48,7 @@ export default function Profile() {
   }, []);
 
   const displayName = user?.fullName ?? "Student";
-  const avatar =
-    user?.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=1A2038`;
+  const fallbackAvatar = `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=1A2038`;
   const department = user?.department ?? "Department not set";
   const year = user?.year ?? "Year not set";
   const registerNumber = user?.registerNumber ?? "Register number not set";
@@ -54,6 +57,19 @@ export default function Profile() {
   const level = levelFromXp(xp);
   const xpToNext = Math.max(level * 250, xp + 1);
   const earnedBadges = badges.filter((badge) => badge.earned).length;
+  const uploadAvatar = async (file: File) => {
+    setAvatarLoading(true);
+    try {
+      const { user: updatedUser } = await authApi.uploadAvatar(file);
+      updateUser(updatedUser);
+      showToast("Profile photo updated.", "success");
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't upload the photo. Please try again.", "error");
+      throw error;
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
   const stats = [
     { label: "Total Correct", value: user?.totalCorrectAnswers ?? 0, icon: Target },
     { label: "Competition Points", value: user?.totalCompetitionPoints ?? 0, icon: CheckSquare },
@@ -74,7 +90,14 @@ export default function Profile() {
         </div>
         <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-14 relative">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <img src={avatar} className="w-24 h-24 rounded-2xl border-4 border-void-100 shadow-card" alt={displayName} />
+            <AvatarPicker
+              value={user?.avatar ?? fallbackAvatar}
+              onSelect={uploadAvatar}
+              label="Change profile photo"
+              size="profile"
+              shape="square"
+              disabled={avatarLoading}
+            />
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-display font-bold text-xl sm:text-2xl text-ink">{displayName}</h1>

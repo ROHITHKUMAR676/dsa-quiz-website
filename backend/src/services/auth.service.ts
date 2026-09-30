@@ -1,21 +1,9 @@
-import { Role } from "@prisma/client";
 import { ApiError } from "../utils/apiError.js";
-import { hashPassword, verifyPassword } from "../utils/password.js";
+import { verifyPassword } from "../utils/password.js";
 import { signAccessToken } from "../utils/jwt.js";
 import { sanitizeUser } from "../utils/sanitize.js";
 import { assertInstitutionalEmail } from "../utils/email.js";
-import { createUser, findUserByEmail, findUserById, updateLastActiveAt, updateUser } from "../repositories/user.repository.js";
-
-interface RegisterInput {
-  fullName: string;
-  email: string;
-  password: string;
-  department?: string;
-  year?: string;
-  registerNumber?: string;
-  phone?: string;
-  preferredLanguage?: string;
-}
+import { findUserByEmail, findUserById, updateLastActiveAt, updateUser } from "../repositories/user.repository.js";
 
 interface LoginInput {
   email: string;
@@ -40,43 +28,14 @@ function optionalText(value: string | null | undefined) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export async function register(input: RegisterInput) {
-  // Server-side institutional email restriction. This must never be
-  // enforced only on the frontend - see utils/email.ts.
-  assertInstitutionalEmail(input.email);
-
-  const existing = await findUserByEmail(input.email);
-  if (existing) {
-    throw new ApiError(409, "Email is already registered", "EMAIL_EXISTS");
-  }
-
-  const passwordHash = await hashPassword(input.password);
-  const user = await createUser({
-    fullName: input.fullName,
-    email: input.email,
-    passwordHash,
-    role: Role.STUDENT,
-    department: input.department,
-    year: input.year,
-    registerNumber: input.registerNumber,
-    phone: input.phone,
-    preferredLanguage: input.preferredLanguage,
-    settings: { create: {} },
-  });
-
-  const token = signAccessToken({ sub: user.id, role: user.role });
-  return { token, user: sanitizeUser(user) };
-}
-
 export async function login(input: LoginInput) {
-  // Defense in depth: even though registration already rejects non
-  // institutional emails, never allow authentication for an email outside
-  // the allowed domain (e.g. legacy/imported data, or future OAuth flows).
   assertInstitutionalEmail(input.email);
-
   const user = await findUserByEmail(input.email);
   if (!user?.passwordHash) {
     throw new ApiError(401, "Invalid email or password", "INVALID_CREDENTIALS");
+  }
+  if (!user.emailVerified) {
+    throw new ApiError(403, "Please verify your email before signing in", "EMAIL_NOT_VERIFIED");
   }
 
   const validPassword = await verifyPassword(input.password, user.passwordHash);

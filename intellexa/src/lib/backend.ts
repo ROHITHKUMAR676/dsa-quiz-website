@@ -33,8 +33,14 @@ export const authApi = {
     registerNumber?: string;
     phone?: string;
     preferredLanguage?: string;
-  }) =>
-    api.post<{ user: BackendUser; token: string }>("/auth/register", input),
+  }) => api.post<{ message: string; email: string; resendAfterSeconds: number }>("/auth/register", input),
+  verifyRegistration: (input: { email: string; code: string }) =>
+    api.post<{ user: BackendUser; token: string }>("/auth/verify-registration", input),
+  resendRegistrationCode: (email: string) => api.post<{ message: string; resendAfterSeconds: number }>("/auth/resend-registration-code", { email }),
+  forgotPassword: (email: string) => api.post<{ message: string }>("/auth/forgot-password", { email }),
+  verifyResetCode: (input: { email: string; code: string }) => api.post<{ resetToken: string }>("/auth/verify-reset-code", input),
+  resendResetCode: (email: string) => api.post<{ message: string; resendAfterSeconds: number }>("/auth/resend-reset-code", { email }),
+  resetPassword: (input: { token: string; password: string }) => api.post<{ message: string }>("/auth/reset-password", input),
   login: (input: { email: string; password: string }) =>
     api.post<{ user: BackendUser; token: string }>("/auth/login", input),
   me: () => api.get<{ user: BackendUser }>("/auth/me"),
@@ -48,6 +54,7 @@ export const authApi = {
     bio?: string | null;
     avatar?: string | null;
   }) => api.patch<{ user: BackendUser }>("/auth/me", input),
+  uploadAvatar: (file: File) => api.putRaw<{ user: BackendUser }>("/auth/me/avatar", file, "image/webp"),
 };
 
 export type BackendQuizAvailability = "LIVE" | "SCHEDULED" | "CLOSED" | "FINALIZED" | "ARCHIVED" | "DRAFT";

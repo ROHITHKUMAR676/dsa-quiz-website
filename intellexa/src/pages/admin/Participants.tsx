@@ -5,6 +5,7 @@ import BadgePill from "../../components/ui/BadgePill";
 import EmptyState from "../../components/ui/EmptyState";
 import { adminApi, type BackendParticipant } from "../../lib/backend";
 import { ApiError } from "../../lib/api";
+import { resolveApiAsset } from "../../lib/api";
 
 function tierFromXp(xp: number) {
   if (xp >= 8000) return "Grandmaster";
@@ -96,7 +97,7 @@ export default function Participants() {
             </thead>
             <tbody>
               {filtered.map((p) => {
-                const avatar = p.avatar ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(p.fullName)}&backgroundColor=1A2038`;
+                const avatar = resolveApiAsset(p.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(p.fullName)}&backgroundColor=1A2038`;
                 return (
                   <tr key={p.id} className="border-b border-surface-border/50 hover:bg-surface-light/40 transition-colors">
                     <td className="px-5 py-3">

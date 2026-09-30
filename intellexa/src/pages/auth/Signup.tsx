@@ -7,6 +7,8 @@ import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { authApi } from "../../lib/backend";
 import { ApiError } from "../../lib/api";
+import OtpVerification from "../../components/auth/OtpVerification";
+import AvatarPicker from "../../components/auth/AvatarPicker";
 
 const departments = ["Computer Science", "Information Technology", "Electronics", "AI & Data Science", "Mechanical", "Civil"];
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -14,9 +16,11 @@ const languages = ["C++", "Python", "Java", "JavaScript", "Go", "Rust"];
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { login, completeProfile } = useApp();
+  const { login, updateUser, completeProfile } = useApp();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -41,17 +45,15 @@ export default function Signup() {
     setLoading(true);
     try {
       const { confirmPassword: _confirmPassword, ...payload } = form;
-      const { user, token } = await authApi.register({
+      await authApi.register({
         ...payload,
         email: payload.email.trim().toLowerCase(),
         fullName: payload.fullName.trim(),
         registerNumber: payload.registerNumber.trim(),
         phone: payload.phone.trim(),
       });
-      login(user, token);
-      completeProfile();
-      showToast("Account created. Welcome to Intellexa!", "success");
-      navigate("/student");
+      setVerificationPending(true);
+      showToast("Verification code sent to your email.", "success");
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -60,6 +62,39 @@ export default function Signup() {
       showToast(message, "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const verify = async (code: string) => {
+    setLoading(true);
+    try {
+      const { user, token } = await authApi.verifyRegistration({ email: form.email.trim().toLowerCase(), code });
+      login(user, token);
+      if (avatarFile) {
+        try {
+          const { user: updatedUser } = await authApi.uploadAvatar(avatarFile);
+          updateUser(updatedUser);
+        } catch {
+          showToast("Your account is ready, but the photo could not be uploaded. You can try again from Profile.", "error");
+        }
+      }
+      completeProfile();
+      showToast("Email verified. Welcome to Intellexa!", "success");
+      navigate("/student");
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't verify the code. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    try {
+      await authApi.resendRegistrationCode(form.email.trim().toLowerCase());
+      showToast("A new verification code has been sent.", "success");
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't resend the code. Please try again.", "error");
+      throw error;
     }
   };
 
@@ -83,6 +118,19 @@ export default function Signup() {
         transition={{ duration: 0.6 }}
         className="relative z-10 w-full max-w-2xl glass-strong rounded-2xl p-6 sm:p-8"
       >
+        {verificationPending ? (
+          <OtpVerification
+            email={form.email.trim().toLowerCase()}
+            onVerify={verify}
+            onResend={resend}
+            onBack={() => setVerificationPending(false)}
+            busy={loading}
+            title="Verify your email"
+          />
+        ) : <>
+        <div className="mb-5 flex justify-center">
+          <AvatarPicker size="signup" label="Add a profile photo" onSelect={setAvatarFile} />
+        </div>
         <div className="flex flex-col items-center mb-7">
           <div className="w-14 h-14 rounded-2xl bg-aurora flex items-center justify-center mb-4 shadow-glow">
             <GraduationCap className="w-7 h-7 text-white" />
@@ -210,6 +258,7 @@ export default function Signup() {
             Sign in
           </Link>
         </p>
+        </>}
       </motion.div>
     </div>
   );

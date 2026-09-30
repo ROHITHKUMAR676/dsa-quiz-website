@@ -32,9 +32,18 @@ export function setToken(token: string | null) {
   }
 }
 
+export function resolveApiAsset(path: string | null | undefined) {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path) || path.startsWith("data:")) return path;
+  const normalizedPath = path.replace(/^\/+/, "").replace(/^api\//i, "");
+  return `${API_BASE_URL}/${normalizedPath}`;
+}
+
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  rawBody?: BodyInit;
+  contentType?: string;
 }
 
 /**
@@ -50,10 +59,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     response = await fetch(`${API_BASE_URL}/${normalizedPath}`, {
       method: options.method ?? "GET",
       headers: {
-        "Content-Type": "application/json",
+        ...(options.rawBody ? { "Content-Type": options.contentType ?? "application/octet-stream" } : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      body: options.rawBody ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     });
   } catch {
     throw new ApiError(
@@ -88,5 +97,6 @@ export const api = {
   post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body }),
   patch: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PATCH", body }),
   put: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PUT", body }),
+  putRaw: <T>(path: string, body: BodyInit, contentType: string) => apiRequest<T>(path, { method: "PUT", rawBody: body, contentType }),
   delete: <T>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };

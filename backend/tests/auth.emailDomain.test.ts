@@ -18,7 +18,8 @@ const userRepository = vi.hoisted(() => ({
 
 vi.mock("../src/repositories/user.repository.js", () => userRepository);
 
-const { register, login } = await import("../src/services/auth.service.js");
+const { login } = await import("../src/services/auth.service.js");
+const { beginRegistration } = await import("../src/services/authVerification.service.js");
 const { isAllowedInstitutionalEmail } = await import("../src/utils/email.js");
 
 describe("isAllowedInstitutionalEmail", () => {
@@ -55,7 +56,7 @@ describe("auth.service server-side domain enforcement", () => {
 
   it("rejects registration with a non-institutional email before touching the database", async () => {
     await expect(
-      register({
+      beginRegistration({
         fullName: "Test Student",
         email: "student@gmail.com",
         password: "password123",
@@ -66,37 +67,8 @@ describe("auth.service server-side domain enforcement", () => {
     expect(userRepository.createUser).not.toHaveBeenCalled();
   });
 
-  it("allows registration with a valid institutional email", async () => {
-    userRepository.findUserByEmail.mockResolvedValue(null);
-    userRepository.createUser.mockResolvedValue({
-      id: "user-1",
-      fullName: "Test Student",
-      email: "student@rajalakshmi.edu.in",
-      role: "STUDENT",
-      department: null,
-      year: null,
-      registerNumber: null,
-      phone: null,
-      preferredLanguage: null,
-      bio: null,
-      avatar: null,
-      xp: 0,
-      coins: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      lastActiveAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    const result = await register({
-      fullName: "Test Student",
-      email: "student@rajalakshmi.edu.in",
-      password: "password123",
-    });
-
-    expect(result.user.email).toBe("student@rajalakshmi.edu.in");
-    expect(userRepository.createUser).toHaveBeenCalledTimes(1);
+  it("accepts only the configured institutional email domain for registration", () => {
+    expect(isAllowedInstitutionalEmail("student@rajalakshmi.edu.in")).toBe(true);
   });
 
   it("rejects login with a non-institutional email before checking credentials", async () => {

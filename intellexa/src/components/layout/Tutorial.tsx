@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trophy, TrendingUp, Award, Flame, X } from "lucide-react";
+import { Trophy, TrendingUp, Award, Flame } from "lucide-react";
 import Button from "../ui/Button";
 import { useApp } from "../../context/AppContext";
 
@@ -98,17 +98,17 @@ export default function Tutorial() {
 
   // Card placement: prefer below the target, flip above if it would run
   // off the bottom of the viewport; clamp horizontally within the viewport.
-  const cardWidth = 320;
   const viewportH = typeof window !== "undefined" ? window.innerHeight : 800;
   const viewportW = typeof window !== "undefined" ? window.innerWidth : 400;
+  const cardWidth = Math.min(320, viewportW - 32);
   let cardTop = highlightStyle ? highlightStyle.top + highlightStyle.height + 16 : viewportH / 2 - 100;
   let placement: "below" | "above" = "below";
-  if (highlightStyle && cardTop + 220 > viewportH) {
-    cardTop = Math.max(16, highlightStyle.top - 220 - 16);
+  if (highlightStyle && cardTop + 260 > viewportH) {
+    cardTop = Math.max(16, highlightStyle.top - 260 - 16);
     placement = "above";
   }
   let cardLeft = highlightStyle ? highlightStyle.left + highlightStyle.width / 2 - cardWidth / 2 : viewportW / 2 - cardWidth / 2;
-  cardLeft = Math.min(Math.max(cardLeft, 16), viewportW - cardWidth - 16);
+  cardLeft = Math.max(16, Math.min(cardLeft, viewportW - cardWidth - 16));
 
   const Icon = step.icon;
 
@@ -143,11 +143,11 @@ export default function Tutorial() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="absolute glass-strong rounded-2xl p-5 shadow-glow"
+          className="absolute glass-strong rounded-2xl p-5 shadow-glow overflow-y-auto"
           style={
             highlightStyle
-              ? { top: cardTop, left: cardLeft, width: cardWidth }
-              : { top: "50%", left: "50%", width: cardWidth, transform: "translate(-50%, -50%)" }
+              ? { top: cardTop, left: cardLeft, width: cardWidth, maxHeight: "calc(100dvh - 32px)" }
+              : { top: "50%", left: "50%", width: cardWidth, maxHeight: "calc(100dvh - 32px)", transform: "translate(-50%, -50%)" }
           }
         >
           {highlightStyle && (
@@ -156,10 +156,6 @@ export default function Tutorial() {
               style={{ left: Math.min(Math.max(highlightStyle.left + highlightStyle.width / 2 - cardLeft - 6, 16), cardWidth - 28) }}
             />
           )}
-
-          <button onClick={finishTutorial} className="absolute top-3 right-3 text-ink-faint hover:text-ink" aria-label="Skip tour">
-            <X className="w-4 h-4" />
-          </button>
 
           <div className="w-11 h-11 rounded-xl bg-aurora flex items-center justify-center mb-3 shadow-glow">
             <Icon className="w-5 h-5 text-white" />
@@ -181,11 +177,6 @@ export default function Tutorial() {
             {stepIndex > 0 && (
               <Button variant="secondary" onClick={goBack} fullWidth>
                 Back
-              </Button>
-            )}
-            {!isLast && (
-              <Button variant="ghost" onClick={finishTutorial} fullWidth>
-                Skip
               </Button>
             )}
             <Button onClick={goNext} fullWidth>

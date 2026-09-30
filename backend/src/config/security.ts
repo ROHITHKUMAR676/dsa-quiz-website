@@ -16,3 +16,10 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const authChallengeRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
