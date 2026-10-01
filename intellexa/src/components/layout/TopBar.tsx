@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Flame, Coins, Zap } from "lucide-react";
+import { Bell, Flame, Coins } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { studentGamificationApi } from "../../lib/backend";
 import ThemeToggle from "../ui/ThemeToggle";
 import { resolveApiAsset } from "../../lib/api";
+import BrandMark from "../brand/BrandMark";
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -33,10 +34,7 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 z-40 glass border-b border-surface-border px-4 sm:px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2 lg:hidden">
-        <div className="w-8 h-8 rounded-lg bg-aurora flex items-center justify-center shadow-glow">
-          <Zap className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-display font-bold text-ink text-sm">INTELLEXA</span>
+        <BrandMark className="w-32" />
       </div>
 
       <div className="hidden lg:block" />

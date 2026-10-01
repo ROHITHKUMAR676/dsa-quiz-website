@@ -9,12 +9,12 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Zap,
   Menu,
 } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "../../lib/utils";
+import BrandMark from "../brand/BrandMark";
 
 const links = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -30,14 +30,9 @@ function Content({ onNavigate }: { onNavigate?: () => void }) {
   const { logout } = useApp();
   return (
     <>
-      <div className="flex items-center gap-2 px-2 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-aurora flex items-center justify-center shadow-glow">
-          <Zap className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="font-display font-bold text-ink leading-none">INTELLEXA</p>
-          <p className="text-[10px] text-ink-faint font-mono tracking-wider">ADMIN CONSOLE</p>
-        </div>
+      <div className="px-2 mb-8">
+        <BrandMark className="w-44 max-w-full" />
+        <p className="mt-2 text-[10px] text-ink-faint font-mono tracking-wider">ADMIN CONSOLE</p>
       </div>
       <nav className="flex-1 flex flex-col gap-1">
         {links.map((link) => (
@@ -91,10 +86,8 @@ export default function AdminSidebar() {
 
       <div className="lg:hidden sticky top-0 z-40 glass border-b border-surface-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-aurora flex items-center justify-center shadow-glow">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-display font-bold text-ink text-sm">INTELLEXA ADMIN</span>
+          <BrandMark className="w-32" />
+          <span className="text-xs font-semibold text-ink-dim">ADMIN</span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={logout} aria-label="Log out" title="Log out" className="p-2 rounded-lg hover:bg-state-danger/10 text-ink-dim hover:text-state-danger">

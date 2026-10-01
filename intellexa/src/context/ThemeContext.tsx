@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import intellexaPurpleLogo from "../assets/intellexa-ppbg.png";
+import intellexaWhiteLogo from "../assets/intellexa-whitebg.png";
 
 export type ThemeName = "dark" | "light";
 
@@ -24,6 +26,8 @@ function applyTheme(theme: ThemeName) {
   root.classList.toggle("theme-light", theme === "light");
   root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
+  const favicon = document.querySelector<HTMLLinkElement>("#intellexa-favicon");
+  if (favicon) favicon.href = theme === "light" ? intellexaWhiteLogo : intellexaPurpleLogo;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

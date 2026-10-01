@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Trophy, User, Bell, Settings, LogOut, Zap } from "lucide-react";
+import { LayoutDashboard, Trophy, User, Bell, Settings, LogOut } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "../../lib/utils";
+import BrandMark from "../brand/BrandMark";
 
 const links = [
   { to: "/student", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -16,14 +17,8 @@ export default function StudentSidebar() {
   const { logout } = useApp();
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 h-screen sticky top-0 glass border-r border-surface-border px-4 py-6">
-      <div className="flex items-center gap-2 px-2 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-aurora flex items-center justify-center shadow-glow">
-          <Zap className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="font-display font-bold text-ink leading-none">INTELLEXA</p>
-          <p className="text-[10px] text-ink-faint font-mono tracking-wider">WEBDEV × DSA</p>
-        </div>
+      <div className="px-2 mb-8">
+        <BrandMark className="w-44 max-w-full" />
       </div>
 
       <nav className="flex-1 flex flex-col gap-1">

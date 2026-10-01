@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { authApi } from "../../lib/backend";
 import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
+import BrandMark from "../../components/brand/BrandMark";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -61,9 +61,7 @@ export default function Login() {
         className="relative z-10 w-full max-w-md glass-strong rounded-2xl p-6 sm:p-8"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-aurora flex items-center justify-center mb-4 shadow-glow">
-            <GraduationCap className="w-7 h-7 text-white" />
-          </div>
+          <BrandMark className="mb-5 w-52 max-w-full" />
           <h1 className="font-display font-bold text-2xl text-ink">Enter the Arena</h1>
           <p className="text-ink-dim text-sm mt-1 text-center">
             Continue with your Rajalakshmi Engineering College Google account to compete, climb ranks, and level up.
