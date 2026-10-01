@@ -43,6 +43,8 @@ export const authApi = {
   resetPassword: (input: { token: string; password: string }) => api.post<{ message: string }>("/auth/reset-password", input),
   login: (input: { email: string; password: string }) =>
     api.post<{ user: BackendUser; token: string }>("/auth/login", input),
+  googleLogin: (credential: string) =>
+    api.post<{ user: BackendUser; token: string }>("/auth/google", { credential }),
   me: () => api.get<{ user: BackendUser }>("/auth/me"),
   updateProfile: (input: {
     fullName?: string;

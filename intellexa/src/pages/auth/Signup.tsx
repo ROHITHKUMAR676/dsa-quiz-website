@@ -9,6 +9,7 @@ import { authApi } from "../../lib/backend";
 import { ApiError } from "../../lib/api";
 import OtpVerification from "../../components/auth/OtpVerification";
 import AvatarPicker from "../../components/auth/AvatarPicker";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 
 const departments = ["Computer Science", "Information Technology", "Electronics", "AI & Data Science", "Mechanical", "Civil"];
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -19,6 +20,7 @@ export default function Signup() {
   const { login, updateUser, completeProfile } = useApp();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [verificationPending, setVerificationPending] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [form, setForm] = useState({
@@ -95,6 +97,18 @@ export default function Signup() {
     } catch (error) {
       showToast(error instanceof ApiError ? error.message : "Couldn't resend the code. Please try again.", "error");
       throw error;
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setGoogleLoading(true);
+    try {
+      const { user, token } = await authApi.googleLogin(credential);
+      login(user, token);
+      showToast(`Welcome${user.role === "ADMIN" ? ", Admin" : ""}!`, "success");
+      navigate(user.role === "ADMIN" ? "/admin" : "/student");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -251,6 +265,14 @@ export default function Signup() {
             {loading ? "Creating account..." : "Sign up"}
           </Button>
         </form>
+
+        <div className="my-5 flex items-center gap-3 text-xs text-ink-faint" aria-hidden="true">
+          <span className="h-px flex-1 bg-surface-border" />
+          <span>or sign up with</span>
+          <span className="h-px flex-1 bg-surface-border" />
+        </div>
+        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={loading || googleLoading} />
+        <p className="mt-2 text-center text-xs text-ink-faint">Only @rajalakshmi.edu.in Google Workspace accounts are allowed.</p>
 
         <p className="text-center text-sm text-ink-dim mt-5">
           Already have an account?{" "}

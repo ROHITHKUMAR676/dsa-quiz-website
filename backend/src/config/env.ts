@@ -19,22 +19,25 @@ export const envSchema = z.object({
   // Per-quiz override: Quiz.resultReleaseDelayMinutes.
   RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(0),
   GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
   GMAIL_USER: z.string().email().optional(),
-  GMAIL_APP_PASSWORD: z.string().optional(),
+  GMAIL_API_CLIENT_ID: z.string().optional(),
+  GMAIL_API_CLIENT_SECRET: z.string().optional(),
+  GMAIL_API_REFRESH_TOKEN: z.string().optional(),
 }).superRefine((values, context) => {
-  if (Boolean(values.GMAIL_USER) !== Boolean(values.GMAIL_APP_PASSWORD)) {
+  const gmailApiConfigured = Boolean(values.GMAIL_API_CLIENT_ID && values.GMAIL_API_CLIENT_SECRET && values.GMAIL_API_REFRESH_TOKEN);
+  const gmailApiPartiallyConfigured = Boolean(values.GMAIL_API_CLIENT_ID || values.GMAIL_API_CLIENT_SECRET || values.GMAIL_API_REFRESH_TOKEN);
+  if (gmailApiPartiallyConfigured && !gmailApiConfigured) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      path: [values.GMAIL_USER ? "GMAIL_APP_PASSWORD" : "GMAIL_USER"],
-      message: "GMAIL_USER and GMAIL_APP_PASSWORD must be configured together",
+      path: ["GMAIL_API_REFRESH_TOKEN"],
+      message: "GMAIL_API_CLIENT_ID, GMAIL_API_CLIENT_SECRET, and GMAIL_API_REFRESH_TOKEN must be configured together",
     });
   }
-  if (values.NODE_ENV === "production" && (!values.GMAIL_USER || !values.GMAIL_APP_PASSWORD)) {
+  if (values.NODE_ENV === "production" && (!values.GMAIL_USER || !gmailApiConfigured)) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["GMAIL_USER"],
-      message: "Production requires GMAIL_USER and GMAIL_APP_PASSWORD",
+      path: ["GMAIL_API_REFRESH_TOKEN"],
+      message: "Production requires GMAIL_USER and complete Gmail API OAuth credentials",
     });
   }
 });

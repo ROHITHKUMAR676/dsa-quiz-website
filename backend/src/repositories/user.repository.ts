@@ -9,6 +9,21 @@ export function findUserById(id: string) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+export function findUserByGoogleSub(googleSub: string) {
+  return prisma.user.findUnique({ where: { googleSub } });
+}
+
+export function linkGoogleAccountIfUnlinked(userId: string, googleSub: string, hasPassword: boolean) {
+  return prisma.user.updateMany({
+    where: { id: userId, googleSub: null },
+    data: {
+      googleSub,
+      emailVerified: true,
+      ...(!hasPassword ? { authProvider: "GOOGLE" } : {}),
+    },
+  });
+}
+
 export function createUser(data: Prisma.UserCreateInput) {
   return prisma.user.create({ data });
 }

@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { randomUUID } from "node:crypto";
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 import { ApiError } from "./apiError.js";
@@ -18,10 +18,89 @@ export function assertInstitutionalEmail(email: string) {
   }
 }
 
+async function getGmailAccessToken() {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.GMAIL_API_CLIENT_ID!,
+      client_secret: env.GMAIL_API_CLIENT_SECRET!,
+      refresh_token: env.GMAIL_API_REFRESH_TOKEN!,
+      grant_type: "refresh_token",
+    }),
+    signal: AbortSignal.timeout(12_000),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Google OAuth token request failed") as Error & { code: string; responseCode: number };
+    error.code = "GMAIL_OAUTH_REJECTED";
+    error.responseCode = response.status;
+    throw error;
+  }
+
+  const result = await response.json() as { access_token?: unknown };
+  if (typeof result.access_token !== "string" || !result.access_token) {
+    throw new Error("Google OAuth returned no access token");
+  }
+  return result.access_token;
+}
+
+function toBase64Url(value: string) {
+  return Buffer.from(value, "utf8").toString("base64url");
+}
+
+async function sendWithGmailApi(email: string, subject: string, text: string, html: string) {
+  const accessToken = await getGmailAccessToken();
+  const boundary = `intellexa-${randomUUID()}`;
+  const mimeMessage = [
+    `From: Intellexa <${env.GMAIL_USER}>`,
+    `To: ${email}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary=\"${boundary}\"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    text,
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    html,
+    `--${boundary}--`,
+    "",
+  ].join("\r\n");
+
+  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ raw: toBase64Url(mimeMessage) }),
+    signal: AbortSignal.timeout(12_000),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Gmail API rejected the email request") as Error & { code: string; responseCode: number };
+    error.code = "GMAIL_API_REJECTED";
+    error.responseCode = response.status;
+    throw error;
+  }
+
+  const result = await response.json() as { id?: unknown };
+  if (typeof result.id !== "string" || !result.id) {
+    throw new Error("Gmail API returned no message id");
+  }
+  return result.id;
+}
+
 export async function sendAuthCode(email: string, code: string, purpose: "REGISTRATION" | "PASSWORD_RESET") {
-  const provider = "gmail";
-  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
-    logger.error("Email delivery is not configured: set GMAIL_USER and GMAIL_APP_PASSWORD");
+  const provider = "gmail-api";
+  if (!env.GMAIL_USER || !env.GMAIL_API_CLIENT_ID || !env.GMAIL_API_CLIENT_SECRET || !env.GMAIL_API_REFRESH_TOKEN) {
+    logger.error("Email delivery is not configured: set GMAIL_USER and Gmail API OAuth credentials");
     throw new ApiError(503, "Email delivery is temporarily unavailable. Please try again later.", "EMAIL_UNAVAILABLE");
   }
   const registration = purpose === "REGISTRATION";
@@ -38,24 +117,8 @@ export async function sendAuthCode(email: string, code: string, purpose: "REGIST
   logger.info({ purpose, provider }, "Attempting authentication email delivery");
   try {
     const text = `${heading}\n${explanation}\nYour verification code is ${code}. It expires in 10 minutes. Do not share it.\n${footer}`;
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD },
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 20_000,
-    });
-    const result = await transporter.sendMail({
-      from: `Intellexa <${env.GMAIL_USER}>`,
-      to: email,
-      subject,
-      text,
-      html,
-    });
-    const messageId = result.messageId;
-    const recipientAccepted = result.accepted.some(
-      (address) => String(address).toLowerCase() === email.toLowerCase(),
-    );
+    const messageId = await sendWithGmailApi(email, subject, text, html);
+    const recipientAccepted = true;
 
     logger.info({
       purpose,
@@ -67,13 +130,12 @@ export async function sendAuthCode(email: string, code: string, purpose: "REGIST
       throw new ApiError(503, "The email provider did not accept the recipient. Please check the email address and try again.", "EMAIL_RECIPIENT_REJECTED");
     }
   } catch (error) {
-    const providerError = error as { name?: string; code?: string; command?: string; responseCode?: number };
+    const providerError = error as { name?: string; code?: string; responseCode?: number };
     logger.error({
       purpose,
       provider,
       errorName: providerError.name,
       errorCode: providerError.code ?? (error instanceof ApiError ? error.code : undefined),
-      command: providerError.command,
       responseCode: providerError.responseCode,
     }, "Failed to send authentication email");
     if (error instanceof ApiError) throw error;

@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getAuthenticatedUser, login, updateAuthenticatedUser } from "../services/auth.service.js";
+import { loginWithGoogle } from "../services/googleAuth.service.js";
 import { beginPasswordReset, beginRegistration, resendPasswordResetCode, resendRegistrationCode, resetPassword, verifyPasswordResetCode, verifyRegistration } from "../services/authVerification.service.js";
 import { getAvatar, saveAvatar } from "../services/avatar.service.js";
 
@@ -34,6 +35,11 @@ export async function resetPasswordController(req: Request, res: Response) {
 
 export async function loginController(req: Request, res: Response) {
   const result = await login(req.body);
+  return res.json(result);
+}
+
+export async function googleLoginController(req: Request, res: Response) {
+  const result = await loginWithGoogle(req.body.credential);
   return res.json(result);
 }
 

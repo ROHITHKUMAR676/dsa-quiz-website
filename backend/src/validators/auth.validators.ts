@@ -20,6 +20,10 @@ export const loginSchema = z.object({
   }),
 });
 
+export const googleLoginSchema = z.object({
+  body: z.object({ credential: z.string().min(1).max(10_000) }),
+});
+
 export const emailCodeSchema = z.object({
   body: z.object({ email: z.string().email().toLowerCase() }),
 });

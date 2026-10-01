@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import {
   loginController,
+  googleLoginController,
   logoutController,
   meController,
   registerController,
@@ -16,7 +17,7 @@ import {
 } from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
 import { validate } from "../middleware/validate.js";
-import { emailCodeSchema, loginSchema, registerSchema, resetPasswordSchema, updateProfileSchema, verifyCodeSchema } from "../validators/auth.validators.js";
+import { emailCodeSchema, googleLoginSchema, loginSchema, registerSchema, resetPasswordSchema, updateProfileSchema, verifyCodeSchema } from "../validators/auth.validators.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { authChallengeRateLimiter, authRateLimiter } from "../config/security.js";
 
@@ -31,6 +32,7 @@ authRouter.post("/resend-reset-code", authChallengeRateLimiter, validate(emailCo
 authRouter.post("/reset-password", authChallengeRateLimiter, validate(resetPasswordSchema), asyncHandler(resetPasswordController));
 authRouter.get("/avatar/:userId", asyncHandler(getAvatarController));
 authRouter.post("/login", authRateLimiter, validate(loginSchema), asyncHandler(loginController));
+authRouter.post("/google", authRateLimiter, validate(googleLoginSchema), asyncHandler(googleLoginController));
 authRouter.post("/logout", authenticate, asyncHandler(logoutController));
 authRouter.get("/me", authenticate, asyncHandler(meController));
 authRouter.patch("/me", authenticate, validate(updateProfileSchema), asyncHandler(updateMeController));
