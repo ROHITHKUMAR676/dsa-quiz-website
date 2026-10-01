@@ -366,6 +366,7 @@ export async function beginPasswordReset(emailInput: string) {
         "RESEND_COOLDOWN",
         "EMAIL_UNAVAILABLE",
         "EMAIL_DELIVERY_FAILED",
+        "EMAIL_DELIVERY_TIMEOUT",
         "EMAIL_RECIPIENT_REJECTED",
       ].includes(error.code)) throw error;
     }
@@ -402,6 +403,7 @@ export async function resendPasswordResetCode(emailInput: string) {
         "RESEND_COOLDOWN",
         "EMAIL_UNAVAILABLE",
         "EMAIL_DELIVERY_FAILED",
+        "EMAIL_DELIVERY_TIMEOUT",
         "EMAIL_RECIPIENT_REJECTED",
       ].includes(error.code)) throw error;
     }
