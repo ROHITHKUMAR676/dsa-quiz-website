@@ -7,6 +7,7 @@ import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { authApi } from "../../lib/backend";
 import { ApiError } from "../../lib/api";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,18 @@ export default function Login() {
       showToast(message, "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setGoogleLoading(true);
+    try {
+      const { user, token } = await authApi.googleLogin(credential);
+      login(user, token);
+      showToast(`Welcome back${user.role === "ADMIN" ? ", Admin" : ""}!`, "success");
+      navigate(user.role === "ADMIN" ? "/admin" : "/student");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -111,11 +125,25 @@ export default function Login() {
           </Button>
         </form>
 
+        <div className="my-5 flex items-center gap-3 text-xs text-ink-faint" aria-hidden="true">
+          <span className="h-px flex-1 bg-surface-border" />
+          <span>or continue with</span>
+          <span className="h-px flex-1 bg-surface-border" />
+        </div>
+        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={loading || googleLoading} />
+        <p className="mt-2 text-center text-xs text-ink-faint">Use your Rajalakshmi Engineering College Google Workspace account.</p>
+
         <p className="text-center text-sm text-ink-dim mt-5">
           New to Intellexa?{" "}
           <Link to="/signup" className="text-neon-cyan hover:text-neon-blue transition-colors">
             Create an account
           </Link>
+        </p>
+        <p className="text-center text-xs text-ink-faint mt-4">
+          By using Intellexa, you agree to our{" "}
+          <Link to="/privacy" className="text-neon-cyan hover:text-neon-blue transition-colors">
+            Privacy Policy
+          </Link>.
         </p>
       </motion.div>
     </div>
