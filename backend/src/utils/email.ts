@@ -18,47 +18,10 @@ export function assertInstitutionalEmail(email: string) {
   }
 }
 
-const RESEND_API_URL = "https://api.resend.com/emails";
-const RESEND_TIMEOUT_MS = 12_000;
-
-async function sendWithResend(email: string, subject: string, text: string, html: string) {
-  const response = await fetch(RESEND_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: env.EMAIL_FROM,
-      to: [email],
-      subject,
-      text,
-      html,
-    }),
-    signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const error = new Error("Resend rejected the email request") as Error & {
-      code: string;
-      responseCode: number;
-    };
-    error.code = "EMAIL_PROVIDER_REJECTED";
-    error.responseCode = response.status;
-    throw error;
-  }
-
-  const result = await response.json() as { id?: unknown };
-  if (typeof result.id !== "string" || !result.id) {
-    throw new Error("Resend returned no email id");
-  }
-  return result.id;
-}
-
 export async function sendAuthCode(email: string, code: string, purpose: "REGISTRATION" | "PASSWORD_RESET") {
-  const provider = env.RESEND_API_KEY ? "resend" : "gmail";
-  if (provider === "gmail" && (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD)) {
-    logger.error("Email delivery is not configured: set Resend credentials or local Gmail credentials");
+  const provider = "gmail";
+  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
+    logger.error("Email delivery is not configured: set GMAIL_USER and GMAIL_APP_PASSWORD");
     throw new ApiError(503, "Email delivery is temporarily unavailable. Please try again later.", "EMAIL_UNAVAILABLE");
   }
   const registration = purpose === "REGISTRATION";
@@ -75,32 +38,24 @@ export async function sendAuthCode(email: string, code: string, purpose: "REGIST
   logger.info({ purpose, provider }, "Attempting authentication email delivery");
   try {
     const text = `${heading}\n${explanation}\nYour verification code is ${code}. It expires in 10 minutes. Do not share it.\n${footer}`;
-    let messageId: string | undefined;
-    let recipientAccepted: boolean;
-
-    if (provider === "resend") {
-      messageId = await sendWithResend(email, subject, text, html);
-      recipientAccepted = true;
-    } else {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: env.GMAIL_USER!, pass: env.GMAIL_APP_PASSWORD! },
-        connectionTimeout: 10_000,
-        greetingTimeout: 10_000,
-        socketTimeout: 20_000,
-      });
-      const result = await transporter.sendMail({
-        from: `Intellexa <${env.GMAIL_USER}>`,
-        to: email,
-        subject,
-        text,
-        html,
-      });
-      messageId = result.messageId;
-      recipientAccepted = result.accepted.some(
-        (address) => String(address).toLowerCase() === email.toLowerCase(),
-      );
-    }
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+    });
+    const result = await transporter.sendMail({
+      from: `Intellexa <${env.GMAIL_USER}>`,
+      to: email,
+      subject,
+      text,
+      html,
+    });
+    const messageId = result.messageId;
+    const recipientAccepted = result.accepted.some(
+      (address) => String(address).toLowerCase() === email.toLowerCase(),
+    );
 
     logger.info({
       purpose,

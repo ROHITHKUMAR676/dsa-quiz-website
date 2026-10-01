@@ -20,30 +20,21 @@ export const envSchema = z.object({
   RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(0),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
-  RESEND_API_KEY: z.string().min(1).optional(),
-  EMAIL_FROM: z.string().trim().min(1).optional(),
   GMAIL_USER: z.string().email().optional(),
   GMAIL_APP_PASSWORD: z.string().optional(),
 }).superRefine((values, context) => {
-  if (Boolean(values.RESEND_API_KEY) !== Boolean(values.EMAIL_FROM)) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: [values.RESEND_API_KEY ? "EMAIL_FROM" : "RESEND_API_KEY"],
-      message: "RESEND_API_KEY and EMAIL_FROM must be configured together",
-    });
-  }
-  if (!values.RESEND_API_KEY && Boolean(values.GMAIL_USER) !== Boolean(values.GMAIL_APP_PASSWORD)) {
+  if (Boolean(values.GMAIL_USER) !== Boolean(values.GMAIL_APP_PASSWORD)) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: [values.GMAIL_USER ? "GMAIL_APP_PASSWORD" : "GMAIL_USER"],
       message: "GMAIL_USER and GMAIL_APP_PASSWORD must be configured together",
     });
   }
-  if (values.NODE_ENV === "production" && (!values.RESEND_API_KEY || !values.EMAIL_FROM)) {
+  if (values.NODE_ENV === "production" && (!values.GMAIL_USER || !values.GMAIL_APP_PASSWORD)) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["RESEND_API_KEY"],
-      message: "Production requires RESEND_API_KEY and EMAIL_FROM",
+      path: ["GMAIL_USER"],
+      message: "Production requires GMAIL_USER and GMAIL_APP_PASSWORD",
     });
   }
 });

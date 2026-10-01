@@ -31,9 +31,10 @@ import Analytics from "./pages/admin/Analytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 function RequireAuth({ children, role }: { children: React.ReactNode; role?: "admin" | "student" }) {
-  const { isAuthenticated, isBootstrapping, role: currentRole } = useApp();
+  const { isAuthenticated, isBootstrapping, user } = useApp();
   if (isBootstrapping) return null;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  const currentRole = user.role === "ADMIN" ? "admin" : "student";
   if (role && currentRole !== role) return <Navigate to={currentRole === "admin" ? "/admin" : "/student"} replace />;
   return <>{children}</>;
 }
@@ -69,11 +70,11 @@ function TutorialGate({ onDone }: { onDone: () => void }) {
 }
 
 function RootRedirect() {
-  const { isAuthenticated, isBootstrapping, hasSeenSplash, role } = useApp();
+  const { isAuthenticated, isBootstrapping, hasSeenSplash, user } = useApp();
   if (isBootstrapping) return null;
   if (!hasSeenSplash) return <Navigate to="/splash" replace />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <Navigate to={role === "admin" ? "/admin" : "/student"} replace />;
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.role === "ADMIN" ? "/admin" : "/student"} replace />;
 }
 
 function AnimatedRoutes() {
