@@ -1,14 +1,6 @@
-import { ApiError } from "../utils/apiError.js";
-import { verifyPassword } from "../utils/password.js";
-import { signAccessToken } from "../utils/jwt.js";
 import { sanitizeUser } from "../utils/sanitize.js";
-import { assertInstitutionalEmail } from "../utils/email.js";
-import { findUserByEmail, findUserById, updateLastActiveAt, updateUser } from "../repositories/user.repository.js";
-
-interface LoginInput {
-  email: string;
-  password: string;
-}
+import { ApiError } from "../utils/apiError.js";
+import { findUserById, updateUser } from "../repositories/user.repository.js";
 
 interface UpdateProfileInput {
   fullName?: string;
@@ -26,26 +18,6 @@ function optionalText(value: string | null | undefined) {
   if (value === null) return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
-}
-
-export async function login(input: LoginInput) {
-  assertInstitutionalEmail(input.email);
-  const user = await findUserByEmail(input.email);
-  if (!user?.passwordHash) {
-    throw new ApiError(401, "Invalid email or password", "INVALID_CREDENTIALS");
-  }
-  if (!user.emailVerified) {
-    throw new ApiError(403, "Please verify your email before signing in", "EMAIL_NOT_VERIFIED");
-  }
-
-  const validPassword = await verifyPassword(input.password, user.passwordHash);
-  if (!validPassword) {
-    throw new ApiError(401, "Invalid email or password", "INVALID_CREDENTIALS");
-  }
-
-  const activeUser = await updateLastActiveAt(user.id);
-  const token = signAccessToken({ sub: activeUser.id, role: activeUser.role });
-  return { token, user: sanitizeUser(activeUser) };
 }
 
 export async function getAuthenticatedUser(userId: string) {

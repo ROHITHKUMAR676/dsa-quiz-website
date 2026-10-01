@@ -12,34 +12,12 @@ export const envSchema = z.object({
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   APP_TIMEZONE: z.string().default("Asia/Kolkata"),
   DEFAULT_DAILY_QUIZ_WINDOW_MINUTES: z.coerce.number().int().positive().default(60),
-  ALLOWED_EMAIL_DOMAIN: z.string().min(1).default("rajalakshmi.edu.in"),
   // Results publish this many minutes after the quiz closes. The default is
   // immediate release at close; with the default 60-minute quiz window, that
   // means leaderboard results release one hour after the scheduled start.
   // Per-quiz override: Quiz.resultReleaseDelayMinutes.
   RESULT_RELEASE_DELAY_MINUTES: z.coerce.number().int().nonnegative().default(0),
   GOOGLE_CLIENT_ID: z.string().optional(),
-  GMAIL_USER: z.string().email().optional(),
-  GMAIL_API_CLIENT_ID: z.string().optional(),
-  GMAIL_API_CLIENT_SECRET: z.string().optional(),
-  GMAIL_API_REFRESH_TOKEN: z.string().optional(),
-}).superRefine((values, context) => {
-  const gmailApiConfigured = Boolean(values.GMAIL_API_CLIENT_ID && values.GMAIL_API_CLIENT_SECRET && values.GMAIL_API_REFRESH_TOKEN);
-  const gmailApiPartiallyConfigured = Boolean(values.GMAIL_API_CLIENT_ID || values.GMAIL_API_CLIENT_SECRET || values.GMAIL_API_REFRESH_TOKEN);
-  if (gmailApiPartiallyConfigured && !gmailApiConfigured) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["GMAIL_API_REFRESH_TOKEN"],
-      message: "GMAIL_API_CLIENT_ID, GMAIL_API_CLIENT_SECRET, and GMAIL_API_REFRESH_TOKEN must be configured together",
-    });
-  }
-  if (values.NODE_ENV === "production" && (!values.GMAIL_USER || !gmailApiConfigured)) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["GMAIL_API_REFRESH_TOKEN"],
-      message: "Production requires GMAIL_USER and complete Gmail API OAuth credentials",
-    });
-  }
 });
 
 const testDefaults = process.env.NODE_ENV === "test"

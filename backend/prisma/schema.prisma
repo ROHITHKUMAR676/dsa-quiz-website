@@ -12,16 +12,6 @@ enum Role {
   ADMIN
 }
 
-enum AuthProvider {
-  PASSWORD
-  GOOGLE
-}
-
-enum AuthChallengePurpose {
-  REGISTRATION
-  PASSWORD_RESET
-}
-
 enum Difficulty {
   EASY
   MEDIUM
@@ -94,10 +84,7 @@ model User {
   id                     String       @id @default(cuid())
   fullName               String
   email                  String       @unique
-  emailVerified          Boolean      @default(false)
-  passwordHash           String?
   role                   Role         @default(STUDENT)
-  authProvider           AuthProvider @default(PASSWORD)
   googleSub              String?      @unique
   department             String?
   year                   String?
@@ -141,24 +128,6 @@ model UserAvatar {
   updatedAt   DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model AuthChallenge {
-  id                   String               @id @default(cuid())
-  email                String
-  purpose              AuthChallengePurpose
-  codeHash             String
-  expiresAt            DateTime
-  attempts             Int                  @default(0)
-  lastSentAt           DateTime             @default(now())
-  pendingRegistration Json?
-  resetTokenHash       String?
-  resetExpiresAt       DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-
-  @@unique([email, purpose])
-  @@index([expiresAt])
 }
 
 model UserSettings {

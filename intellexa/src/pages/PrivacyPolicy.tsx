@@ -6,14 +6,14 @@ const sections = [
     title: "1. Information we collect",
     content: (
       <>
-        <p>When you create or use an Intellexa account, we may collect your name, Rajalakshmi Engineering College email address, password credential, and student profile details such as department, year, register number, phone number, preferred programming language, and optional profile photo.</p>
+        <p>When you use Intellexa, we collect your name and Rajalakshmi Engineering College email address from Google, plus student profile details you provide such as department, year, register number, phone number, preferred programming language, and optional profile photo.</p>
         <p>We also record platform activity needed to provide the service, including quizzes attempted, answers and results, scores, points, streaks, badges, leaderboard participation, and account activity such as sign-in and last-active times. Basic technical request and security logs may also be generated when you use the website.</p>
       </>
     ),
   },
   {
     title: "2. Why we use this information",
-    content: <p>We use this information to create and secure accounts, verify college eligibility, provide quizzes and personalized progress, calculate results and rewards, display leaderboards, maintain the service, and investigate abuse or technical problems. We do not use it to sell advertising profiles.</p>,
+    content: <p>We use this information to create and secure accounts, confirm college eligibility, provide quizzes and personalized progress, calculate results and rewards, display leaderboards, maintain the service, and investigate abuse or technical problems. We do not use it to sell advertising profiles.</p>,
   },
   {
     title: "3. Google Sign-In",
@@ -21,19 +21,19 @@ const sections = [
   },
   {
     title: "4. Authentication and account data",
-    content: <p>For password accounts, the password is stored as a one-way password hash rather than as plain text. Google accounts use the identity information and account identifier needed to recognize the account. A signed session token is stored in your browser to keep you signed in and is sent to the service when you make authenticated requests. You can sign out to remove the locally stored session.</p>,
+    content: <p>Intellexa uses Google Sign-In as its authentication method. We retain the Google account identifier needed to recognize your account. A signed session token is stored in your browser to keep you signed in and is sent to the service when you make authenticated requests. You can sign out to remove the locally stored session.</p>,
   },
   {
     title: "5. Storage and protection",
     content: <p>Account and quiz records are stored in the application database, and an optional profile photo is stored with account data. The website and its API use HTTPS in transit. We apply access controls and security measures intended to limit access to authorized application operations. No online service can guarantee absolute security, so please use a unique password and keep verification codes private.</p>,
   },
   {
-    title: "6. Verification and password-reset emails",
-    content: <p>We send one-time codes to your college email to verify a new account or help reset its password. These messages are sent through the Gmail API from the Intellexa email account. Verification codes expire after 10 minutes. The app stores verification challenge data needed to validate a code and sends your email address and message content to Google for delivery; it does not request access to your inbox.</p>,
+    title: "6. Email verification and password resets",
+    content: <p>Intellexa does not send email verification or password-reset messages. Google verifies the account as part of Google Sign-In, and Intellexa does not request access to your inbox.</p>,
   },
   {
     title: "7. Sharing with third parties",
-    content: <p>We do not sell personal information. We share only what is needed with service providers that help operate the platform, such as Google for optional sign-in and account email delivery, and the providers hosting the website, API, and database. These providers process information to provide their services. We may also disclose information when required by law or when necessary to protect users and the service.</p>,
+    content: <p>We do not sell personal information. We share only what is needed with service providers that help operate the platform, such as Google for sign-in and the providers hosting the website, API, and database. These providers process information to provide their services. We may also disclose information when required by law or when necessary to protect users and the service.</p>,
   },
   {
     title: "8. Your choices and privacy requests",
@@ -41,7 +41,7 @@ const sections = [
   },
   {
     title: "9. Data retention",
-    content: <p>We keep account and quiz records while an account is active and for as long as they are needed to operate the platform, preserve quiz results and leaderboard integrity, or meet security and legal obligations. Expired verification and password-reset challenges are no longer usable and are cleared according to the application’s challenge handling. You may ask the project administrators to delete your account; some records may need to be retained where required for legitimate operational or legal reasons.</p>,
+    content: <p>We keep account and quiz records while an account is active and for as long as they are needed to operate the platform, preserve quiz results and leaderboard integrity, or meet security and legal obligations. You may ask the project administrators to delete your account; some records may need to be retained where required for legitimate operational or legal reasons.</p>,
   },
   {
     title: "10. Changes to this policy",

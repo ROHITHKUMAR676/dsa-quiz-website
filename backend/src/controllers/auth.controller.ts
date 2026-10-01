@@ -1,42 +1,7 @@
 import type { Request, Response } from "express";
-import { getAuthenticatedUser, login, updateAuthenticatedUser } from "../services/auth.service.js";
+import { getAuthenticatedUser, updateAuthenticatedUser } from "../services/auth.service.js";
 import { loginWithGoogle } from "../services/googleAuth.service.js";
-import { beginPasswordReset, beginRegistration, resendPasswordResetCode, resendRegistrationCode, resetPassword, verifyPasswordResetCode, verifyRegistration } from "../services/authVerification.service.js";
 import { getAvatar, saveAvatar } from "../services/avatar.service.js";
-
-export async function registerController(req: Request, res: Response) {
-  const result = await beginRegistration(req.body);
-  return res.status(201).json(result);
-}
-
-export async function verifyRegistrationController(req: Request, res: Response) {
-  return res.json(await verifyRegistration(req.body.email, req.body.code));
-}
-
-export async function resendRegistrationController(req: Request, res: Response) {
-  return res.json(await resendRegistrationCode(req.body.email));
-}
-
-export async function forgotPasswordController(req: Request, res: Response) {
-  return res.json(await beginPasswordReset(req.body.email));
-}
-
-export async function verifyResetCodeController(req: Request, res: Response) {
-  return res.json(await verifyPasswordResetCode(req.body.email, req.body.code));
-}
-
-export async function resendResetCodeController(req: Request, res: Response) {
-  return res.json(await resendPasswordResetCode(req.body.email));
-}
-
-export async function resetPasswordController(req: Request, res: Response) {
-  return res.json(await resetPassword(req.body.token, req.body.password));
-}
-
-export async function loginController(req: Request, res: Response) {
-  const result = await login(req.body);
-  return res.json(result);
-}
 
 export async function googleLoginController(req: Request, res: Response) {
   const result = await loginWithGoogle(req.body.credential);

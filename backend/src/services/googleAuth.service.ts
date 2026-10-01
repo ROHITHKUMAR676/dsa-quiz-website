@@ -1,4 +1,4 @@
-import { AuthProvider, Prisma, Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { OAuth2Client } from "google-auth-library";
 import { env } from "../config/env.js";
 import {
@@ -8,6 +8,7 @@ import {
   findUserById,
   linkGoogleAccountIfUnlinked,
   updateLastActiveAt,
+  updateUser,
 } from "../repositories/user.repository.js";
 import { ApiError } from "../utils/apiError.js";
 import { signAccessToken } from "../utils/jwt.js";
@@ -19,6 +20,7 @@ interface GoogleIdentity {
   sub: string;
   email: string;
   name?: string;
+  picture?: string;
 }
 
 async function verifyGoogleCredential(credential: string): Promise<GoogleIdentity> {
@@ -54,13 +56,14 @@ async function verifyGoogleCredential(credential: string): Promise<GoogleIdentit
     sub: payload.sub,
     email: payload.email.trim().toLowerCase(),
     name: payload.name,
+    picture: payload.picture,
   };
 }
 
 function accountConflict() {
   return new ApiError(
     409,
-    "This Google account cannot be linked to the existing account. Sign in with your original method or contact support.",
+    "This Google account cannot be linked to the existing account. Contact the project administrator for help.",
     "GOOGLE_ACCOUNT_LINK_CONFLICT",
   );
 }
@@ -78,11 +81,7 @@ async function findOrCreateGoogleUser(identity: GoogleIdentity) {
     if (accountByEmail.googleSub === identity.sub) return accountByEmail;
 
     try {
-      await linkGoogleAccountIfUnlinked(
-        accountByEmail.id,
-        identity.sub,
-        Boolean(accountByEmail.passwordHash),
-      );
+      await linkGoogleAccountIfUnlinked(accountByEmail.id, identity.sub);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw accountConflict();
@@ -100,10 +99,9 @@ async function findOrCreateGoogleUser(identity: GoogleIdentity) {
     return await createUser({
       fullName: identity.name?.trim().slice(0, 120) || identity.email.split("@")[0] || "Student",
       email: identity.email,
-      emailVerified: true,
       role: Role.STUDENT,
-      authProvider: AuthProvider.GOOGLE,
       googleSub: identity.sub,
+      avatar: identity.picture,
       settings: { create: {} },
     });
   } catch (error) {
@@ -119,11 +117,7 @@ async function findOrCreateGoogleUser(identity: GoogleIdentity) {
     if (emailCreatedByConcurrentRequest) {
       if (emailCreatedByConcurrentRequest.googleSub === identity.sub) return emailCreatedByConcurrentRequest;
       if (!emailCreatedByConcurrentRequest.googleSub) {
-        await linkGoogleAccountIfUnlinked(
-          emailCreatedByConcurrentRequest.id,
-          identity.sub,
-          Boolean(emailCreatedByConcurrentRequest.passwordHash),
-        );
+        await linkGoogleAccountIfUnlinked(emailCreatedByConcurrentRequest.id, identity.sub);
         const linkedConcurrentAccount = await findUserById(emailCreatedByConcurrentRequest.id);
         if (linkedConcurrentAccount?.googleSub === identity.sub) return linkedConcurrentAccount;
       }
@@ -134,7 +128,10 @@ async function findOrCreateGoogleUser(identity: GoogleIdentity) {
 
 export async function loginWithGoogle(credential: string) {
   const identity = await verifyGoogleCredential(credential);
-  const user = await findOrCreateGoogleUser(identity);
+  let user = await findOrCreateGoogleUser(identity);
+  if (!user.avatar && identity.picture) {
+    user = await updateUser(user.id, { avatar: identity.picture });
+  }
   const activeUser = await updateLastActiveAt(user.id);
 
   return {

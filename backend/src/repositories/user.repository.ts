@@ -13,13 +13,11 @@ export function findUserByGoogleSub(googleSub: string) {
   return prisma.user.findUnique({ where: { googleSub } });
 }
 
-export function linkGoogleAccountIfUnlinked(userId: string, googleSub: string, hasPassword: boolean) {
+export function linkGoogleAccountIfUnlinked(userId: string, googleSub: string) {
   return prisma.user.updateMany({
     where: { id: userId, googleSub: null },
     data: {
       googleSub,
-      emailVerified: true,
-      ...(!hasPassword ? { authProvider: "GOOGLE" } : {}),
     },
   });
 }

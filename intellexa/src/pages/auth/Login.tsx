@@ -1,41 +1,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
-import Button from "../../components/ui/Button";
+import { GraduationCap } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { authApi } from "../../lib/backend";
-import { ApiError } from "../../lib/api";
 import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useApp();
   const { showToast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { user, token } = await authApi.login({ email, password });
-      login(user, token);
-      showToast(`Welcome back${user.role === "ADMIN" ? ", Admin" : ""}!`, "success");
-      navigate(user.role === "ADMIN" ? "/admin" : "/student");
-    } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Couldn't reach the server. Please check your connection and try again.";
-      showToast(message, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleGoogleCredential = async (credential: string) => {
     setGoogleLoading(true);
@@ -86,59 +62,16 @@ export default function Login() {
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-aurora flex items-center justify-center mb-4 shadow-glow">
-            <Mail className="w-7 h-7 text-white" />
+            <GraduationCap className="w-7 h-7 text-white" />
           </div>
           <h1 className="font-display font-bold text-2xl text-ink">Enter the Arena</h1>
           <p className="text-ink-dim text-sm mt-1 text-center">
-            Sign in with your @rajalakshmi.edu.in email to compete, climb ranks, and level up.
+            Continue with your Rajalakshmi Engineering College Google account to compete, climb ranks, and level up.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
-            <input
-              type="email"
-              required
-              placeholder="you@rajalakshmi.edu.in"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-3 py-3 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint focus:border-neon-blue/50 outline-none transition-colors"
-            />
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
-            <input
-              type="password"
-              required
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-3 py-3 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint focus:border-neon-blue/50 outline-none transition-colors"
-            />
-          </div>
-          <div className="flex justify-end -mt-1">
-            <Link to="/forgot-password" className="text-xs text-neon-cyan hover:text-neon-blue transition-colors">Forgot Password?</Link>
-          </div>
-          <Button type="submit" fullWidth size="lg" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
-
-        <div className="my-5 flex items-center gap-3 text-xs text-ink-faint" aria-hidden="true">
-          <span className="h-px flex-1 bg-surface-border" />
-          <span>or continue with</span>
-          <span className="h-px flex-1 bg-surface-border" />
-        </div>
-        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={loading || googleLoading} />
-        <p className="mt-2 text-center text-xs text-ink-faint">Use your Rajalakshmi Engineering College Google Workspace account.</p>
-
-        <p className="text-center text-sm text-ink-dim mt-5">
-          New to Intellexa?{" "}
-          <Link to="/signup" className="text-neon-cyan hover:text-neon-blue transition-colors">
-            Create an account
-          </Link>
-        </p>
+        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={googleLoading} />
+        <p className="mt-3 text-center text-xs text-ink-faint">Only verified @rajalakshmi.edu.in Google Workspace accounts are allowed.</p>
         <p className="text-center text-xs text-ink-faint mt-4">
           By using Intellexa, you agree to our{" "}
           <Link to="/privacy" className="text-neon-cyan hover:text-neon-blue transition-colors">

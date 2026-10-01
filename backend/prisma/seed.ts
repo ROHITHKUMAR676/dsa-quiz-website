@@ -1,21 +1,16 @@
 import { PrismaClient, Role, BadgeRuleType } from "@prisma/client";
-import { hashPassword } from "../src/utils/password.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPasswordHash = await hashPassword("Admin@123");
-
   await prisma.user.upsert({
     where: { email: "admin@rajalakshmi.edu.in" },
     update: {
-      passwordHash: adminPasswordHash,
       role: Role.ADMIN,
     },
     create: {
       fullName: "Intellexa Admin",
       email: "admin@rajalakshmi.edu.in",
-      passwordHash: adminPasswordHash,
       role: Role.ADMIN,
       department: "Platform",
       settings: { create: {} },

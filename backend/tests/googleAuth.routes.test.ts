@@ -25,7 +25,7 @@ describe("POST /api/auth/google", () => {
     });
   });
 
-  it("returns the same user and application token shape as password login", async () => {
+  it("returns the user and application session token", async () => {
     const response = await request(app)
       .post("/api/auth/google")
       .send({ credential: "signed-google-id-token" });
@@ -43,5 +43,17 @@ describe("POST /api/auth/google", () => {
 
     expect(response.status).toBe(400);
     expect(mocks.loginWithGoogle).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "/api/auth/register",
+    "/api/auth/login",
+    "/api/auth/forgot-password",
+    "/api/auth/verify-registration",
+    "/api/auth/reset-password",
+  ])("does not expose the retired auth endpoint %s", async (path) => {
+    const response = await request(app).post(path).send({});
+
+    expect(response.status).toBe(404);
   });
 });

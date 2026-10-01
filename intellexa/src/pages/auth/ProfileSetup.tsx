@@ -181,7 +181,7 @@ export default function ProfileSetup() {
           </div>
 
           <Button type="submit" fullWidth size="lg" className="mt-2" disabled={loading}>
-            {loading ? "Saving profile..." : "Enter Dashboard"} <ChevronRight className="w-4 h-4" />
+            {loading ? "Saving profile..." : "Save and continue"} <ChevronRight className="w-4 h-4" />
           </Button>
         </form>
       </motion.div>

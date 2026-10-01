@@ -24,25 +24,6 @@ export interface BackendUser {
 }
 
 export const authApi = {
-  register: (input: {
-    fullName: string;
-    email: string;
-    password: string;
-    department?: string;
-    year?: string;
-    registerNumber?: string;
-    phone?: string;
-    preferredLanguage?: string;
-  }) => api.post<{ message: string; email: string; resendAfterSeconds: number }>("/auth/register", input),
-  verifyRegistration: (input: { email: string; code: string }) =>
-    api.post<{ user: BackendUser; token: string }>("/auth/verify-registration", input),
-  resendRegistrationCode: (email: string) => api.post<{ message: string; resendAfterSeconds: number }>("/auth/resend-registration-code", { email }),
-  forgotPassword: (email: string) => api.post<{ message: string }>("/auth/forgot-password", { email }),
-  verifyResetCode: (input: { email: string; code: string }) => api.post<{ resetToken: string }>("/auth/verify-reset-code", input),
-  resendResetCode: (email: string) => api.post<{ message: string; resendAfterSeconds: number }>("/auth/resend-reset-code", { email }),
-  resetPassword: (input: { token: string; password: string }) => api.post<{ message: string }>("/auth/reset-password", input),
-  login: (input: { email: string; password: string }) =>
-    api.post<{ user: BackendUser; token: string }>("/auth/login", input),
   googleLogin: (credential: string) =>
     api.post<{ user: BackendUser; token: string }>("/auth/google", { credential }),
   me: () => api.get<{ user: BackendUser }>("/auth/me"),

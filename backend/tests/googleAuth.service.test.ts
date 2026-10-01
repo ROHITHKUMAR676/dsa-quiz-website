@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   findUserById: vi.fn(),
   linkGoogleAccountIfUnlinked: vi.fn(),
   updateLastActiveAt: vi.fn(),
+  updateUser: vi.fn(),
   signAccessToken: vi.fn(() => "application-jwt"),
 }));
 
@@ -26,6 +27,7 @@ vi.mock("../src/repositories/user.repository.js", () => ({
   findUserById: mocks.findUserById,
   linkGoogleAccountIfUnlinked: mocks.linkGoogleAccountIfUnlinked,
   updateLastActiveAt: mocks.updateLastActiveAt,
+  updateUser: mocks.updateUser,
 }));
 vi.mock("../src/utils/jwt.js", () => ({ signAccessToken: mocks.signAccessToken }));
 
@@ -44,10 +46,7 @@ function makeUser(overrides: Record<string, unknown> = {}) {
     id: "user-1",
     fullName: "Test Student",
     email: "student@rajalakshmi.edu.in",
-    emailVerified: true,
-    passwordHash: null,
     role: "STUDENT",
-    authProvider: "GOOGLE",
     googleSub: "google-sub-1",
     department: null,
     year: null,
@@ -78,6 +77,7 @@ beforeEach(() => {
   mocks.linkGoogleAccountIfUnlinked.mockResolvedValue({ count: 1 });
   mocks.createUser.mockResolvedValue(makeUser());
   mocks.updateLastActiveAt.mockResolvedValue(makeUser());
+  mocks.updateUser.mockImplementation(async (id, data) => makeUser({ id, ...data }));
 });
 
 describe("Google Workspace authentication", () => {
@@ -90,29 +90,52 @@ describe("Google Workspace authentication", () => {
     });
     expect(mocks.createUser).toHaveBeenCalledWith(expect.objectContaining({
       email: "student@rajalakshmi.edu.in",
-      emailVerified: true,
       role: "STUDENT",
-      authProvider: "GOOGLE",
       googleSub: "google-sub-1",
     }));
     expect(result.token).toBe("application-jwt");
     expect(mocks.signAccessToken).toHaveBeenCalledWith({ sub: "user-1", role: "STUDENT" });
   });
 
-  it("links a verified same-email account without replacing its password or database role", async () => {
+  it("stores the Google profile picture when one is available", async () => {
+    mocks.verifyIdToken.mockResolvedValue({ getPayload: () => ({
+      ...verifiedWorkspaceIdentity,
+      picture: "https://profiles.google.com/student.jpg",
+    }) });
+    mocks.createUser.mockResolvedValue(makeUser({ avatar: null }));
+
+    await loginWithGoogle("signed-google-id-token");
+
+    expect(mocks.createUser).toHaveBeenCalledWith(expect.objectContaining({
+      avatar: "https://profiles.google.com/student.jpg",
+    }));
+    expect(mocks.updateUser).toHaveBeenCalledWith("user-1", {
+      avatar: "https://profiles.google.com/student.jpg",
+    });
+  });
+
+  it("reuses the existing user for a repeated Google login", async () => {
+    mocks.findUserByGoogleSub.mockResolvedValue(makeUser());
+
+    await loginWithGoogle("signed-google-id-token");
+    await loginWithGoogle("signed-google-id-token");
+
+    expect(mocks.findUserByGoogleSub).toHaveBeenCalledTimes(2);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+  });
+
+  it("links a verified same-email account while preserving its database role", async () => {
     const existingAdmin = makeUser({
       role: "ADMIN",
-      authProvider: "PASSWORD",
-      passwordHash: "existing-password-hash",
       googleSub: null,
     });
     mocks.findUserByEmail.mockResolvedValue(existingAdmin);
-    mocks.findUserById.mockResolvedValue({ ...existingAdmin, googleSub: "google-sub-1", emailVerified: true });
-    mocks.updateLastActiveAt.mockResolvedValue({ ...existingAdmin, googleSub: "google-sub-1", emailVerified: true });
+    mocks.findUserById.mockResolvedValue({ ...existingAdmin, googleSub: "google-sub-1" });
+    mocks.updateLastActiveAt.mockResolvedValue({ ...existingAdmin, googleSub: "google-sub-1" });
 
     const result = await loginWithGoogle("signed-google-id-token");
 
-    expect(mocks.linkGoogleAccountIfUnlinked).toHaveBeenCalledWith("user-1", "google-sub-1", true);
+    expect(mocks.linkGoogleAccountIfUnlinked).toHaveBeenCalledWith("user-1", "google-sub-1");
     expect(mocks.createUser).not.toHaveBeenCalled();
     expect(mocks.signAccessToken).toHaveBeenCalledWith({ sub: "user-1", role: "ADMIN" });
     expect(result.user.role).toBe("ADMIN");

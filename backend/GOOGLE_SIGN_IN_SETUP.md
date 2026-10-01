@@ -27,4 +27,6 @@ Do not add `GOOGLE_CLIENT_SECRET` for this ID-token flow. Do not add any OAuth s
 
 ## Account behavior
 
-Google sign-in creates a `STUDENT` account with an incomplete profile when no matching user exists. The existing profile setup will collect the remaining required student details. A verified Google account with an existing email safely links to that user while preserving the database role and any existing password login. A Google subject already linked to a different email is rejected.
+Google sign-in creates a `STUDENT` account with an incomplete profile when no matching user exists. The existing profile setup collects the remaining required student details before the tutorial and arena. A verified Google account with an existing email safely links to that user while preserving the database role and quiz history. A Google subject already linked to a different email is rejected.
+
+The application uses Google Sign-In as its only authentication method. There is no password, email-verification, or password-recovery flow. Legacy password accounts can be linked by signing in with the same verified college Google email.

@@ -46,7 +46,7 @@ interface AppContextValue {
   hasCompletedProfile: boolean;
   hasSeenSplash: boolean;
   hasSeenTutorial: boolean;
-  /** Called after a successful /auth/login or /auth/register response. */
+  /** Called after a successful Google authentication response. */
   login: (user: BackendUser, token: string) => void;
   updateUser: (user: BackendUser) => void;
   logout: () => void;
