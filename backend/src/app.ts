@@ -10,6 +10,10 @@ import { healthController } from "./controllers/health.controller.js";
 export function createApp() {
   const app = express();
 
+  // Requests reach Render through its proxy (and may also pass through
+  // Cloudflare). Use the forwarded client address for IP-based rate limits.
+  app.set("trust proxy", true);
+
   app.use(pinoHttp({ logger }));
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
