@@ -79,7 +79,7 @@ export default function Profile() {
   const timeline = [
     user?.lastActiveAt ? { label: "Last active", time: new Date(user.lastActiveAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) } : null,
     user?.updatedAt ? { label: "Profile updated", time: new Date(user.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) } : null,
-    user?.createdAt ? { label: "Joined Intellexa", time: new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) } : null,
+    user?.createdAt ? { label: "Joined", time: new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) } : null,
   ].filter(Boolean) as Array<{ label: string; time: string }>;
 
   return (

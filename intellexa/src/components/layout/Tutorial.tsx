@@ -59,13 +59,53 @@ export default function Tutorial() {
   const recompute = () => setRect(measure(step.target));
 
   useLayoutEffect(() => {
+    const revealTarget = () => {
+      const candidates = document.querySelectorAll<HTMLElement>(`[data-tour="${step.target}"]`);
+      const target = Array.from(candidates).find((element) => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.width > 0 && bounds.height > 0;
+      });
+      if (!target) return false;
+
+      const bounds = target.getBoundingClientRect();
+      const safeTop = 24;
+      const safeBottom = window.innerHeight - 96;
+      const preferCardBelow = stepIndex === 0 || stepIndex === 1 || stepIndex === 3;
+      if (preferCardBelow && bounds.top > safeTop) {
+        target.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      } else if (bounds.top < safeTop || bounds.bottom > safeBottom) {
+        target.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+      }
+      return true;
+    };
+
+    const foundTarget = revealTarget();
     recompute();
-    // Retry once shortly after mount - some targets (e.g. the live quiz
-    // card) may render a beat after the page's own data settles.
-    const retry = setTimeout(recompute, 250);
-    return () => clearTimeout(retry);
+    const retry = setTimeout(recompute, 350);
+    // The live quiz target can appear after dashboard data loads.
+    const observer = !foundTarget
+      ? new MutationObserver(() => {
+          if (revealTarget()) {
+            recompute();
+            observer.disconnect();
+          }
+        })
+      : null;
+    observer?.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      clearTimeout(retry);
+      observer?.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepIndex]);
+  }, [stepIndex, step.target]);
 
   useEffect(() => {
     window.addEventListener("resize", recompute);
@@ -98,17 +138,23 @@ export default function Tutorial() {
 
   // Card placement: prefer below the target, flip above if it would run
   // off the bottom of the viewport; clamp horizontally within the viewport.
-  const viewportH = typeof window !== "undefined" ? window.innerHeight : 800;
-  const viewportW = typeof window !== "undefined" ? window.innerWidth : 400;
+  const viewportH = typeof window !== "undefined" ? (window.visualViewport?.height ?? window.innerHeight) : 800;
+  const viewportW = typeof window !== "undefined" ? (window.visualViewport?.width ?? window.innerWidth) : 400;
   const cardWidth = Math.min(320, viewportW - 32);
+  const preferCardBelow = stepIndex === 0 || stepIndex === 1 || stepIndex === 3;
   let cardTop = highlightStyle ? highlightStyle.top + highlightStyle.height + 16 : viewportH / 2 - 100;
   let placement: "below" | "above" = "below";
-  if (highlightStyle && cardTop + 260 > viewportH) {
+  if (highlightStyle && !preferCardBelow && cardTop + 260 > viewportH) {
     cardTop = Math.max(16, highlightStyle.top - 260 - 16);
     placement = "above";
   }
-  let cardLeft = highlightStyle ? highlightStyle.left + highlightStyle.width / 2 - cardWidth / 2 : viewportW / 2 - cardWidth / 2;
-  cardLeft = Math.max(16, Math.min(cardLeft, viewportW - cardWidth - 16));
+  let cardLeft = viewportW < 640
+    ? (viewportW - cardWidth) / 2
+    : highlightStyle
+      ? highlightStyle.left + highlightStyle.width / 2 - cardWidth / 2
+      : viewportW / 2 - cardWidth / 2;
+  cardLeft = Math.max(16, Math.min(cardLeft, Math.max(16, viewportW - cardWidth - 16)));
+  const remainingCardHeight = Math.max(160, viewportH - cardTop - 16);
 
   const Icon = step.icon;
 
@@ -143,11 +189,11 @@ export default function Tutorial() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="absolute glass-strong rounded-2xl p-5 shadow-glow overflow-y-auto"
+          className="absolute box-border glass-strong rounded-2xl p-5 shadow-glow overflow-y-auto"
           style={
             highlightStyle
-              ? { top: cardTop, left: cardLeft, width: cardWidth, maxHeight: "calc(100dvh - 32px)" }
-              : { top: "50%", left: "50%", width: cardWidth, maxHeight: "calc(100dvh - 32px)", transform: "translate(-50%, -50%)" }
+              ? { top: cardTop, left: cardLeft, width: cardWidth, maxWidth: "calc(100vw - 32px)", maxHeight: preferCardBelow ? remainingCardHeight : "calc(100dvh - 32px)" }
+              : { top: "50%", left: "50%", width: cardWidth, maxWidth: "calc(100vw - 32px)", maxHeight: "calc(100dvh - 32px)", transform: "translate(-50%, -50%)" }
           }
         >
           {highlightStyle && (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Coins, Trophy, Zap, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { Flame, Coins, Trophy, Zap, Podium, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProgressRing from "../../components/ui/ProgressRing";
 import XPBar from "../../components/ui/XPBar";
@@ -99,7 +99,8 @@ export default function StudentDashboard() {
   const streak = user?.currentStreak ?? 0;
   const { level, xpToNextLevel } = levelFromXp(xp);
   const myRank = topRanks.find((entry) => user && entry.userId === user.id)?.rank;
-  const todayProgress = liveQuiz ? 0 : 100;
+  const todayQuiz = liveQuiz ?? recentlyClosedQuiz;
+  const todayProgress = todayQuiz?.hasAttempted ? 100 : 0;
   const completedCount = quizzes.filter((q) => q.status === "completed").length;
   const totalVisibleQuizzes = quizzes.length;
   const quizProgress = totalVisibleQuizzes ? Math.round((completedCount / totalVisibleQuizzes) * 100) : 0;
@@ -152,7 +153,7 @@ export default function StudentDashboard() {
 
       {/* Live sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4" data-tour="live-quiz">
           <div className="flex items-center justify-between">
             <h2 className="font-display font-semibold text-lg text-ink flex items-center gap-2">
               <Sparkles className="w-4.5 h-4.5 text-neon-cyan" /> Live &amp; Upcoming
@@ -168,7 +169,7 @@ export default function StudentDashboard() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {liveQuiz && (
-                <div data-tour="live-quiz">
+                <div>
                   <QuizCard quiz={liveQuiz} />
                 </div>
               )}
@@ -248,7 +249,8 @@ export default function StudentDashboard() {
             className="mt-5"
             onClick={() => (liveQuiz ? navigate(`/student/quiz/${liveQuiz.id}`) : navigate("/student/leaderboard"))}
           >
-            <Zap className="w-4 h-4" /> {liveQuiz ? "Jump into today's quiz" : "Check the leaderboard"}
+            {liveQuiz ? <Zap className="w-4 h-4" /> : <Podium className="w-4 h-4" />}
+            {liveQuiz ? "Jump into today's quiz" : "Check the leaderboard"}
           </Button>
         </Card>
       </div>
