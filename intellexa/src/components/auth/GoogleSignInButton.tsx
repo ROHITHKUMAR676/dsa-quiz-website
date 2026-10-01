@@ -53,11 +53,17 @@ export default function GoogleSignInButton({ onCredential, disabled = false }: G
   useEffect(() => {
     if (!clientId || !containerRef.current) return;
     let disposed = false;
+    let renderedWidth = 0;
 
     const renderGoogleButton = () => {
       const google = window.google;
       const container = containerRef.current;
       if (disposed || !google || !container) return;
+
+      const availableWidth = container.parentElement?.getBoundingClientRect().width ?? 360;
+      const width = Math.max(120, Math.min(360, Math.floor(availableWidth)));
+      if (renderedWidth === width && container.childElementCount > 0) return;
+      renderedWidth = width;
 
       google.accounts.id.initialize({
         client_id: clientId,
@@ -81,14 +87,21 @@ export default function GoogleSignInButton({ onCredential, disabled = false }: G
         size: "large",
         text: "continue_with",
         shape: "rectangular",
-        width: 360,
+        width,
         logo_alignment: "left",
       });
     };
 
+    const wrapper = containerRef.current.parentElement;
+    const resizeObserver = wrapper ? new ResizeObserver(renderGoogleButton) : null;
+    if (wrapper) resizeObserver?.observe(wrapper);
+
     if (window.google) {
       renderGoogleButton();
-      return () => { disposed = true; };
+      return () => {
+        disposed = true;
+        resizeObserver?.disconnect();
+      };
     }
 
     let script = document.getElementById(GOOGLE_SCRIPT_ID) as HTMLScriptElement | null;
@@ -111,6 +124,7 @@ export default function GoogleSignInButton({ onCredential, disabled = false }: G
 
     return () => {
       disposed = true;
+      resizeObserver?.disconnect();
       script?.removeEventListener("load", handleLoad);
       script?.removeEventListener("error", handleError);
     };
@@ -130,7 +144,7 @@ export default function GoogleSignInButton({ onCredential, disabled = false }: G
       aria-busy={disabled}
       aria-disabled={disabled}
     >
-      <div ref={containerRef} />
+      <div ref={containerRef} className="w-full" />
     </div>
   );
 }
