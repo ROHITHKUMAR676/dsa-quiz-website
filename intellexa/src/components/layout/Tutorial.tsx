@@ -91,15 +91,16 @@ export default function Tutorial() {
     recompute();
     const retry = setTimeout(recompute, 350);
     // The live quiz target can appear after dashboard data loads.
-    const observer = !foundTarget
-      ? new MutationObserver(() => {
-          if (revealTarget()) {
-            recompute();
-            observer.disconnect();
-          }
-        })
-      : null;
-    observer?.observe(document.body, { childList: true, subtree: true });
+    let observer: MutationObserver | undefined;
+    if (!foundTarget) {
+      observer = new MutationObserver(() => {
+        if (revealTarget()) {
+          recompute();
+          observer?.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
     return () => {
       clearTimeout(retry);
       observer?.disconnect();
