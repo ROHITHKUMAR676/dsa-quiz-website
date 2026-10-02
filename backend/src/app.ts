@@ -10,7 +10,10 @@ import { healthController } from "./controllers/health.controller.js";
 export function createApp() {
   const app = express();
 
-  app.use(pinoHttp({ logger }));
+  app.use(pinoHttp({
+    logger,
+    redact: ["req.headers.authorization", "req.headers.cookie"],
+  }));
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
   app.use(express.json({ limit: "1mb" }));
