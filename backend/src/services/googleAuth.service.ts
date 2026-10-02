@@ -1,6 +1,7 @@
 import { Prisma, Role } from "@prisma/client";
 import { OAuth2Client } from "google-auth-library";
 import { env } from "../config/env.js";
+import { ADMIN_EMAIL } from "../config/admin.js";
 import {
   createUser,
   findUserByEmail,
@@ -129,6 +130,10 @@ async function findOrCreateGoogleUser(identity: GoogleIdentity) {
 export async function loginWithGoogle(credential: string) {
   const identity = await verifyGoogleCredential(credential);
   let user = await findOrCreateGoogleUser(identity);
+  const expectedRole = identity.email === ADMIN_EMAIL ? Role.ADMIN : Role.STUDENT;
+  if (user.role !== expectedRole) {
+    user = await updateUser(user.id, { role: expectedRole });
+  }
   if (!user.avatar && identity.picture) {
     user = await updateUser(user.id, { avatar: identity.picture });
   }
