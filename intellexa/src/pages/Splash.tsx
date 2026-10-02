@@ -48,11 +48,11 @@ export default function Splash() {
       ))}
 
       <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <motion.line x1="10%" y1="20%" x2="45%" y2="55%" stroke="#4F7CFF" strokeWidth="1"
+        <motion.line x1="10%" y1="20%" x2="45%" y2="55%" stroke="#6c90c6" strokeWidth="1"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.2 }} />
-        <motion.line x1="90%" y1="15%" x2="55%" y2="50%" stroke="#A855F7" strokeWidth="1"
+        <motion.line x1="90%" y1="15%" x2="55%" y2="50%" stroke="#8778ED" strokeWidth="1"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5 }} />
-        <motion.line x1="15%" y1="85%" x2="50%" y2="55%" stroke="#22D3EE" strokeWidth="1"
+        <motion.line x1="15%" y1="85%" x2="50%" y2="55%" stroke="#568CB3" strokeWidth="1"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.8 }} />
       </svg>
 
@@ -65,7 +65,7 @@ export default function Splash() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.7, ease: "backOut" }}
-          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(128,73,255,0.16)]"
+          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]"
         >
           <BrandMark className="w-full" />
         </motion.div>

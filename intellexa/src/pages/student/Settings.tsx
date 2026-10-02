@@ -16,7 +16,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
       aria-label={label}
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex w-11 h-6 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-emerald-600" : "bg-surface-border"}`}
+      className={`relative inline-flex w-11 h-6 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-aurora" : "bg-surface-border"}`}
     >
       <span
         className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`}
@@ -55,16 +55,16 @@ export default function Settings() {
             active={theme === "dark"}
             label="Nebula"
             sublabel="Current dark design"
-            previewBg="linear-gradient(135deg, #080B14, #12172A)"
-            previewAccent="#22D3EE"
+            previewBg="linear-gradient(135deg, #161925, #1E2334)"
+            previewAccent="#568CB3"
             onClick={() => setTheme("dark")}
           />
           <ThemeSwatch
             active={theme === "light"}
             label="White Smokey"
             sublabel="Clean bright system"
-            previewBg="linear-gradient(135deg, #FFFFFF, #EEF3F7)"
-            previewAccent="#2563EB"
+            previewBg="linear-gradient(135deg, #FFFFFF, #EAF0F7)"
+            previewAccent="#0656a4"
             onClick={() => setTheme("light")}
           />
         </div>

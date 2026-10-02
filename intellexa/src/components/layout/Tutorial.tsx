@@ -169,7 +169,7 @@ export default function Tutorial() {
             left: highlightStyle.left,
             width: highlightStyle.width,
             height: highlightStyle.height,
-            boxShadow: "0 0 0 9999px rgba(6,9,20,0.82)",
+            boxShadow: "0 0 0 9999px rgba(13,15,24,0.82)",
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

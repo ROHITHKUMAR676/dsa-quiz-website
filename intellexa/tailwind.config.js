@@ -44,14 +44,14 @@ export default {
         mono: ["'JetBrains Mono'", "monospace"],
       },
       backgroundImage: {
-        "grid-glow": "radial-gradient(circle at 50% 0%, rgba(79,124,255,0.15), transparent 60%)",
-        aurora: "linear-gradient(120deg, rgb(var(--color-neon-blue)) 0%, rgb(var(--color-neon-purple)) 50%, rgb(var(--color-neon-cyan)) 100%)",
+        "grid-glow": "radial-gradient(circle at 50% 0%, rgba(108,144,198,0.15), transparent 60%)",
+        aurora: "linear-gradient(120deg, rgb(var(--aurora-1)) 0%, rgb(var(--aurora-2)) 55%, rgb(var(--aurora-3)) 100%)",
         "aurora-soft": "linear-gradient(120deg, rgb(var(--color-neon-blue) / 0.25) 0%, rgb(var(--color-neon-purple) / 0.25) 50%, rgb(var(--color-neon-cyan) / 0.25) 100%)",
       },
       boxShadow: {
-        glow: "0 0 24px rgba(79,124,255,0.35)",
-        "glow-purple": "0 0 24px rgba(168,85,247,0.35)",
-        "glow-cyan": "0 0 24px rgba(34,211,238,0.35)",
+        glow: "0 0 24px rgba(6,86,164,0.50)",
+        "glow-purple": "0 0 24px rgba(135,120,237,0.40)",
+        "glow-cyan": "0 0 24px rgba(86,140,179,0.40)",
         card: "0 8px 32px rgba(0,0,0,0.35)",
       },
       borderRadius: {

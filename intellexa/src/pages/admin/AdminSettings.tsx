@@ -37,16 +37,16 @@ export default function AdminSettings() {
             active={theme === "dark"}
             label="Nebula"
             sublabel="Current dark design"
-            previewBg="linear-gradient(135deg, #080B14, #12172A)"
-            previewAccent="#22D3EE"
+            previewBg="linear-gradient(135deg, #161925, #1E2334)"
+            previewAccent="#568CB3"
             onClick={() => setTheme("dark")}
           />
           <ThemeSwatch
             active={theme === "light"}
             label="White Smokey"
             sublabel="Clean bright system"
-            previewBg="linear-gradient(135deg, #FFFFFF, #EEF3F7)"
-            previewAccent="#2563EB"
+            previewBg="linear-gradient(135deg, #FFFFFF, #EAF0F7)"
+            previewAccent="#0656a4"
             onClick={() => setTheme("light")}
           />
         </div>
