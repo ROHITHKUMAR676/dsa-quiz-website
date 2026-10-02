@@ -55,6 +55,7 @@ export default function Tutorial() {
 
   const step = steps[stepIndex];
   const isLast = stepIndex === steps.length - 1;
+  const isDesktopStepFour = stepIndex === 3 && typeof window !== "undefined" && window.innerWidth >= 640;
 
   const recompute = () => setRect(measure(step.target));
 
@@ -68,21 +69,16 @@ export default function Tutorial() {
       if (!target) return false;
 
       const bounds = target.getBoundingClientRect();
-      const safeTop = 24;
+      const safeTop = 88;
       const safeBottom = window.innerHeight - 96;
-      const preferCardBelow = stepIndex === 0 || stepIndex === 1 || stepIndex === 3;
-      if (preferCardBelow && bounds.top > safeTop) {
-        target.scrollIntoView({
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-          block: "start",
-          inline: "nearest",
-        });
-      } else if (bounds.top < safeTop || bounds.bottom > safeBottom) {
-        target.scrollIntoView({
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-          block: "center",
-          inline: "nearest",
-        });
+      const preferCardBelow = stepIndex === 0 || stepIndex === 1 || (stepIndex === 3 && !isDesktopStepFour);
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      if (preferCardBelow && Math.abs(bounds.top - safeTop) > 12) {
+        // Leave room for the sticky top bar and keep the highlighted target
+        // fully visible above the tour card on mobile.
+        window.scrollTo({ top: window.scrollY + bounds.top - safeTop, behavior });
+      } else if (!preferCardBelow && (bounds.top < safeTop || bounds.bottom > safeBottom)) {
+        target.scrollIntoView({ behavior, block: "center", inline: "nearest" });
       }
       return true;
     };
@@ -142,11 +138,11 @@ export default function Tutorial() {
   const viewportH = typeof window !== "undefined" ? (window.visualViewport?.height ?? window.innerHeight) : 800;
   const viewportW = typeof window !== "undefined" ? (window.visualViewport?.width ?? window.innerWidth) : 400;
   const cardWidth = Math.min(320, viewportW - 32);
-  const preferCardBelow = stepIndex === 0 || stepIndex === 1 || stepIndex === 3;
+  const preferCardBelow = stepIndex === 0 || stepIndex === 1 || (stepIndex === 3 && !isDesktopStepFour);
   let cardTop = highlightStyle ? highlightStyle.top + highlightStyle.height + 16 : viewportH / 2 - 100;
   let placement: "below" | "above" = "below";
-  if (highlightStyle && !preferCardBelow && cardTop + 260 > viewportH) {
-    cardTop = Math.max(16, highlightStyle.top - 260 - 16);
+  if (highlightStyle && (isDesktopStepFour || (!preferCardBelow && cardTop + 260 > viewportH))) {
+    cardTop = Math.max(16, highlightStyle.top - 276);
     placement = "above";
   }
   let cardLeft = viewportW < 640
