@@ -9,8 +9,8 @@ export function findAttemptByQuizAndUser(quizId: string, userId: string) {
 }
 
 /**
- * Official daily ranking order (spec section 11): score DESC, correctAnswers
- * DESC, completionTimeMs ASC, scoreAchievedAt ASC. Only ever called once a
+ * Official daily ranking order: score DESC, correctAnswers DESC, persisted
+ * total response time ASC, then the earlier server submission. Only called once a
  * quiz's results are PUBLISHED - see services/leaderboard.service.ts.
  */
 export function findSubmittedAttemptsRankedForQuiz(quizId: string) {
@@ -19,11 +19,17 @@ export function findSubmittedAttemptsRankedForQuiz(quizId: string) {
     orderBy: [
       { score: "desc" },
       { correctAnswers: "desc" },
-      { completionTimeMs: "asc" },
-      { scoreAchievedAt: "asc" },
     ],
-    include: { user: { select: { id: true, fullName: true, avatar: true, department: true } } },
-  });
+    include: {
+      user: { select: { id: true, fullName: true, avatar: true, department: true } },
+      answers: { select: { responseTimeMs: true } },
+    },
+  }).then((attempts) => attempts.sort((a, b) =>
+    b.score - a.score || b.correctAnswers - a.correctAnswers ||
+    a.answers.reduce((sum, answer) => sum + (answer.responseTimeMs ?? 0), 0) -
+      b.answers.reduce((sum, answer) => sum + (answer.responseTimeMs ?? 0), 0) ||
+    (a.scoreAchievedAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.scoreAchievedAt?.getTime() ?? Number.MAX_SAFE_INTEGER)
+  ));
 }
 
 /**
@@ -37,6 +43,24 @@ export async function aggregateSubmittedAttemptsByUser(quizIds: string[]) {
     where: { quizId: { in: quizIds }, status: AttemptStatus.SUBMITTED },
     _sum: { score: true, correctAnswers: true },
     _count: { _all: true },
+  });
+}
+
+export function findReleasedAttemptsBetween(start: Date, end: Date) {
+  return prisma.quizAttempt.findMany({
+    where: {
+      status: AttemptStatus.SUBMITTED,
+      quiz: {
+        status: { in: ["SCHEDULED", "LIVE", "CLOSED", "FINALIZED", "ARCHIVED"] },
+        competitionDate: { gte: start, lt: end },
+      },
+    },
+    select: {
+      userId: true, score: true, correctAnswers: true, completionTimeMs: true, submittedAt: true,
+      user: { select: { id: true, fullName: true, avatar: true, department: true } },
+      answers: { select: { responseTimeMs: true } },
+      quiz: { select: { startsAt: true, endsAt: true, competitionDate: true, defaultWindowMinutes: true, resultReleaseDelayMinutes: true } },
+    },
   });
 }
 
@@ -64,6 +88,26 @@ export function markAttemptExpired(id: string) {
     data: { status: AttemptStatus.EXPIRED },
     include: { quiz: true },
   });
+}
+
+export async function beginQuestion(attemptId: string, questionId: string) {
+  await prisma.answer.createMany({
+    data: [{ attemptId, questionId, selectedOptionId: null, isCorrect: false, pointsAwarded: 0 }],
+    skipDuplicates: true,
+  });
+  return prisma.answer.findUniqueOrThrow({ where: { attemptId_questionId: { attemptId, questionId } } });
+}
+
+export function findAttemptAnswers(attemptId: string) {
+  return prisma.answer.findMany({ where: { attemptId }, orderBy: { answeredAt: "asc" } });
+}
+
+export function findAttemptAnswer(attemptId: string, questionId: string) {
+  return prisma.answer.findUnique({ where: { attemptId_questionId: { attemptId, questionId } } });
+}
+
+export function saveQuestionAnswer(id: string, data: { selectedOptionId: string | null; isCorrect: boolean; pointsAwarded: number; responseTimeMs: number }) {
+  return prisma.answer.updateMany({ where: { id, responseTimeMs: null }, data });
 }
 
 
@@ -108,6 +152,7 @@ export function submitAttempt(input: SubmitAttemptInput) {
           pointsAwarded: answer.pointsAwarded,
           responseTimeMs: answer.responseTimeMs ?? null,
         })) satisfies Prisma.AnswerCreateManyInput[],
+        skipDuplicates: true,
       });
     }
 

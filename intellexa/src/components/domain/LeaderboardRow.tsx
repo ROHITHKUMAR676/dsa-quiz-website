@@ -4,7 +4,7 @@ import type { LeaderboardEntry } from "../../types";
 import { cn } from "../../lib/utils";
 import BadgePill from "../ui/BadgePill";
 
-export default function LeaderboardRow({ entry, highlight, index = 0 }: { entry: LeaderboardEntry; highlight?: boolean; index?: number }) {
+export default function LeaderboardRow({ entry, highlight, index = 0, metricLabel = "XP", monthly = false }: { entry: LeaderboardEntry; highlight?: boolean; index?: number; metricLabel?: string; monthly?: boolean }) {
   const delta = entry.previousRank - entry.rank;
   const DeltaIcon = delta > 0 ? ArrowUp : delta < 0 ? ArrowDown : Minus;
   const deltaColor = delta > 0 ? "text-state-success" : delta < 0 ? "text-state-danger" : "text-ink-faint";
@@ -34,16 +34,16 @@ export default function LeaderboardRow({ entry, highlight, index = 0 }: { entry:
         <p className="text-ink font-medium text-sm truncate">{entry.name}</p>
         <p className="text-ink-faint text-xs truncate">{entry.department}</p>
       </div>
-      <div className="hidden sm:flex items-center gap-1 text-ink-dim text-xs">
+      {!monthly && <div className="hidden sm:flex items-center gap-1 text-ink-dim text-xs">
         <Flame className="w-3.5 h-3.5 text-state-warning" /> {entry.streak}
-      </div>
-      <div className="hidden md:flex items-center gap-1 text-ink-dim text-xs">
+      </div>}
+      {!monthly && <div className="hidden md:flex items-center gap-1 text-ink-dim text-xs">
         <Award className="w-3.5 h-3.5 text-neon-purple" /> {entry.badges}
-      </div>
-      <BadgePill variant="blue" className="hidden xs:inline-flex shrink-0">{entry.tier}</BadgePill>
+      </div>}
+      {!monthly && <BadgePill variant="blue" className="hidden xs:inline-flex shrink-0">{entry.tier}</BadgePill>}
       <div className="text-right shrink-0 w-16 sm:w-20">
         <p className="font-mono font-semibold text-ink text-sm">{entry.xp.toLocaleString()}</p>
-        <p className="text-ink-faint text-[10px]">XP</p>
+        <p className="text-ink-faint text-[10px]">{metricLabel}</p>
       </div>
     </motion.div>
   );

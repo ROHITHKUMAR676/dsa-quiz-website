@@ -49,7 +49,7 @@ export default function ScheduledQuizzes() {
         <h1 className="font-display font-bold text-2xl text-ink flex items-center gap-2">
           <CalendarClock className="w-6 h-6 text-state-warning" /> Scheduled Quizzes
         </h1>
-        <p className="text-ink-dim text-sm">Upcoming daily quizzes queued for release.</p>
+        <p className="text-ink-dim text-sm">Daily quizzes open automatically at 8:00 PM IST and close at 9:00 PM IST.</p>
       </div>
 
       {status === "loading" && (
@@ -66,7 +66,7 @@ export default function ScheduledQuizzes() {
       )}
 
       {status === "ready" && quizzes.length === 0 ? (
-        <EmptyState icon={CalendarClock} title="Nothing scheduled" description="Create a quiz and schedule it for later." />
+        <EmptyState icon={CalendarClock} title="Nothing scheduled" description="Create a quiz and choose its daily release date." />
       ) : status === "ready" ? (
         <div className="space-y-3">
           {quizzes.map((item) => (
@@ -81,7 +81,7 @@ export default function ScheduledQuizzes() {
                 </div>
                 <p className="text-xs text-ink-faint">
                   {item.startsAt
-                    ? new Date(item.startsAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+                    ? new Date(item.startsAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " IST"
                     : "Awaiting schedule"}
                 </p>
               </div>

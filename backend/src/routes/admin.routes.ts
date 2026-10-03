@@ -14,7 +14,6 @@ import {
   finalizeQuizController,
   getQuizController,
   listQuizzesController,
-  publishQuizController,
   reorderQuestionsController,
   scheduleQuizController,
   updateQuestionController,
@@ -36,6 +35,7 @@ import {
   finalizeWeeklyController,
   getOrCreateCurrentWeeklyController,
   adminGlobalLeaderboardController,
+  adminMonthlyLeaderboardController,
   participantsController,
   listWeeklyCompetitionsController,
   platformAnalyticsController,
@@ -69,7 +69,6 @@ adminRouter.delete("/questions/:id", validate(questionIdParamSchema), asyncHandl
 adminRouter.post("/quizzes/:id/questions/reorder", validate(reorderQuestionsSchema), asyncHandler(reorderQuestionsController));
 
 adminRouter.post("/quizzes/:id/schedule", validate(scheduleQuizSchema), asyncHandler(scheduleQuizController));
-adminRouter.post("/quizzes/:id/publish", validate(transitionQuizSchema), asyncHandler(publishQuizController));
 adminRouter.post("/quizzes/:id/close", validate(transitionQuizSchema), asyncHandler(closeQuizController));
 adminRouter.post("/quizzes/:id/finalize", validate(transitionQuizSchema), asyncHandler(finalizeQuizController));
 adminRouter.post("/quizzes/:id/archive", validate(transitionQuizSchema), asyncHandler(archiveQuizController));
@@ -86,5 +85,6 @@ adminRouter.post("/weekly/:id/finalize", validate(weeklyIdParamSchema), asyncHan
 // Phase 8: analytics
 adminRouter.get("/participants", asyncHandler(participantsController));
 adminRouter.get("/leaderboard/global", asyncHandler(adminGlobalLeaderboardController));
+adminRouter.get("/leaderboard/monthly", asyncHandler(adminMonthlyLeaderboardController));
 adminRouter.get("/analytics/quizzes/:id", validate(quizIdParamSchema), asyncHandler(quizAnalyticsController));
 adminRouter.get("/analytics/platform", asyncHandler(platformAnalyticsController));

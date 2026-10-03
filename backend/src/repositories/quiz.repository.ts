@@ -28,6 +28,10 @@ export function findQuizById(id: string) {
   return prisma.quiz.findUnique({ where: { id }, include: adminQuizInclude });
 }
 
+export function findQuizByCompetitionDate(competitionDate: Date) {
+  return prisma.quiz.findFirst({ where: { competitionDate }, select: { id: true } });
+}
+
 export function updateQuiz(id: string, data: Prisma.QuizUncheckedUpdateInput) {
   return prisma.quiz.update({ where: { id }, data, include: adminQuizInclude });
 }

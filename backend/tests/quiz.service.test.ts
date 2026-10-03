@@ -5,6 +5,7 @@ const quizRepository = vi.hoisted(() => ({
   createQuiz: vi.fn(),
   listQuizzes: vi.fn(),
   findQuizById: vi.fn(),
+  findQuizByCompetitionDate: vi.fn(),
   updateQuiz: vi.fn(),
   deleteQuiz: vi.fn(),
 }));
@@ -59,14 +60,13 @@ describe("quiz service", () => {
     process.env.DEFAULT_DAILY_QUIZ_WINDOW_MINUTES = "60";
   });
 
-  it("stores schedule timestamps and defaults timezone to Asia/Kolkata", async () => {
+  it("schedules the selected day at 8:00 PM IST for exactly one hour", async () => {
     quizRepository.findQuizById.mockResolvedValue(readyQuiz);
+    quizRepository.findQuizByCompetitionDate.mockResolvedValue(null);
     quizRepository.updateQuiz.mockResolvedValue({ ...readyQuiz, status: QuizStatus.SCHEDULED });
 
     await scheduleAdminQuiz("quiz-1", {
-      competitionDate: "2026-08-15T00:00:00+05:30",
-      startsAt: "2026-08-15T19:00:00+05:30",
-      endsAt: "2026-08-15T20:00:00+05:30",
+      competitionDate: "2026-08-15",
     });
 
     expect(quizRepository.updateQuiz).toHaveBeenCalledWith(
@@ -74,8 +74,8 @@ describe("quiz service", () => {
       expect.objectContaining({
         status: QuizStatus.SCHEDULED,
         timezone: "Asia/Kolkata",
-        startsAt: new Date("2026-08-15T19:00:00+05:30"),
-        endsAt: new Date("2026-08-15T20:00:00+05:30"),
+        startsAt: new Date("2026-08-15T14:30:00.000Z"),
+        endsAt: new Date("2026-08-15T15:30:00.000Z"),
       })
     );
   });

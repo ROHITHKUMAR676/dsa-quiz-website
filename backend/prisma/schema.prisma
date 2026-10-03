@@ -252,6 +252,8 @@ model Answer {
   isCorrect        Boolean  @default(false)
   responseTimeMs   Int?
   pointsAwarded    Int      @default(0)
+  // For IN_PROGRESS answers this captures server-side question entry time;
+  // responseTimeMs is written when the student answers or times out.
   answeredAt       DateTime @default(now())
 
   attempt          QuizAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)

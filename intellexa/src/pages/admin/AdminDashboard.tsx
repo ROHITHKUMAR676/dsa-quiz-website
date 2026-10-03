@@ -6,13 +6,13 @@ import Card from "../../components/ui/Card";
 import BadgePill from "../../components/ui/BadgePill";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { adminApi, type BackendAdminQuiz, type BackendPlatformStats } from "../../lib/backend";
-import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
+import { mapBackendMonthlyEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { ApiError } from "../../lib/api";
 import type { LeaderboardEntry } from "../../types";
 
 function formatQuizTime(quiz: BackendAdminQuiz) {
   const value = quiz.startsAt ?? quiz.createdAt;
-  return value ? new Date(value).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Not scheduled";
+  return value ? new Date(value).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " IST" : "Not scheduled";
 }
 
 export default function AdminDashboard() {
@@ -26,14 +26,14 @@ export default function AdminDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        const [{ stats }, { leaderboard }, { quizzes }] = await Promise.all([
+        const [{ stats }, monthly, { quizzes }] = await Promise.all([
           adminApi.platformStats(),
-          adminApi.leaderboard(),
+          adminApi.monthlyLeaderboard(),
           adminApi.listQuizzes(),
         ]);
         if (cancelled) return;
         setStats(stats);
-        setTopPerformers(leaderboard.slice(0, 4).map(mapBackendGlobalEntryToLegacy));
+        setTopPerformers(monthly.leaderboard.slice(0, 4).map(mapBackendMonthlyEntryToLegacy));
         setRecentQuizzes(quizzes.slice(0, 4));
         setStatus("ready");
       } catch (error) {
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="font-display font-bold text-2xl sm:text-3xl text-ink">Admin Dashboard</h1>
-        <p className="text-ink-dim text-sm">Real-time overview of Intellexa's arena.</p>
+        <p className="text-ink-dim text-sm">Real-time overview of Codexa’s arena.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

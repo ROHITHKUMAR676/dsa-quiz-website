@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getDailyLeaderboard, getGlobalLeaderboard } from "../services/leaderboard.service.js";
+import { getDailyLeaderboard, getGlobalLeaderboard, getMonthlyLeaderboard } from "../services/leaderboard.service.js";
 import { getWeeklyLeaderboardForStudent, getOrCreateWeeklyCompetition } from "../services/weekly.service.js";
 import { getDailyRevealForStudent } from "../services/resultReveal.service.js";
 import {
@@ -17,6 +17,10 @@ export async function dailyLeaderboardController(req: Request, res: Response) {
 export async function globalLeaderboardController(_req: Request, res: Response) {
   const leaderboard = await getGlobalLeaderboard();
   return res.json({ leaderboard });
+}
+
+export async function monthlyLeaderboardController(_req: Request, res: Response) {
+  return res.json(await getMonthlyLeaderboard());
 }
 
 export async function currentWeeklyLeaderboardController(_req: Request, res: Response) {

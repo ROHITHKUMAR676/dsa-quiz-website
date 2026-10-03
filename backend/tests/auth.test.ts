@@ -1,6 +1,9 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import type { Express } from "express";
+
+const prismaMock = vi.hoisted(() => ({ user: { findUnique: vi.fn().mockResolvedValue({ email: "rohithkumar.s.2024.cse@rajalakshmi.edu.in", role: "ADMIN" }) } }));
+vi.mock("../src/config/prisma.js", () => ({ prisma: prismaMock }));
 
 describe("auth route protection", () => {
   let app: Express;

@@ -6,7 +6,7 @@ import LeaderboardRow from "../../components/domain/LeaderboardRow";
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { leaderboardApi } from "../../lib/backend";
-import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
+import { mapBackendMonthlyEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { ApiError } from "../../lib/api";
 import { useApp } from "../../context/AppContext";
 import type { LeaderboardEntry } from "../../types";
@@ -26,14 +26,32 @@ export default function Leaderboard() {
   const [status, setStatus] = useState<Status>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [period, setPeriod] = useState("");
+  const [previousPeriod, setPreviousPeriod] = useState("");
+  const [previousTop3, setPreviousTop3] = useState<LeaderboardEntry[]>([]);
+  const [celebratePreviousMonth, setCelebratePreviousMonth] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const { leaderboard } = await leaderboardApi.global();
+        const result = await leaderboardApi.monthly();
         if (cancelled) return;
-        setEntries(leaderboard.map(mapBackendGlobalEntryToLegacy));
+        setEntries(result.leaderboard.map(mapBackendMonthlyEntryToLegacy));
+        setPreviousTop3(result.previousPeriodTop3.map(mapBackendMonthlyEntryToLegacy));
+        setPeriod(result.period);
+        setPreviousPeriod(result.previousPeriod);
+        if (result.previousPeriodTop3.length > 0) {
+          const key = `intellexa-monthly-appreciation:${result.period}`;
+          let alreadyShown = false;
+          try {
+            alreadyShown = localStorage.getItem(key) === "shown";
+            if (!alreadyShown) localStorage.setItem(key, "shown");
+          } catch {
+            // The celebration remains present even if browser storage is unavailable.
+          }
+          setCelebratePreviousMonth(!alreadyShown);
+        }
         setStatus("ready");
       } catch (error) {
         if (cancelled) return;
@@ -57,7 +75,7 @@ export default function Leaderboard() {
           <h1 className="font-display font-bold text-2xl text-ink flex items-center gap-2">
             <Trophy className="w-6 h-6 text-state-gold" /> Leaderboard
           </h1>
-          <p className="text-ink-dim text-sm">Ranked by total XP across every finalized daily quiz.</p>
+          <p className="text-ink-dim text-sm">Current month: {period || "…"}. Daily quiz points reset for rankings on the 1st.</p>
         </div>
       </div>
 
@@ -74,6 +92,24 @@ export default function Leaderboard() {
         </Card>
       )}
 
+      {status === "ready" && previousTop3.length > 0 && (
+        <motion.div initial={celebratePreviousMonth ? { opacity: 0, y: 12 } : false} animate={{ opacity: 1, y: 0 }}>
+          <Card className="p-5 border-state-gold/30 bg-state-gold/5">
+            <h2 className="font-display font-semibold text-ink mb-1">{previousPeriod} Monthly Champions</h2>
+            <p className="text-xs text-ink-dim mb-4">Celebrating last month’s final leaderboard. Your lifetime XP and profile remain unchanged.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {previousTop3.map((entry) => (
+                <motion.div key={entry.userId} initial={celebratePreviousMonth ? { scale: 0.9, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={{ delay: celebratePreviousMonth ? entry.rank * 0.12 : 0 }} className="glass rounded-xl p-3 flex items-center gap-3">
+                  <span className="font-display font-bold text-state-gold">#{entry.rank}</span>
+                  <img src={entry.avatar} alt="" className="w-9 h-9 rounded-full" />
+                  <div className="min-w-0"><p className="text-sm text-ink truncate">{entry.name}</p><p className="text-xs text-neon-cyan">{entry.points.toLocaleString()} points</p></div>
+                </motion.div>
+              ))}
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
       {status === "ready" && entries.length === 0 && (
         <EmptyState icon={Trophy} title="No rankings yet" description="Complete a quiz to appear on the leaderboard." />
       )}
@@ -81,7 +117,7 @@ export default function Leaderboard() {
       <AnimatePresence mode="wait">
         {status === "ready" && entries.length > 0 && (
         <>
-          <Podium top3={top3} />
+          <Podium top3={top3} metricLabel="points" />
 
           <motion.div
             initial={{ opacity: 0 }}
@@ -91,7 +127,7 @@ export default function Leaderboard() {
             className="space-y-2"
           >
             {rest.map((entry, index) => (
-              <LeaderboardRow key={entry.userId} entry={entry} index={index} highlight={user ? entry.userId === user.id : false} />
+              <LeaderboardRow key={entry.userId} entry={entry} index={index} monthly metricLabel="points" highlight={user ? entry.userId === user.id : false} />
             ))}
           </motion.div>
 
@@ -112,7 +148,7 @@ export default function Leaderboard() {
                     <p className="text-xs text-ink-dim">Keep it up to climb higher</p>
                   </div>
                 </div>
-                <span className="font-mono text-neon-cyan text-sm shrink-0">{me.xp.toLocaleString()} XP</span>
+                <span className="font-mono text-neon-cyan text-sm shrink-0">{me.points.toLocaleString()} points</span>
               </Card>
             </motion.div>
           )}

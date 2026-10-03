@@ -54,7 +54,7 @@ export default function Participants() {
           <h1 className="font-display font-bold text-2xl text-ink flex items-center gap-2">
             <Users className="w-6 h-6 text-neon-blue" /> Participants
           </h1>
-          <p className="text-ink-dim text-sm">{participants.length.toLocaleString()} students registered on Intellexa.</p>
+          <p className="text-ink-dim text-sm">{participants.length.toLocaleString()} students registered on Codexa.</p>
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />

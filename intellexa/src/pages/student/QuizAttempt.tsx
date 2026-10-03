@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { cn } from "../../lib/utils";
@@ -32,7 +32,12 @@ export default function QuizAttempt() {
   const [deadline, setDeadline] = useState<string | null>(null);
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
+  const [questionDeadlines, setQuestionDeadlines] = useState<Record<string, string>>({});
+  const [completedQuestions, setCompletedQuestions] = useState<Record<string, boolean>>({});
+  const [frozenSeconds, setFrozenSeconds] = useState<Record<string, number>>({});
+  const timeoutInFlight = useRef(new Set<string>());
   const [now, setNow] = useState(Date.now());
+  const [serverOffsetMs, setServerOffsetMs] = useState(0);
 
   // Load the quiz's public details, and recover any already-in-progress
   // attempt so a page refresh mid-quiz doesn't lose the student's place.
@@ -53,6 +58,23 @@ export default function QuizAttempt() {
           setAttemptId(attempt.id);
           setQuestions(attempt.questions);
           setDeadline(attempt.deadline);
+          if (attempt.serverTime) setServerOffsetMs(new Date(attempt.serverTime).getTime() - Date.now());
+          const states = attempt.questionStates ?? [];
+          setAnswers(Object.fromEntries(states.map((state) => [state.questionId, state.selectedOptionId])));
+          setQuestionDeadlines(Object.fromEntries(states.map((state) => [state.questionId, state.deadline])));
+          setCompletedQuestions(Object.fromEntries(states.filter((state) => state.selectedOptionId || state.responseTimeMs !== null).map((state) => [state.questionId, true])));
+          const questionList = attempt.questions;
+          const firstOpen = questionList.findIndex((item) => {
+            const state = states.find((candidate) => candidate.questionId === item.id);
+            return !state || (!state.selectedOptionId && state.responseTimeMs === null);
+          });
+          const activeIndex = firstOpen < 0 ? Math.max(0, questionList.length - 1) : firstOpen;
+          setQIndex(activeIndex);
+          if (!states.some((state) => state.questionId === questionList[activeIndex]?.id)) {
+            const timer = await studentQuizApi.startQuestion(attempt.id, questionList[activeIndex].id);
+            setServerOffsetMs(new Date(timer.serverTime).getTime() - Date.now());
+            setQuestionDeadlines((previous) => ({ ...previous, [questionList[activeIndex].id]: timer.deadline }));
+          }
           setStage("playing");
         } else if (attempt && attempt.status !== "IN_PROGRESS") {
           // Already attempted - send them to the results page, which shows
@@ -79,14 +101,14 @@ export default function QuizAttempt() {
   // enforces the deadline.
   useEffect(() => {
     if (stage !== "playing") return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => setNow(Date.now()), 100);
     return () => clearInterval(t);
   }, [stage]);
 
   const secondsRemaining = useMemo(() => {
     if (!deadline) return null;
-    return Math.max(0, Math.floor((new Date(deadline).getTime() - now) / 1000));
-  }, [deadline, now]);
+    return Math.max(0, Math.floor((new Date(deadline).getTime() - (now + serverOffsetMs)) / 1000));
+  }, [deadline, now, serverOffsetMs]);
 
   const question = questions[qIndex];
 
@@ -99,6 +121,10 @@ export default function QuizAttempt() {
       setQuestions(result.questions);
       setDeadline(result.deadline);
       setAnswers({});
+      setCompletedQuestions({});
+      const firstTimer = await studentQuizApi.startQuestion(result.attempt.id, result.questions[0].id);
+      setServerOffsetMs(new Date(firstTimer.serverTime).getTime() - Date.now());
+      setQuestionDeadlines({ [result.questions[0].id]: firstTimer.deadline });
       setQIndex(0);
       setStage("playing");
     } catch (error) {
@@ -108,8 +134,22 @@ export default function QuizAttempt() {
     }
   }, [quizId, showToast]);
 
-  const selectOption = (questionId: string, optionId: string) => {
+  const selectOption = async (questionId: string, optionId: string) => {
+    if (!attemptId || completedQuestions[questionId]) return;
+    const secondsLeft = Math.max(0, (new Date(questionDeadlines[questionId] ?? Date.now()).getTime() - (Date.now() + serverOffsetMs)) / 1000);
+    timeoutInFlight.current.add(questionId);
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+    setCompletedQuestions((prev) => ({ ...prev, [questionId]: true }));
+    setFrozenSeconds((prev) => ({ ...prev, [questionId]: secondsLeft }));
+    try {
+      await studentQuizApi.answerQuestion(attemptId, questionId, optionId);
+    } catch (error) {
+      setAnswers((prev) => ({ ...prev, [questionId]: null }));
+      setCompletedQuestions((prev) => ({ ...prev, [questionId]: false }));
+      showToast(error instanceof ApiError ? error.message : "Couldn't record that answer.", "error");
+    } finally {
+      timeoutInFlight.current.delete(questionId);
+    }
   };
 
   const submit = useCallback(async () => {
@@ -127,8 +167,34 @@ export default function QuizAttempt() {
     }
   }, [attemptId, answers, questions, showToast]);
 
-  // Auto-submit once the deadline is hit so an answered-but-unsubmitted
-  // attempt isn't silently lost to expiry.
+  const currentQuestionDeadline = question ? questionDeadlines[question.id] : undefined;
+  const questionSecondsRemaining = completedQuestions[question?.id ?? ""]
+    ? frozenSeconds[question?.id ?? ""] ?? 0
+    : currentQuestionDeadline ? Math.max(0, (new Date(currentQuestionDeadline).getTime() - (now + serverOffsetMs)) / 1000) : 30;
+
+  useEffect(() => {
+    if (stage !== "playing" || !attemptId || !question || !currentQuestionDeadline || questionSecondsRemaining > 0 || completedQuestions[question.id] || timeoutInFlight.current.has(question.id)) return;
+    timeoutInFlight.current.add(question.id);
+    void studentQuizApi.answerQuestion(attemptId, question.id, null).then((result) => {
+      setServerOffsetMs(new Date(result.serverTime).getTime() - Date.now());
+      if (!result.answered) {
+        setNow(Date.now());
+        return;
+      }
+      setCompletedQuestions((prev) => ({ ...prev, [question.id]: true }));
+      setFrozenSeconds((prev) => ({ ...prev, [question.id]: 0 }));
+      const nextIndex = qIndex + 1;
+      if (nextIndex < questions.length) {
+        void studentQuizApi.startQuestion(attemptId, questions[nextIndex].id).then((timer) => {
+          setServerOffsetMs(new Date(timer.serverTime).getTime() - Date.now());
+          setQuestionDeadlines((prev) => ({ ...prev, [questions[nextIndex].id]: timer.deadline }));
+          setQIndex(nextIndex);
+        });
+      }
+    }).catch((error) => showToast(error instanceof ApiError ? error.message : "Couldn't record the timeout.", "error")).finally(() => timeoutInFlight.current.delete(question.id));
+  }, [stage, attemptId, question, currentQuestionDeadline, questionSecondsRemaining, completedQuestions, qIndex, questions, showToast]);
+
+  // Overall deadline remains independently enforced by the server.
   useEffect(() => {
     if (stage === "playing" && secondsRemaining === 0) {
       void submit();
@@ -234,6 +300,21 @@ export default function QuizAttempt() {
   const isLast = qIndex === questions.length - 1;
   const selectedOptionId = answers[question.id] ?? null;
   const answeredCount = Object.values(answers).filter(Boolean).length;
+  const timerColor = questionSecondsRemaining > 20 ? "#35d07f" : questionSecondsRemaining > 10 ? "#f5c542" : "#ff5364";
+  const timerOffset = 2 * Math.PI * 19 * (1 - questionSecondsRemaining / 30);
+
+  const goNext = async () => {
+    if (!attemptId || !completedQuestions[question.id] || isLast) return;
+    const nextIndex = qIndex + 1;
+    try {
+      const timer = await studentQuizApi.startQuestion(attemptId, questions[nextIndex].id);
+      setServerOffsetMs(new Date(timer.serverTime).getTime() - Date.now());
+      setQuestionDeadlines((prev) => ({ ...prev, [questions[nextIndex].id]: timer.deadline }));
+      setQIndex(nextIndex);
+    } catch (error) {
+      showToast(error instanceof ApiError ? error.message : "Couldn't start the next question.", "error");
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-1">
@@ -241,11 +322,13 @@ export default function QuizAttempt() {
         <span className="text-xs text-ink-dim font-mono">
           Question {qIndex + 1} / {questions.length}
         </span>
-        {secondsRemaining !== null && (
-          <div className={cn("flex items-center gap-1.5 text-xs font-mono", secondsRemaining < 60 ? "text-state-danger" : "text-ink-dim")}>
-            <Clock className="w-3.5 h-3.5" /> {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, "0")}
-          </div>
-        )}
+        <div className="relative w-14 h-14 shrink-0" aria-label={`${Math.ceil(questionSecondsRemaining)} seconds left`}>
+          <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
+            <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" strokeWidth="4" className="text-surface-border" />
+            <circle cx="24" cy="24" r="19" fill="none" stroke={timerColor} strokeWidth="4" strokeLinecap="round" strokeDasharray={2 * Math.PI * 19} strokeDashoffset={timerOffset} style={{ transition: "stroke-dashoffset 100ms linear, stroke 200ms" }} />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center font-mono text-sm font-bold" style={{ color: timerColor }}>{Math.ceil(questionSecondsRemaining)}</span>
+        </div>
       </div>
 
       <div className="h-1.5 rounded-full bg-surface-light overflow-hidden mb-6">
@@ -261,18 +344,19 @@ export default function QuizAttempt() {
           transition={{ duration: 0.3 }}
         >
           <Card className="p-5 sm:p-7 mb-4">
-            <h2 className="font-display font-semibold text-lg sm:text-xl text-ink mb-6">{question.questionText}</h2>
+            <h2 className="font-sans font-semibold text-lg sm:text-xl text-ink mb-6">{question.questionText}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {question.options.map((opt) => {
                 const isSelected = selectedOptionId === opt.id;
                 return (
                   <motion.button
                     key={opt.id}
-                    onClick={() => selectOption(question.id, opt.id)}
+                    onClick={() => void selectOption(question.id, opt.id)}
+                    disabled={completedQuestions[question.id] || questionSecondsRemaining <= 0}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
-                      "relative text-left px-4 py-3.5 rounded-xl border text-sm font-medium transition-colors",
+                      "relative text-left px-4 py-3.5 rounded-xl border text-sm font-medium font-sans transition-colors",
                       "bg-surface-light border-surface-border text-ink hover:border-neon-blue/50 hover:bg-surface-light/80",
                       isSelected && "bg-neon-blue/15 border-neon-blue text-neon-blue"
                     )}
@@ -296,7 +380,7 @@ export default function QuizAttempt() {
             {stage === "submitting" ? "Submitting..." : "Submit Quiz"}
           </Button>
         ) : (
-          <Button onClick={() => setQIndex((i) => Math.min(questions.length - 1, i + 1))}>Next</Button>
+          <Button onClick={() => void goNext()} disabled={!completedQuestions[question.id]}>Next</Button>
         )}
       </div>
     </div>

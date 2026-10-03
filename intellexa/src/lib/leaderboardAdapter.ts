@@ -1,4 +1,4 @@
-import type { BackendGlobalLeaderboardEntry, BackendWeeklyLeaderboardEntry } from "./backend";
+import type { BackendGlobalLeaderboardEntry, BackendWeeklyLeaderboardEntry, BackendMonthlyLeaderboardEntry } from "./backend";
 import type { LeaderboardEntry } from "../types";
 import { resolveApiAsset } from "./api";
 
@@ -49,5 +49,14 @@ export function mapBackendWeeklyEntryToLegacy(entry: BackendWeeklyLeaderboardEnt
     streak: entry.quizzesCompleted,
     badges: entry.totalCorrectAnswers,
     tier: tierFromXp(xp),
+  };
+}
+
+export function mapBackendMonthlyEntryToLegacy(entry: BackendMonthlyLeaderboardEntry): LeaderboardEntry {
+  return {
+    rank: entry.rank, previousRank: entry.rank, userId: entry.userId, name: entry.fullName,
+    avatar: resolveApiAsset(entry.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
+    department: entry.department ?? "Department pending", xp: entry.totalScore, points: entry.totalScore,
+    streak: 0, badges: 0, tier: tierFromXp(entry.totalScore),
   };
 }

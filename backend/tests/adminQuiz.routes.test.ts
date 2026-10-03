@@ -22,6 +22,9 @@ const questionService = vi.hoisted(() => ({
   reorderAdminQuestions: vi.fn(),
 }));
 
+const prismaMock = vi.hoisted(() => ({ user: { findUnique: vi.fn() } }));
+vi.mock("../src/config/prisma.js", () => ({ prisma: prismaMock }));
+
 vi.mock("../src/services/quiz.service.js", () => quizService);
 vi.mock("../src/services/question.service.js", () => questionService);
 
@@ -48,6 +51,7 @@ describe("admin quiz routes", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    prismaMock.user.findUnique.mockResolvedValue({ email: "rohithkumar.s.2024.cse@rajalakshmi.edu.in", role: "ADMIN" });
   });
 
   it("allows admin to create a quiz", async () => {
@@ -152,31 +156,25 @@ describe("admin quiz routes", () => {
     expect(questionService.updateAdminQuestion).not.toHaveBeenCalled();
   });
 
-  it("schedules a quiz using Asia/Kolkata by default", async () => {
+  it("assigns a daily quiz to a date using the fixed IST schedule", async () => {
     quizService.scheduleAdminQuiz.mockResolvedValue({ id: "quiz-1", status: "SCHEDULED", timezone: "Asia/Kolkata" });
 
     const response = await request(app)
       .post("/api/admin/quizzes/quiz-1/schedule")
       .set("Authorization", `Bearer ${adminToken}`)
       .send({
-        competitionDate: "2026-08-15T00:00:00+05:30",
-        startsAt: "2026-08-15T19:00:00+05:30",
-        endsAt: "2026-08-15T20:00:00+05:30",
+        competitionDate: "2026-08-15",
       });
 
     expect(response.status).toBe(200);
-    expect(quizService.scheduleAdminQuiz).toHaveBeenCalledWith("quiz-1", expect.objectContaining({ timezone: "Asia/Kolkata" }));
+    expect(quizService.scheduleAdminQuiz).toHaveBeenCalledWith("quiz-1", { competitionDate: "2026-08-15" });
   });
 
   it("rejects invalid end time before service execution", async () => {
     const response = await request(app)
       .post("/api/admin/quizzes/quiz-1/schedule")
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({
-        competitionDate: "2026-08-15T00:00:00+05:30",
-        startsAt: "2026-08-15T19:00:00+05:30",
-        endsAt: "not-a-date",
-      });
+      .send({ competitionDate: "bad-date" });
 
     expect(response.status).toBe(400);
     expect(quizService.scheduleAdminQuiz).not.toHaveBeenCalled();
@@ -194,7 +192,6 @@ describe("admin quiz routes", () => {
     const routes = [
       request(app).patch("/api/admin/quizzes/quiz-1").send({ title: "Nope" }),
       request(app).delete("/api/admin/quizzes/quiz-1"),
-      request(app).post("/api/admin/quizzes/quiz-1/publish").send({}),
       request(app).post("/api/admin/quizzes/quiz-1/close").send({}),
       request(app).post("/api/admin/quizzes/quiz-1/finalize").send({}),
       request(app).post("/api/admin/quizzes/quiz-1/archive").send({}),

@@ -77,7 +77,7 @@ export default function Login() {
         <GoogleSignInButton onCredential={handleGoogleCredential} disabled={googleLoading} />
         <p className="mt-3 text-center text-xs text-ink-faint">Only verified @rajalakshmi.edu.in Google Workspace accounts are allowed.</p>
         <p className="text-center text-xs text-ink-faint mt-4">
-          By using Intellexa, you agree to our{" "}
+          By using Codexa, you agree to our{" "}
           <Link to="/privacy" className="text-neon-cyan hover:text-neon-blue transition-colors">
             Privacy Policy
           </Link>.

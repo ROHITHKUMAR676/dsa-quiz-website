@@ -22,5 +22,8 @@ describe("daily quiz scoring rubric", () => {
     expect(calculateQuestionScore(false, QUESTION_TIME_LIMIT_MS)).toBe(0);
     expect(calculateQuestionScore(true, QUESTION_TIME_LIMIT_MS)).toBe(0);
     expect(calculateQuestionScore(true, QUESTION_TIME_LIMIT_MS + 1)).toBe(0);
+    expect(calculateQuestionScore(true, -1)).toBe(0);
+    expect(calculateQuestionScore(true, Number.NaN)).toBe(0);
+    expect(calculateQuestionScore(true, Number.POSITIVE_INFINITY)).toBe(0);
   });
 });

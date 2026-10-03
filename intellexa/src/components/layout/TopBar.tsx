@@ -5,7 +5,6 @@ import { useApp } from "../../context/AppContext";
 import { studentGamificationApi } from "../../lib/backend";
 import ThemeToggle from "../ui/ThemeToggle";
 import { resolveApiAsset } from "../../lib/api";
-import BrandMark from "../brand/BrandMark";
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -33,11 +32,10 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-40 glass border-b border-surface-border px-4 sm:px-6 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-2 lg:hidden">
-        <BrandMark className="w-32" />
+      <div className="min-w-0">
+        <div className="font-sans text-lg sm:text-xl font-bold leading-tight tracking-tight text-ink">Codexa</div>
+        <div className="font-sans text-[10px] sm:text-xs leading-tight text-ink-dim">Your DSA partner</div>
       </div>
-
-      <div className="hidden lg:block" />
 
       <div className="flex items-center gap-2 sm:gap-3">
         <ThemeToggle compact />

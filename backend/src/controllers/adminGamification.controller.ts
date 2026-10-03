@@ -6,7 +6,7 @@ import {
   listWeeklyCompetitions,
 } from "../services/weekly.service.js";
 import { getPlatformStats, getQuizParticipationStats, listParticipants } from "../services/analytics.service.js";
-import { getGlobalLeaderboard } from "../services/leaderboard.service.js";
+import { getGlobalLeaderboard, getMonthlyLeaderboard } from "../services/leaderboard.service.js";
 
 export async function setDailyRevealController(req: Request, res: Response) {
   const reveal = await adminSetDailyReveal(req.params.id, req.body);
@@ -52,4 +52,8 @@ export async function participantsController(_req: Request, res: Response) {
 export async function adminGlobalLeaderboardController(_req: Request, res: Response) {
   const leaderboard = await getGlobalLeaderboard();
   return res.json({ leaderboard });
+}
+
+export async function adminMonthlyLeaderboardController(_req: Request, res: Response) {
+  return res.json(await getMonthlyLeaderboard());
 }

@@ -11,11 +11,15 @@ import {
   listQuizzesController,
   startAttemptController,
   submitAttemptController,
+  answerQuestionController,
+  beginQuestionController,
 } from "../controllers/studentAttempt.controller.js";
 import {
   attemptIdParamSchema,
   quizIdParamSchema,
   submitAttemptSchema,
+  answerQuestionSchema,
+  attemptQuestionParamSchema,
 } from "../validators/studentAttempt.validators.js";
 import { weeklyIdParamSchema } from "../validators/gamification.validators.js";
 import {
@@ -23,6 +27,7 @@ import {
   dailyLeaderboardController,
   dailyRevealController,
   globalLeaderboardController,
+  monthlyLeaderboardController,
   listBadgesController,
   listNotificationsController,
   markAllNotificationsReadController,
@@ -40,11 +45,14 @@ studentRouter.get("/quizzes/:id/attempt", validate(quizIdParamSchema), asyncHand
 studentRouter.post("/quizzes/:id/start", validate(quizIdParamSchema), asyncHandler(startAttemptController));
 
 studentRouter.get("/attempts/:id", validate(attemptIdParamSchema), asyncHandler(getAttemptController));
+studentRouter.post("/attempts/:id/questions/:questionId/start", validate(attemptQuestionParamSchema), asyncHandler(beginQuestionController));
+studentRouter.post("/attempts/:id/questions/:questionId/answer", validate(answerQuestionSchema), asyncHandler(answerQuestionController));
 studentRouter.post("/attempts/:id/submit", validate(submitAttemptSchema), asyncHandler(submitAttemptController));
 
 // Phase 5: leaderboards
 studentRouter.get("/leaderboard/daily/:id", validate(quizIdParamSchema), asyncHandler(dailyLeaderboardController));
 studentRouter.get("/leaderboard/global", asyncHandler(globalLeaderboardController));
+studentRouter.get("/leaderboard/monthly", asyncHandler(monthlyLeaderboardController));
 studentRouter.get("/leaderboard/weekly/current", asyncHandler(currentWeeklyLeaderboardController));
 studentRouter.get("/leaderboard/weekly/:id", validate(weeklyIdParamSchema), asyncHandler(weeklyLeaderboardController));
 

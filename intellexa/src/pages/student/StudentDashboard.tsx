@@ -14,7 +14,7 @@ import DailyChallengeTimer from "../../components/domain/DailyChallengeTimer";
 import { useApp } from "../../context/AppContext";
 import { studentQuizApi, leaderboardApi, studentGamificationApi } from "../../lib/backend";
 import { mapBackendQuizToLegacy } from "../../lib/quizAdapter";
-import { mapBackendGlobalEntryToLegacy } from "../../lib/leaderboardAdapter";
+import { mapBackendMonthlyEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { mapBackendBadgeToLegacy } from "../../lib/badgeAdapter";
 import type { Quiz, LeaderboardEntry, Badge } from "../../types";
 
@@ -39,14 +39,14 @@ export default function StudentDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        const [{ quizzes: backendQuizzes }, { leaderboard: globalLeaderboard }, { badges }] = await Promise.all([
+        const [{ quizzes: backendQuizzes }, monthly, { badges }] = await Promise.all([
           studentQuizApi.list(),
-          leaderboardApi.global(),
+          leaderboardApi.monthly(),
           studentGamificationApi.badges(),
         ]);
         if (cancelled) return;
         setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
-        setTopRanks(globalLeaderboard.slice(0, 5).map(mapBackendGlobalEntryToLegacy));
+        setTopRanks(monthly.leaderboard.slice(0, 5).map(mapBackendMonthlyEntryToLegacy));
         setRecentBadges(badges.filter((badge) => badge.earned).slice(0, 4).map(mapBackendBadgeToLegacy));
       } catch {
         // Dashboard degrades gracefully to empty sections rather than a
@@ -72,12 +72,12 @@ export default function StudentDashboard() {
   const handleLiveQuizClosed = async (quizId: string) => {
     try {
       await leaderboardApi.daily(quizId);
-      const [{ quizzes: backendQuizzes }, { leaderboard: globalLeaderboard }] = await Promise.all([
+      const [{ quizzes: backendQuizzes }, monthly] = await Promise.all([
         studentQuizApi.list(),
-        leaderboardApi.global(),
+        leaderboardApi.monthly(),
       ]);
       setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
-      setTopRanks(globalLeaderboard.slice(0, 5).map(mapBackendGlobalEntryToLegacy));
+      setTopRanks(monthly.leaderboard.slice(0, 5).map(mapBackendMonthlyEntryToLegacy));
     } catch {
       // Best-effort - the next visit to the results page will finalize and
       // refresh things regardless.

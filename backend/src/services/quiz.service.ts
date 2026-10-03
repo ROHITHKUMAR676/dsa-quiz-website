@@ -1,9 +1,8 @@
 import { QuizStatus, type Difficulty } from "@prisma/client";
-import { env } from "../config/env.js";
 import { ApiError } from "../utils/apiError.js";
 import * as quizRepository from "../repositories/quiz.repository.js";
-import { assertQuizEditable, assertTransitionAllowed } from "./quizLifecycle.service.js";
-import { assertQuizReadyToSchedule, assertSchedulingDates } from "./quizValidation.service.js";
+import { assertQuizEditable, assertTransitionAllowed, getIstDailyWindow } from "./quizLifecycle.service.js";
+import { assertQuizReadyToSchedule } from "./quizValidation.service.js";
 import { finalizeQuizResults } from "./finalization.service.js";
 
 interface QuizInput {
@@ -12,12 +11,7 @@ interface QuizInput {
   category: string;
   difficulty: Difficulty;
   competitionDate?: string | null;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  timezone?: string;
-  defaultWindowMinutes?: number | null;
   timeLimit: number;
-  timeLimitPerQuestion?: number | null;
 }
 
 type QuizUpdateInput = Partial<QuizInput>;
@@ -27,22 +21,15 @@ function optionalDate(value?: string | null) {
 }
 
 export async function createAdminQuiz(adminId: string, input: QuizInput) {
-  const startsAt = optionalDate(input.startsAt);
-  const endsAt = optionalDate(input.endsAt);
-  if (startsAt) assertSchedulingDates(startsAt, endsAt);
-
   return quizRepository.createQuiz({
     title: input.title,
     description: input.description,
     category: input.category,
     difficulty: input.difficulty,
     competitionDate: optionalDate(input.competitionDate),
-    startsAt,
-    endsAt,
-    timezone: input.timezone ?? env.APP_TIMEZONE,
-    defaultWindowMinutes: input.defaultWindowMinutes,
-    timeLimit: input.timeLimit,
-    timeLimitPerQuestion: input.timeLimitPerQuestion,
+    timezone: "Asia/Kolkata",
+    timeLimitPerQuestion: 30,
+    timeLimit: 3600,
     maxAttempts: 1,
     createdById: adminId,
   });
@@ -62,22 +49,13 @@ export async function updateAdminQuiz(id: string, input: QuizUpdateInput) {
   const quiz = await getAdminQuiz(id);
   assertQuizEditable(quiz.status);
 
-  const startsAt = "startsAt" in input ? optionalDate(input.startsAt) : undefined;
-  const endsAt = "endsAt" in input ? optionalDate(input.endsAt) : undefined;
-  if (startsAt || endsAt) assertSchedulingDates(startsAt ?? quiz.startsAt!, endsAt ?? quiz.endsAt);
-
   return quizRepository.updateQuiz(id, {
     title: input.title,
     description: input.description,
     category: input.category,
     difficulty: input.difficulty,
     competitionDate: "competitionDate" in input ? optionalDate(input.competitionDate) : undefined,
-    startsAt,
-    endsAt,
-    timezone: input.timezone,
-    defaultWindowMinutes: input.defaultWindowMinutes,
     timeLimit: input.timeLimit,
-    timeLimitPerQuestion: input.timeLimitPerQuestion,
   });
 }
 
@@ -89,34 +67,27 @@ export async function deleteAdminQuiz(id: string) {
 
 export async function scheduleAdminQuiz(
   id: string,
-  input: { competitionDate: string; startsAt: string; endsAt?: string | null; timezone?: string; defaultWindowMinutes?: number | null }
+  input: { competitionDate: string }
 ) {
   const quiz = await getAdminQuiz(id);
   assertQuizEditable(quiz.status);
 
-  const startsAt = new Date(input.startsAt);
-  const endsAt = optionalDate(input.endsAt);
+  const day = input.competitionDate.slice(0, 10);
+  const { competitionDate, startsAt, endsAt } = getIstDailyWindow(day);
+  const assignedQuiz = await quizRepository.findQuizByCompetitionDate(competitionDate);
+  if (assignedQuiz && assignedQuiz.id !== quiz.id) {
+    throw new ApiError(409, "A daily quiz is already assigned to this date", "DAILY_QUIZ_ALREADY_SCHEDULED");
+  }
   assertQuizReadyToSchedule(quiz, { startsAt, endsAt });
 
   return quizRepository.updateQuiz(id, {
     status: QuizStatus.SCHEDULED,
-    competitionDate: new Date(input.competitionDate),
+    competitionDate,
     startsAt,
     endsAt,
-    timezone: input.timezone ?? env.APP_TIMEZONE,
-    defaultWindowMinutes: input.defaultWindowMinutes,
+    timezone: "Asia/Kolkata",
+    defaultWindowMinutes: 60,
     publishedAt: new Date(),
-  });
-}
-
-export async function publishAdminQuiz(id: string) {
-  const quiz = await getAdminQuiz(id);
-  assertQuizEditable(quiz.status);
-  assertQuizReadyToSchedule(quiz);
-
-  return quizRepository.updateQuiz(id, {
-    status: QuizStatus.SCHEDULED,
-    publishedAt: quiz.publishedAt ?? new Date(),
   });
 }
 

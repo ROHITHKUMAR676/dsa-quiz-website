@@ -3,8 +3,9 @@ import { ApiError } from "../utils/apiError.js";
 import { sanitizeQuestionsForAttempt } from "../utils/sanitize.js";
 import * as quizRepository from "../repositories/quiz.repository.js";
 import * as attemptRepository from "../repositories/attempt.repository.js";
-import { getEffectiveEndsAt, getServerAvailabilityState } from "./quizLifecycle.service.js";
+import { getEffectiveEndsAt, getEffectiveStartsAt, getServerAvailabilityState } from "./quizLifecycle.service.js";
 import { applyImmediateRewards } from "./reward.service.js";
+import { calculateQuestionScore, QUESTION_TIME_LIMIT_MS } from "./quizScoring.service.js";
 
 const STUDENT_VISIBLE_STATUSES = [
   QuizStatus.SCHEDULED,
@@ -20,11 +21,11 @@ interface SubmitAnswerInput {
   responseTimeMs?: number | null;
 }
 
-function toQuizAvailabilitySummary(quiz: Pick<Quiz, "status" | "startsAt" | "endsAt" | "defaultWindowMinutes">, now: Date) {
+function toQuizAvailabilitySummary(quiz: Pick<Quiz, "status" | "startsAt" | "endsAt" | "defaultWindowMinutes" | "competitionDate">, now: Date) {
   return {
     status: quiz.status,
     availability: getServerAvailabilityState(quiz, now),
-    startsAt: quiz.startsAt,
+    startsAt: getEffectiveStartsAt(quiz),
     endsAt: getEffectiveEndsAt(quiz),
   };
 }
@@ -123,6 +124,7 @@ export async function startAttempt(quizId: string, userId: string) {
       userId,
       totalQuestions: quiz.questions.length,
     });
+    await attemptRepository.beginQuestion(attempt.id, quiz.questions[0].id);
 
     return {
       attempt: {
@@ -185,6 +187,7 @@ async function buildAttemptResponse(
     startedAt: attempt.startedAt,
     submittedAt: attempt.submittedAt,
     deadline: getEffectiveEndsAt(attempt.quiz),
+    serverTime: new Date(),
   };
 
   if (attempt.status !== AttemptStatus.IN_PROGRESS) {
@@ -194,7 +197,67 @@ async function buildAttemptResponse(
   }
 
   const quiz = await getQuizOr404(attempt.quizId);
-  return { ...base, questions: sanitizeQuestionsForAttempt(quiz.questions) };
+  const answers = await attemptRepository.findAttemptAnswers(attempt.id);
+  return {
+    ...base,
+    questions: sanitizeQuestionsForAttempt(quiz.questions),
+    questionStates: answers.map((answer) => ({
+      questionId: answer.questionId, selectedOptionId: answer.selectedOptionId,
+      responseTimeMs: answer.responseTimeMs,
+      startedAt: answer.answeredAt,
+      deadline: new Date(answer.answeredAt.getTime() + QUESTION_TIME_LIMIT_MS),
+    })),
+  };
+}
+
+export async function answerQuestion(attemptId: string, userId: string, questionId: string, selectedOptionId: string | null) {
+  const attempt = await getOwnedInProgressAttemptOrThrow(attemptId, userId);
+  if (attempt.status !== AttemptStatus.IN_PROGRESS) throw new ApiError(409, "This attempt is no longer active", "ATTEMPT_ALREADY_SUBMITTED");
+  const quiz = await getQuizOr404(attempt.quizId);
+  const now = new Date();
+  const endsAt = getEffectiveEndsAt(quiz);
+  if (endsAt && now >= endsAt) throw new ApiError(409, "The quiz arena has closed", "SUBMISSION_WINDOW_CLOSED");
+  const question = quiz.questions.find((item) => item.id === questionId);
+  if (!question) throw new ApiError(400, "Question is outside this quiz", "INVALID_ANSWER_QUESTION");
+  const saved = await attemptRepository.findAttemptAnswer(attempt.id, questionId);
+  if (!saved) throw new ApiError(409, "Start this question before answering", "QUESTION_NOT_STARTED");
+  if (saved.selectedOptionId) throw new ApiError(409, "This question has already been answered", "QUESTION_ALREADY_ANSWERED");
+  const elapsedMs = now.getTime() - saved.answeredAt.getTime();
+  const timedOut = elapsedMs >= QUESTION_TIME_LIMIT_MS;
+  if (selectedOptionId && timedOut) throw new ApiError(409, "The question timer has expired", "QUESTION_TIMER_EXPIRED");
+  const option = selectedOptionId ? question.options.find((item) => item.id === selectedOptionId) : null;
+  if (selectedOptionId && !option) throw new ApiError(400, "Selected option does not belong to this question", "INVALID_ANSWER_OPTION");
+  if (!selectedOptionId && !timedOut) return { questionId, answered: false, remainingMs: QUESTION_TIME_LIMIT_MS - elapsedMs, serverTime: now };
+  const isCorrect = option?.isCorrect ?? false;
+  const responseTimeMs = Math.min(Math.max(0, elapsedMs), QUESTION_TIME_LIMIT_MS);
+  const updated = await attemptRepository.saveQuestionAnswer(saved.id, {
+    selectedOptionId: option?.id ?? null, isCorrect,
+    pointsAwarded: calculateQuestionScore(isCorrect, responseTimeMs), responseTimeMs,
+  });
+  if (updated.count === 0) throw new ApiError(409, "This question has already been answered", "QUESTION_ALREADY_ANSWERED");
+  return { questionId, answered: true, timedOut, responseTimeMs, serverTime: now };
+}
+
+export async function beginAttemptQuestion(attemptId: string, userId: string, questionId: string) {
+  const attempt = await getOwnedInProgressAttemptOrThrow(attemptId, userId);
+  if (attempt.status !== AttemptStatus.IN_PROGRESS) throw new ApiError(409, "This attempt is no longer active", "ATTEMPT_ALREADY_SUBMITTED");
+  const quiz = await getQuizOr404(attempt.quizId);
+  const endsAt = getEffectiveEndsAt(quiz);
+  if (endsAt && endsAt <= new Date()) {
+    await attemptRepository.markAttemptExpired(attempt.id);
+    throw new ApiError(409, "The quiz arena has closed", "SUBMISSION_WINDOW_CLOSED");
+  }
+  const index = quiz.questions.findIndex((question) => question.id === questionId);
+  if (index < 0) throw new ApiError(400, "Question is outside this quiz", "INVALID_ANSWER_QUESTION");
+  const previousQuestion = quiz.questions[index - 1];
+  if (previousQuestion) {
+    const previous = await attemptRepository.findAttemptAnswer(attempt.id, previousQuestion.id);
+    if (!previous || (!previous.selectedOptionId && Date.now() - previous.answeredAt.getTime() < QUESTION_TIME_LIMIT_MS)) {
+      throw new ApiError(409, "Finish the previous question before continuing", "QUESTION_STILL_ACTIVE");
+    }
+  }
+  const entry = await attemptRepository.beginQuestion(attempt.id, questionId);
+  return { questionId, startedAt: entry.answeredAt, deadline: new Date(entry.answeredAt.getTime() + QUESTION_TIME_LIMIT_MS), serverTime: new Date() };
 }
 
 export async function submitAttempt(attemptId: string, userId: string, answers: SubmitAnswerInput[]) {
@@ -216,34 +279,19 @@ export async function submitAttempt(attemptId: string, userId: string, answers: 
     throw new ApiError(409, "The submission window for this quiz has closed", "SUBMISSION_WINDOW_CLOSED");
   }
 
-  const questionsById = new Map(quiz.questions.map((question) => [question.id, question]));
-
-  const seenQuestionIds = new Set<string>();
-  const gradedAnswers = answers.map((answer) => {
-    const question = questionsById.get(answer.questionId);
-    if (!question) {
-      throw new ApiError(400, "Answer references a question outside this quiz", "INVALID_ANSWER_QUESTION");
-    }
-    if (seenQuestionIds.has(answer.questionId)) {
-      throw new ApiError(400, "Duplicate answer for the same question", "DUPLICATE_ANSWER");
-    }
-    seenQuestionIds.add(answer.questionId);
-
-    let selectedOption = null as (typeof question.options)[number] | null;
-    if (answer.selectedOptionId) {
-      selectedOption = question.options.find((option) => option.id === answer.selectedOptionId) ?? null;
-      if (!selectedOption) {
-        throw new ApiError(400, "Selected option does not belong to this question", "INVALID_ANSWER_OPTION");
-      }
-    }
-
-    const isCorrect = selectedOption?.isCorrect ?? false;
+  // Client answer arrays and response-time values are never authoritative.
+  // Grading is based only on Answer rows created and timed by this server.
+  void answers;
+  const persisted = await attemptRepository.findAttemptAnswers(attempt.id);
+  const answerByQuestion = new Map(persisted.map((answer) => [answer.questionId, answer]));
+  const gradedAnswers = quiz.questions.map((question) => {
+    const answer = answerByQuestion.get(question.id);
     return {
       questionId: question.id,
-      selectedOptionId: selectedOption?.id ?? null,
-      isCorrect,
-      pointsAwarded: isCorrect ? question.points : 0,
-      responseTimeMs: answer.responseTimeMs ?? null,
+      selectedOptionId: answer?.selectedOptionId ?? null,
+      isCorrect: answer?.isCorrect ?? false,
+      pointsAwarded: answer?.pointsAwarded ?? 0,
+      responseTimeMs: answer?.responseTimeMs ?? null,
       difficulty: question.difficulty,
     };
   });

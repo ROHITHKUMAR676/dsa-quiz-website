@@ -10,12 +10,7 @@ const quizBaseBody = z.object({
   category: z.string().min(1).max(120).optional(),
   difficulty: difficultySchema.optional(),
   competitionDate: isoDateSchema.optional().nullable(),
-  startsAt: isoDateSchema.optional().nullable(),
-  endsAt: isoDateSchema.optional().nullable(),
-  timezone: z.string().min(1).max(80).optional(),
-  defaultWindowMinutes: z.number().int().positive().optional().nullable(),
   timeLimit: z.number().int().positive().optional(),
-  timeLimitPerQuestion: z.number().int().positive().optional().nullable(),
 });
 
 export const createQuizSchema = z.object({
@@ -84,11 +79,7 @@ export const reorderQuestionsSchema = z.object({
 export const scheduleQuizSchema = z.object({
   params: z.object({ id: z.string().min(1) }),
   body: z.object({
-    competitionDate: isoDateSchema,
-    startsAt: isoDateSchema,
-    endsAt: isoDateSchema.optional().nullable(),
-    timezone: z.string().min(1).max(80).default("Asia/Kolkata"),
-    defaultWindowMinutes: z.number().int().positive().optional().nullable(),
+    competitionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   }),
 });
 

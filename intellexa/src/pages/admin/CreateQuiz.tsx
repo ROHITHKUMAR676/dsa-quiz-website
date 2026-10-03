@@ -13,7 +13,6 @@ interface DraftQuestion {
   question: string;
   options: [string, string, string, string];
   correctAnswer: number;
-  points: number;
 }
 
 let qCounter = 0;
@@ -22,8 +21,14 @@ const newQuestion = (): DraftQuestion => ({
   question: "",
   options: ["", "", "", ""],
   correctAnswer: 0,
-  points: 100,
 });
+
+function currentIstDateKey() {
+  const values = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date()).map(({ type, value }) => [type, value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
 
 export default function CreateQuiz() {
   const { showToast } = useToast();
@@ -32,10 +37,7 @@ export default function CreateQuiz() {
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState("Medium");
   const [category, setCategory] = useState("WebDev");
-  const [timeLimit, setTimeLimit] = useState(20);
-  const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [quizDate, setQuizDate] = useState(currentIstDateKey());
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,21 +64,10 @@ export default function CreateQuiz() {
       return;
     }
 
-    const now = new Date();
-    const startsAt = scheduleMode === "later" ? new Date(`${date}T${time}`) : now;
-    if (Number.isNaN(startsAt.getTime())) {
-      showToast("Please choose a valid schedule time.", "error");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(quizDate)) {
+      showToast("Choose the quiz day.", "error");
       return;
     }
-    // The quiz stays open for a fixed 1-hour window after it goes live -
-    // this is completely separate from `timeLimit`, which is only the
-    // per-question countdown a student sees once they've entered the
-    // arena. Do NOT derive endsAt from timeLimit * questionCount: that
-    // made the quiz's entire availability window as short as a single
-    // question's timer, closing it to students within minutes.
-    const QUIZ_WINDOW_MINUTES = 60;
-    const endsAt = new Date(startsAt.getTime() + QUIZ_WINDOW_MINUTES * 60 * 1000);
-    const totalSeconds = Math.max(timeLimit * questions.length, 60);
 
     setIsSubmitting(true);
     try {
@@ -85,12 +76,7 @@ export default function CreateQuiz() {
         description: description.trim() || null,
         category: category.trim(),
         difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
-        competitionDate: startsAt.toISOString(),
-        startsAt: startsAt.toISOString(),
-        endsAt: endsAt.toISOString(),
-        timezone: "Asia/Kolkata",
-        timeLimit: totalSeconds,
-        timeLimitPerQuestion: timeLimit,
+        timeLimit: 3600,
       });
 
       await Promise.all(
@@ -98,7 +84,7 @@ export default function CreateQuiz() {
           adminApi.createQuestion(quiz.id, {
             questionText: question.question.trim(),
             difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
-            points: question.points,
+            points: 100,
             order: index + 1,
             options: question.options.map((option, optionIndex) => ({
               optionText: option.trim(),
@@ -109,19 +95,9 @@ export default function CreateQuiz() {
         )
       );
 
-      if (scheduleMode === "later") {
-        await adminApi.scheduleQuiz(quiz.id, {
-          competitionDate: startsAt.toISOString(),
-          startsAt: startsAt.toISOString(),
-          endsAt: endsAt.toISOString(),
-          timezone: "Asia/Kolkata",
-          defaultWindowMinutes: QUIZ_WINDOW_MINUTES,
-        });
-      } else {
-        await adminApi.publishQuiz(quiz.id);
-      }
+      await adminApi.scheduleQuiz(quiz.id, { competitionDate: quizDate });
 
-      showToast(scheduleMode === "now" ? `"${title}" published to students` : `"${title}" scheduled successfully`, "success");
+      showToast(`"${title}" scheduled for ${quizDate} at 8:00 PM IST`, "success");
       navigate("/admin");
     } catch (error) {
       showToast(error instanceof ApiError ? error.message : "Couldn't save the quiz. Please try again.", "error");
@@ -184,15 +160,7 @@ export default function CreateQuiz() {
               <option>Hard</option>
             </select>
           </div>
-          <div>
-            <label className="text-xs text-ink-dim mb-1 block">Time Limit / Q (sec)</label>
-            <input
-              type="number"
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(Number(e.target.value))}
-              className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
-            />
-          </div>
+          <p className="text-xs text-ink-dim self-end pb-3">Each question has a fixed 30-second timer.</p>
         </div>
       </Card>
 
@@ -249,15 +217,6 @@ export default function CreateQuiz() {
                     </div>
                   ))}
                 </div>
-                <div className="w-32">
-                  <label className="text-xs text-ink-dim mb-1 block">Points</label>
-                  <input
-                    type="number"
-                    value={q.points}
-                    onChange={(e) => updateQuestion(q.id, { points: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-lg bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
-                  />
-                </div>
               </Card>
             </motion.div>
           ))}
@@ -265,54 +224,15 @@ export default function CreateQuiz() {
       </div>
 
       <Card className="p-5 space-y-4">
-        <h3 className="font-display font-semibold text-ink">Publishing</h3>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setScheduleMode("now")}
-            disabled={isSubmitting}
-            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "now" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
-          >
-            Publish Now
-          </button>
-          <button
-            type="button"
-            onClick={() => setScheduleMode("later")}
-            disabled={isSubmitting}
-            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "later" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
-          >
-            Schedule Later
-          </button>
-        </div>
-        {scheduleMode === "later" && (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-ink-dim mb-1 flex items-center gap-1"><CalendarClock className="w-3.5 h-3.5" /> Date</label>
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-ink-dim mb-1 block">Time</label>
-              <input
-                type="time"
-                required
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
-              />
-            </div>
-          </div>
-        )}
+        <h3 className="font-display font-semibold text-ink">Daily quiz schedule</h3>
+        <p className="text-xs text-ink-dim">The quiz opens at 8:00 PM IST and closes at 9:00 PM IST on this day.</p>
+        <label className="text-xs text-ink-dim mb-1 flex items-center gap-1"><CalendarClock className="w-3.5 h-3.5" /> Quiz day (IST)</label>
+        <input type="date" required value={quizDate} onChange={(e) => setQuizDate(e.target.value)} className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50" />
       </Card>
 
       <Button type="submit" size="lg" disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-        {scheduleMode === "now" ? "Publish Quiz" : "Schedule Quiz"}
+        Schedule Daily Quiz
       </Button>
     </form>
   );

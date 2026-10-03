@@ -6,15 +6,14 @@ vi.mock("../src/config/prisma.js", () => ({ prisma: prismaMock }));
 const { findSubmittedAttemptsRankedForQuiz } = await import("../src/repositories/attempt.repository.js");
 
 describe("daily leaderboard tie-breaking", () => {
-  it("orders by score, correctness, total response time, then earliest submission", async () => {
+  it("orders by score and correctness in SQL, then loads server response times for stable tie-breaking", async () => {
     await findSubmittedAttemptsRankedForQuiz("quiz-1");
     expect(prismaMock.quizAttempt.findMany).toHaveBeenCalledWith(expect.objectContaining({
       orderBy: [
         { score: "desc" },
         { correctAnswers: "desc" },
-        { completionTimeMs: "asc" },
-        { scoreAchievedAt: "asc" },
       ],
+      include: expect.objectContaining({ answers: { select: { responseTimeMs: true } } }),
     }));
   });
 });

@@ -170,6 +170,23 @@ h1 {
 @media (min-width: 640px) {
   h1 { font-size: 1.3rem !important; }
 }
+.admin-layout,
+.admin-layout .font-display,
+.admin-layout h1,
+.admin-layout h2,
+.admin-layout h3,
+.admin-layout h4 {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
+.admin-layout h1 {
+  font-size: clamp(1.5rem, 2vw, 1.875rem) !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.025em !important;
+  font-weight: 700 !important;
+  overflow-wrap: normal;
+}
+.admin-layout .recharts-wrapper text,
+.admin-layout svg text { font-family: Inter, ui-sans-serif, system-ui, sans-serif !important; }
 .pixel-bar {
   -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
   mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);

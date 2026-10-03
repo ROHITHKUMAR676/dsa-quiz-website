@@ -7,7 +7,6 @@ import {
   finalizeAdminQuiz,
   getAdminQuiz,
   listAdminQuizzes,
-  publishAdminQuiz,
   scheduleAdminQuiz,
   updateAdminQuiz,
 } from "../services/quiz.service.js";
@@ -65,11 +64,6 @@ export async function reorderQuestionsController(req: Request, res: Response) {
 
 export async function scheduleQuizController(req: Request, res: Response) {
   const quiz = await scheduleAdminQuiz(req.params.id, req.body);
-  return res.json({ quiz });
-}
-
-export async function publishQuizController(req: Request, res: Response) {
-  const quiz = await publishAdminQuiz(req.params.id);
   return res.json({ quiz });
 }
 

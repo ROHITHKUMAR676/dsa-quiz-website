@@ -61,7 +61,7 @@ export default function ProfileSetup() {
       });
       updateUser(updatedUser);
       completeProfile();
-      showToast("Profile saved. Welcome to Intellexa!", "success");
+      showToast("Profile saved. Welcome to Codexa!", "success");
       navigate("/student");
     } catch (error) {
       const message =

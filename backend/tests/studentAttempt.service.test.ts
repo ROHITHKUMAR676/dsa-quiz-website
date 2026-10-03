@@ -12,6 +12,10 @@ const attemptRepository = vi.hoisted(() => ({
   createAttempt: vi.fn(),
   markAttemptExpired: vi.fn(),
   submitAttempt: vi.fn(),
+  beginQuestion: vi.fn(),
+  findAttemptAnswers: vi.fn(),
+  findAttemptAnswer: vi.fn(),
+  saveQuestionAnswer: vi.fn(),
 }));
 
 const rewardService = vi.hoisted(() => ({
@@ -22,7 +26,7 @@ vi.mock("../src/repositories/quiz.repository.js", () => quizRepository);
 vi.mock("../src/repositories/attempt.repository.js", () => attemptRepository);
 vi.mock("../src/services/reward.service.js", () => rewardService);
 
-const { startAttempt, submitAttempt, getAttemptForStudent } = await import(
+const { startAttempt, submitAttempt, getAttemptForStudent, answerQuestion } = await import(
   "../src/services/studentAttempt.service.js"
 );
 
@@ -35,7 +39,7 @@ function buildLiveQuiz(overrides: Partial<Record<string, unknown>> = {}) {
     category: "General",
     difficulty: Difficulty.MEDIUM,
     status: QuizStatus.LIVE,
-    competitionDate: now,
+    competitionDate: null,
     startsAt: new Date(now.getTime() - 60_000),
     endsAt: new Date(now.getTime() + 60 * 60_000),
     timezone: "Asia/Kolkata",
@@ -92,6 +96,10 @@ describe("startAttempt", () => {
   it("returns questions without isCorrect or the correct option id", async () => {
     const quiz = buildLiveQuiz();
     quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
+    attemptRepository.findAttemptAnswers.mockResolvedValue([
+      { questionId: "q1", selectedOptionId: "q1-b", isCorrect: true, pointsAwarded: 100, responseTimeMs: 1000 },
+      { questionId: "q2", selectedOptionId: "q2-b", isCorrect: false, pointsAwarded: 0, responseTimeMs: 1000 },
+    ]);
     attemptRepository.createAttempt.mockResolvedValue({
       id: "attempt-1",
       quizId: "quiz-1",
@@ -174,7 +182,7 @@ describe("submitAttempt", () => {
         correctAnswers: 1,
         incorrectAnswers: 1,
         unansweredQuestions: 0,
-        score: 10,
+        score: 100,
       })
     );
   });
@@ -191,6 +199,13 @@ describe("submitAttempt", () => {
       quiz,
     });
     quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
+    attemptRepository.findAttemptAnswers.mockResolvedValue([
+      { questionId: "q1", selectedOptionId: "q1-b", isCorrect: true, pointsAwarded: 100, responseTimeMs: 1000 },
+      { questionId: "q2", selectedOptionId: "q2-b", isCorrect: false, pointsAwarded: 0, responseTimeMs: 1000 },
+    ]);
+    attemptRepository.findAttemptAnswers.mockResolvedValue([
+      { questionId: "q1", selectedOptionId: "q1-b", isCorrect: true, pointsAwarded: 100, responseTimeMs: 1000 },
+    ]);
     attemptRepository.submitAttempt.mockResolvedValue({});
 
     await submitAttempt("attempt-1", "user-1", [{ questionId: "q1", selectedOptionId: "q1-b" }]);
@@ -200,7 +215,7 @@ describe("submitAttempt", () => {
         correctAnswers: 1,
         incorrectAnswers: 0,
         unansweredQuestions: 1,
-        score: 10,
+        score: 100,
       })
     );
   });
@@ -278,7 +293,7 @@ describe("submitAttempt", () => {
   expect(attemptRepository.submitAttempt).not.toHaveBeenCalled();
 });
 
-  it("rejects an answer that references a question outside the quiz", async () => {
+  it("rejects question answers outside the quiz before saving", async () => {
     const quiz = buildLiveQuiz();
     attemptRepository.findAttemptById.mockResolvedValue({
       id: "attempt-1",
@@ -292,7 +307,7 @@ describe("submitAttempt", () => {
     quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
 
     await expect(
-      submitAttempt("attempt-1", "user-1", [{ questionId: "not-in-quiz", selectedOptionId: "q1-b" }])
+      answerQuestion("attempt-1", "user-1", "not-in-quiz", "q1-b")
     ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_ANSWER_QUESTION" });
   });
 });
