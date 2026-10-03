@@ -28,7 +28,7 @@ export function mapBackendGlobalEntryToLegacy(entry: BackendGlobalLeaderboardEnt
     avatar: resolveApiAsset(entry.avatar) ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(entry.fullName)}&backgroundColor=1A2038`,
     department: entry.department ?? "—",
     xp: entry.xp,
-    points: entry.monthlyPoints,
+    points: entry.totalCompetitionPoints,
     streak: entry.currentStreak,
     badges: 0,
     tier: tierFromXp(entry.xp),

@@ -6,6 +6,7 @@ import { useToast } from "../../context/ToastContext";
 import { authApi } from "../../lib/backend";
 import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 import BrandMark from "../../components/brand/BrandMark";
+import PixelSprite from "../../components/pixel/PixelSprite";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -53,6 +54,11 @@ export default function Login() {
           transition={{ duration: 6 + i, repeat: Infinity, delay: i * 0.4 }}
         />
       ))}
+
+      <div className="absolute left-[6%] top-[22%] hidden lg:block opacity-45"><PixelSprite kind="tree" size={5} bob /></div>
+      <div className="absolute right-[7%] top-[18%] hidden lg:block opacity-45"><PixelSprite kind="stack" size={5} bob /></div>
+      <div className="absolute left-[9%] bottom-[14%] hidden lg:block opacity-45"><PixelSprite kind="list" size={4} bob /></div>
+      <div className="absolute right-[9%] bottom-[16%] hidden lg:block opacity-45"><PixelSprite kind="graph" size={5} bob /></div>
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}

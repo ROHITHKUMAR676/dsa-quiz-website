@@ -39,9 +39,10 @@ export default {
         },
       },
       fontFamily: {
-        display: ["'Space Grotesk'", "sans-serif"],
-        body: ["'Inter'", "sans-serif"],
-        mono: ["'JetBrains Mono'", "monospace"],
+        display: ["'Pixelify Sans'", "sans-serif"],
+        body: ["'Pixelify Sans'", "sans-serif"],
+        mono: ["'VT323'", "monospace"],
+        pixel: ["'Press Start 2P'", "monospace"],
       },
       backgroundImage: {
         "grid-glow": "radial-gradient(circle at 50% 0%, rgba(108,144,198,0.15), transparent 60%)",
@@ -52,12 +53,28 @@ export default {
         glow: "0 0 24px rgba(6,86,164,0.50)",
         "glow-purple": "0 0 24px rgba(135,120,237,0.40)",
         "glow-cyan": "0 0 24px rgba(86,140,179,0.40)",
-        card: "0 8px 32px rgba(0,0,0,0.35)",
+        card: "var(--glass-shadow)",
+        pixel: "3px 3px 0 0 var(--pixel-btn-shadow)",
+        "pixel-sm": "2px 2px 0 0 var(--pixel-btn-shadow)",
+        "pixel-pressed": "1px 1px 0 0 var(--pixel-btn-shadow)",
       },
       borderRadius: {
-        xl2: "1.25rem",
+        xl2: "6px",
+        md: "3px",
+        lg: "4px",
+        xl: "4px",
+        "2xl": "6px",
+        "3xl": "6px",
       },
       keyframes: {
+        "pixel-twinkle": {
+          "0%,100%": { opacity: 0.2 },
+          "50%": { opacity: 1 },
+        },
+        "pixel-bob": {
+          "0%,100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
         float: {
           "0%,100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-12px)" },
@@ -80,6 +97,8 @@ export default {
         },
       },
       animation: {
+        "pixel-twinkle": "pixel-twinkle 1.2s steps(2, end) infinite",
+        "pixel-bob": "pixel-bob 2s steps(2, end) infinite",
         float: "float 6s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2.5s ease-in-out infinite",
         shimmer: "shimmer 1.6s linear infinite",

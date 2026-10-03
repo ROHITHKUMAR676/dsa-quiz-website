@@ -23,6 +23,7 @@ import StudentSettings from "./pages/student/Settings";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CreateQuiz from "./pages/admin/CreateQuiz";
+import ScheduledQuizzes from "./pages/admin/ScheduledQuizzes";
 import Participants from "./pages/admin/Participants";
 import AdminLeaderboard from "./pages/admin/AdminLeaderboard";
 import Analytics from "./pages/admin/Analytics";
@@ -121,6 +122,7 @@ function AnimatedRoutes() {
       >
         <Route index element={<AdminDashboard />} />
         <Route path="create-quiz" element={<CreateQuiz />} />
+        <Route path="scheduled" element={<ScheduledQuizzes />} />
         <Route path="participants" element={<Participants />} />
         <Route path="leaderboard" element={<AdminLeaderboard />} />
         <Route path="analytics" element={<Analytics />} />

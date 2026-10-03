@@ -21,16 +21,14 @@ export default function AdminLeaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
-  const [periodLabel, setPeriodLabel] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     adminApi
       .leaderboard()
-      .then(({ leaderboard, period }) => {
+      .then(({ leaderboard }) => {
         if (cancelled) return;
         setEntries(leaderboard.map(mapBackendGlobalEntryToLegacy));
-        setPeriodLabel(period.label);
         setStatus("ready");
       })
       .catch((error) => {
@@ -52,7 +50,7 @@ export default function AdminLeaderboard() {
         <h1 className="font-display font-bold text-2xl text-ink flex items-center gap-2">
           <Trophy className="w-6 h-6 text-state-gold" /> Leaderboard
         </h1>
-        <p className="text-ink-dim text-sm">{periodLabel ? `${periodLabel} monthly student rankings.` : "Monthly student rankings."}</p>
+        <p className="text-ink-dim text-sm">Platform-wide student rankings.</p>
       </div>
 
       {status === "loading" && (

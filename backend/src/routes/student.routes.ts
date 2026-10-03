@@ -10,12 +10,12 @@ import {
   getQuizController,
   listQuizzesController,
   startAttemptController,
-  answerQuestionController,
+  submitAttemptController,
 } from "../controllers/studentAttempt.controller.js";
 import {
   attemptIdParamSchema,
   quizIdParamSchema,
-  answerQuestionSchema,
+  submitAttemptSchema,
 } from "../validators/studentAttempt.validators.js";
 import { weeklyIdParamSchema } from "../validators/gamification.validators.js";
 import {
@@ -40,7 +40,7 @@ studentRouter.get("/quizzes/:id/attempt", validate(quizIdParamSchema), asyncHand
 studentRouter.post("/quizzes/:id/start", validate(quizIdParamSchema), asyncHandler(startAttemptController));
 
 studentRouter.get("/attempts/:id", validate(attemptIdParamSchema), asyncHandler(getAttemptController));
-studentRouter.post("/attempts/:id/answer", validate(answerQuestionSchema), asyncHandler(answerQuestionController));
+studentRouter.post("/attempts/:id/submit", validate(submitAttemptSchema), asyncHandler(submitAttemptController));
 
 // Phase 5: leaderboards
 studentRouter.get("/leaderboard/daily/:id", validate(quizIdParamSchema), asyncHandler(dailyLeaderboardController));

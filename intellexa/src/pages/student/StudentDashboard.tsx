@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Coins, Trophy, Zap, Podium, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { Zap, Podium, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProgressRing from "../../components/ui/ProgressRing";
 import XPBar from "../../components/ui/XPBar";
 import Card from "../../components/ui/Card";
+import PixelIcon from "../../components/pixel/PixelIcon";
 import Button from "../../components/ui/Button";
 import BadgePill from "../../components/ui/BadgePill";
 import QuizCard from "../../components/domain/QuizCard";
@@ -83,21 +84,14 @@ export default function StudentDashboard() {
     }
   };
 
-  const handleUpcomingQuizOpened = async () => {
-    try {
-      const { quizzes: backendQuizzes } = await studentQuizApi.list();
-      setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
-    } catch {
-      // The quiz page still checks availability on the server before entry.
-    }
-  };
-
   const liveQuiz = quizzes.find((q) => q.status === "live");
   const upcomingQuizzes = quizzes.filter((q) => q.status === "upcoming");
-  // Keep the previous quiz in the timer until the next day's 8 PM opening.
-  const RESULTS_WINDOW_MS = 24 * 60 * 60 * 1000;
+  // Most recently closed quiz, kept visible in the daily timer widget for a
+  // full day after it closes (or until a new quiz is scheduled, whichever
+  // comes first - once `upcomingQuizzes` has something, that takes over).
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
   const recentlyClosedQuiz = quizzes
-    .filter((q) => q.status === "completed" && q.endsAt && Date.now() - new Date(q.endsAt).getTime() < RESULTS_WINDOW_MS)
+    .filter((q) => q.status === "completed" && q.endsAt && Date.now() - new Date(q.endsAt).getTime() < ONE_DAY_MS)
     .sort((a, b) => new Date(b.endsAt as string).getTime() - new Date(a.endsAt as string).getTime())[0];
 
   const displayName = user?.fullName ?? "Student";
@@ -129,9 +123,9 @@ export default function StudentDashboard() {
               <p className="text-ink-dim text-sm mb-1">Welcome back,</p>
               <h1 className="font-display font-bold text-2xl sm:text-3xl text-ink mb-3">{displayName.split(" ")[0]} ⚡</h1>
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <BadgePill variant="blue" size="md"><Trophy className="w-3.5 h-3.5" /> {myRank ? `Rank #${myRank}` : "Unranked"}</BadgePill>
-                <BadgePill variant="warning" size="md"><Flame className="w-3.5 h-3.5" /> {streak}-day streak</BadgePill>
-                <BadgePill variant="neutral" size="md"><Coins className="w-3.5 h-3.5 text-state-gold" /> {coins.toLocaleString()}</BadgePill>
+                <BadgePill variant="blue" size="md"><PixelIcon name="trophy" /> {myRank ? `Rank #${myRank}` : "Unranked"}</BadgePill>
+                <BadgePill variant="warning" size="md"><PixelIcon name="flame" /> {streak}-day streak</BadgePill>
+                <BadgePill variant="neutral" size="md"><PixelIcon name="coins" /> {coins.toLocaleString()}</BadgePill>
               </div>
               <XPBar xp={xp} xpToNext={xpToNextLevel} level={level} />
             </div>
@@ -155,7 +149,6 @@ export default function StudentDashboard() {
           upcomingQuiz={upcomingQuizzes[0]}
           closedQuiz={recentlyClosedQuiz}
           onLiveQuizClosed={handleLiveQuizClosed}
-          onUpcomingQuizOpened={handleUpcomingQuizOpened}
         />
       </motion.div>
 
@@ -207,7 +200,7 @@ export default function StudentDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-ink truncate">{entry.name}</p>
                 </div>
-                <span className="font-mono text-xs text-neon-cyan">{entry.points.toLocaleString()}</span>
+                <span className="font-mono text-xs text-neon-cyan">{entry.xp.toLocaleString()}</span>
               </div>
             ))}
             {!loading && topRanks.length === 0 && <p className="text-ink-faint text-xs text-center py-4">No rankings yet.</p>}

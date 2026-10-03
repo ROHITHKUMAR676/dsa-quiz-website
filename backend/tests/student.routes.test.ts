@@ -7,7 +7,7 @@ const studentAttemptService = vi.hoisted(() => ({
   getQuizForStudent: vi.fn(),
   startAttempt: vi.fn(),
   getAttemptForStudent: vi.fn(),
-  answerQuestion: vi.fn(),
+  submitAttempt: vi.fn(),
 }));
 
 vi.mock("../src/services/studentAttempt.service.js", () => studentAttemptService);
@@ -77,33 +77,32 @@ describe("student routes", () => {
     expect(studentAttemptService.startAttempt).toHaveBeenCalledWith("quiz-1", "student-1");
   });
 
-  it("lets an authenticated student submit the current answer", async () => {
-    studentAttemptService.answerQuestion.mockResolvedValue({
+  it("lets an authenticated student submit an attempt", async () => {
+    studentAttemptService.submitAttempt.mockResolvedValue({
       id: "attempt-1",
-      status: "IN_PROGRESS",
+      status: "SUBMITTED",
     });
 
     const response = await request(app)
-      .post("/api/student/attempts/attempt-1/answer")
+      .post("/api/student/attempts/attempt-1/submit")
       .set("Authorization", `Bearer ${studentToken}`)
-      .send({ questionId: "q1", selectedOptionId: "q1-b" });
+      .send({ answers: [{ questionId: "q1", selectedOptionId: "q1-b" }] });
 
     expect(response.status).toBe(200);
-    expect(studentAttemptService.answerQuestion).toHaveBeenCalledWith(
+    expect(studentAttemptService.submitAttempt).toHaveBeenCalledWith(
       "attempt-1",
       "student-1",
-      "q1",
-      "q1-b"
+      [{ questionId: "q1", selectedOptionId: "q1-b" }]
     );
   });
 
-  it("rejects an answer payload with no question id", async () => {
+  it("rejects a submit payload with a malformed answer", async () => {
     const response = await request(app)
-      .post("/api/student/attempts/attempt-1/answer")
+      .post("/api/student/attempts/attempt-1/submit")
       .set("Authorization", `Bearer ${studentToken}`)
-      .send({ selectedOptionId: "q1-b" });
+      .send({ answers: [{ selectedOptionId: "q1-b" }] }); // missing questionId
 
     expect(response.status).toBe(400);
-    expect(studentAttemptService.answerQuestion).not.toHaveBeenCalled();
+    expect(studentAttemptService.submitAttempt).not.toHaveBeenCalled();
   });
 });

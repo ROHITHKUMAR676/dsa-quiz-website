@@ -10,7 +10,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
 }
 
 const variants: Record<string, string> = {
-  primary: "bg-aurora text-white shadow-glow hover:shadow-glow-purple",
+  primary: "bg-aurora text-white shadow-pixel active:shadow-pixel-pressed",
   secondary: "bg-surface-light text-ink border border-surface-border hover:border-neon-blue/50",
   ghost: "bg-transparent text-ink-dim hover:text-ink hover:bg-surface-light",
   danger: "bg-state-danger/15 text-state-danger border border-state-danger/30 hover:bg-state-danger/25",
@@ -34,9 +34,9 @@ export default function Button({
 }: ButtonProps) {
   return (
     <motion.button
-      whileHover={{ scale: 1.02, y: -1 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+      whileHover={{ y: -1 }}
+      whileTap={{ x: 2, y: 2 }}
+      transition={{ duration: 0.08 }}
       className={cn(
         "relative font-medium inline-flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none",
         variants[variant],

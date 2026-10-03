@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FilePlus2,
+  CalendarClock,
   Users,
   Trophy,
   BarChart3,
@@ -18,6 +19,7 @@ import BrandMark from "../brand/BrandMark";
 const links = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/create-quiz", icon: FilePlus2, label: "Create Quiz" },
+  { to: "/admin/scheduled", icon: CalendarClock, label: "Scheduled Quizzes" },
   { to: "/admin/participants", icon: Users, label: "Participants" },
   { to: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { to: "/admin/analytics", icon: BarChart3, label: "Analytics" },
@@ -51,7 +53,7 @@ function Content({ onNavigate }: { onNavigate?: () => void }) {
                 {isActive && (
                   <motion.div
                     layoutId="admin-nav-active"
-                    className="absolute inset-0 bg-aurora rounded-xl -z-10 shadow-glow"
+                    className="absolute inset-0 bg-aurora rounded-xl -z-10 shadow-pixel-sm"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}

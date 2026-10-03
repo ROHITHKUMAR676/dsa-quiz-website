@@ -40,7 +40,7 @@ export default function StudentSidebar() {
                 {isActive && (
                   <motion.div
                     layoutId="student-nav-active"
-                    className="absolute inset-0 bg-aurora rounded-xl -z-10 shadow-glow"
+                    className="absolute inset-0 bg-aurora rounded-xl -z-10 shadow-pixel-sm"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}

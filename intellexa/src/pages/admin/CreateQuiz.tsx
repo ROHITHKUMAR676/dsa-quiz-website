@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Send, FilePlus2, Loader2, Clock3 } from "lucide-react";
+import { Plus, Trash2, Send, CalendarClock, FilePlus2, Loader2 } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useToast } from "../../context/ToastContext";
@@ -32,6 +32,10 @@ export default function CreateQuiz() {
   const [description, setDescription] = useState("");
   const [difficulty, setDifficulty] = useState("Medium");
   const [category, setCategory] = useState("WebDev");
+  const [timeLimit, setTimeLimit] = useState(20);
+  const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [questions, setQuestions] = useState<DraftQuestion[]>([newQuestion()]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,19 +62,21 @@ export default function CreateQuiz() {
       return;
     }
 
-    // All daily quizzes open at 8 PM India time. Choose the next slot when
-    // the admin submits the quiz, so a long editing session cannot make it stale.
     const now = new Date();
-    const indiaNow = new Date(now.getTime() + 330 * 60_000);
-    const slot = new Date(Date.UTC(indiaNow.getUTCFullYear(), indiaNow.getUTCMonth(), indiaNow.getUTCDate(), 14, 30));
-    if (now >= slot) slot.setUTCDate(slot.getUTCDate() + 1);
-    const startsAt = slot;
+    const startsAt = scheduleMode === "later" ? new Date(`${date}T${time}`) : now;
+    if (Number.isNaN(startsAt.getTime())) {
+      showToast("Please choose a valid schedule time.", "error");
+      return;
+    }
     // The quiz stays open for a fixed 1-hour window after it goes live -
-    // Arena access is open for an hour; each question is independently timed
-    // at 30 seconds after a student starts their attempt.
+    // this is completely separate from `timeLimit`, which is only the
+    // per-question countdown a student sees once they've entered the
+    // arena. Do NOT derive endsAt from timeLimit * questionCount: that
+    // made the quiz's entire availability window as short as a single
+    // question's timer, closing it to students within minutes.
     const QUIZ_WINDOW_MINUTES = 60;
     const endsAt = new Date(startsAt.getTime() + QUIZ_WINDOW_MINUTES * 60 * 1000);
-    const totalSeconds = Math.max(30 * questions.length, 30);
+    const totalSeconds = Math.max(timeLimit * questions.length, 60);
 
     setIsSubmitting(true);
     try {
@@ -79,9 +85,12 @@ export default function CreateQuiz() {
         description: description.trim() || null,
         category: category.trim(),
         difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
+        competitionDate: startsAt.toISOString(),
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
         timezone: "Asia/Kolkata",
         timeLimit: totalSeconds,
-        timeLimitPerQuestion: 30,
+        timeLimitPerQuestion: timeLimit,
       });
 
       await Promise.all(
@@ -100,15 +109,19 @@ export default function CreateQuiz() {
         )
       );
 
-      await adminApi.scheduleQuiz(quiz.id, {
-        competitionDate: startsAt.toISOString(),
-        startsAt: startsAt.toISOString(),
-        endsAt: endsAt.toISOString(),
-        timezone: "Asia/Kolkata",
-        defaultWindowMinutes: QUIZ_WINDOW_MINUTES,
-      });
+      if (scheduleMode === "later") {
+        await adminApi.scheduleQuiz(quiz.id, {
+          competitionDate: startsAt.toISOString(),
+          startsAt: startsAt.toISOString(),
+          endsAt: endsAt.toISOString(),
+          timezone: "Asia/Kolkata",
+          defaultWindowMinutes: QUIZ_WINDOW_MINUTES,
+        });
+      } else {
+        await adminApi.publishQuiz(quiz.id);
+      }
 
-      showToast(`"${title}" scheduled for ${slot.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} IST`, "success");
+      showToast(scheduleMode === "now" ? `"${title}" published to students` : `"${title}" scheduled successfully`, "success");
       navigate("/admin");
     } catch (error) {
       showToast(error instanceof ApiError ? error.message : "Couldn't save the quiz. Please try again.", "error");
@@ -170,6 +183,15 @@ export default function CreateQuiz() {
               <option>Medium</option>
               <option>Hard</option>
             </select>
+          </div>
+          <div>
+            <label className="text-xs text-ink-dim mb-1 block">Time Limit / Q (sec)</label>
+            <input
+              type="number"
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(Number(e.target.value))}
+              className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
+            />
           </div>
         </div>
       </Card>
@@ -242,14 +264,55 @@ export default function CreateQuiz() {
         </AnimatePresence>
       </div>
 
-      <Card className="p-4 flex items-center gap-3">
-        <Clock3 className="w-5 h-5 text-neon-blue" />
-        <p className="text-sm text-ink-dim">Daily quiz time: <strong className="text-ink">8:00 PM IST</strong>. This quiz will open at the next available slot for one hour.</p>
+      <Card className="p-5 space-y-4">
+        <h3 className="font-display font-semibold text-ink">Publishing</h3>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setScheduleMode("now")}
+            disabled={isSubmitting}
+            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "now" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
+          >
+            Publish Now
+          </button>
+          <button
+            type="button"
+            onClick={() => setScheduleMode("later")}
+            disabled={isSubmitting}
+            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${scheduleMode === "later" ? "bg-aurora text-white border-transparent shadow-glow" : "bg-surface-light border-surface-border text-ink-dim"}`}
+          >
+            Schedule Later
+          </button>
+        </div>
+        {scheduleMode === "later" && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-ink-dim mb-1 flex items-center gap-1"><CalendarClock className="w-3.5 h-3.5" /> Date</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-ink-dim mb-1 block">Time</label>
+              <input
+                type="time"
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm outline-none focus:border-neon-blue/50"
+              />
+            </div>
+          </div>
+        )}
       </Card>
 
       <Button type="submit" size="lg" disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-        {isSubmitting ? "Saving Quiz" : "Save for 8 PM"}
+        {scheduleMode === "now" ? "Publish Quiz" : "Schedule Quiz"}
       </Button>
     </form>
   );

@@ -15,7 +15,8 @@ export async function dailyLeaderboardController(req: Request, res: Response) {
 }
 
 export async function globalLeaderboardController(_req: Request, res: Response) {
-  return res.json(await getGlobalLeaderboard());
+  const leaderboard = await getGlobalLeaderboard();
+  return res.json({ leaderboard });
 }
 
 export async function currentWeeklyLeaderboardController(_req: Request, res: Response) {

@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import BrandMark from "../components/brand/BrandMark";
+import PacReveal from "../components/pixel/PacReveal";
+import PixelSprite, { type PixelKind } from "../components/pixel/PixelSprite";
 
 const codeSnippets = [
   "const solve = (n) =>",
@@ -13,6 +15,15 @@ const codeSnippets = [
   "<div className=",
   "for i in range(n):",
   "git commit -m",
+];
+
+const sprites: { kind: PixelKind; left: string; top: string; delay: number }[] = [
+  { kind: "tree", left: "6%", top: "12%", delay: 0 },
+  { kind: "stack", left: "84%", top: "14%", delay: 0.4 },
+  { kind: "graph", left: "10%", top: "70%", delay: 0.8 },
+  { kind: "list", left: "66%", top: "76%", delay: 1.2 },
+  { kind: "queue", left: "78%", top: "46%", delay: 0.6 },
+  { kind: "array", left: "18%", top: "44%", delay: 1 },
 ];
 
 export default function Splash() {
@@ -58,15 +69,20 @@ export default function Splash() {
         </motion.span>
       ))}
 
-      {/* Lines that draw themselves */}
-      <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <motion.line x1="10%" y1="20%" x2="45%" y2="55%" stroke="#6c90c6" strokeWidth="1"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.2 }} />
-        <motion.line x1="90%" y1="15%" x2="55%" y2="50%" stroke="#8778ED" strokeWidth="1"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.5 }} />
-        <motion.line x1="15%" y1="85%" x2="50%" y2="55%" stroke="#568CB3" strokeWidth="1"
-          initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.8 }} />
-      </svg>
+      {/* Pixel DSA sprites that pop in, one by one */}
+      {sprites.map((s) => (
+        <motion.div
+          key={s.kind}
+          className="absolute opacity-50 hidden sm:block"
+          style={{ left: s.left, top: s.top }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ delay: 0.3 + s.delay, duration: 0.2, ease: "linear" }}
+        >
+          <PixelSprite kind={s.kind} size={4} bob />
+        </motion.div>
+      ))}
+
 
       {/* Logo: pops in once loaded, then zooms out */}
       <motion.div
@@ -74,14 +90,11 @@ export default function Splash() {
         transition={{ duration: 0.9, ease: "easeIn" }}
         className="relative z-10 flex flex-col items-center px-4"
       >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={ready ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }}
-          transition={{ duration: 0.7, ease: "backOut" }}
-          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]"
-        >
-          <BrandMark className="w-full" onLoad={() => setReady(true)} />
-        </motion.div>
+        <div className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]">
+          <PacReveal play={ready}>
+            <BrandMark className="w-full" onLoad={() => setReady(true)} />
+          </PacReveal>
+        </div>
       </motion.div>
     </div>
   );

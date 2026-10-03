@@ -5,7 +5,7 @@ import {
   getQuizForStudent,
   listQuizzesForStudent,
   startAttempt,
-  answerQuestion,
+  submitAttempt,
 } from "../services/studentAttempt.service.js";
 
 export async function listQuizzesController(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export async function getAttemptController(req: Request, res: Response) {
   return res.json({ attempt });
 }
 
-export async function answerQuestionController(req: Request, res: Response) {
-  const result = await answerQuestion(req.params.id, req.auth!.userId, req.body.questionId, req.body.selectedOptionId);
+export async function submitAttemptController(req: Request, res: Response) {
+  const result = await submitAttempt(req.params.id, req.auth!.userId, req.body.answers);
   return res.json({ attempt: result });
 }
