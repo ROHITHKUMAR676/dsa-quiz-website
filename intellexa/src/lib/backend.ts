@@ -85,7 +85,9 @@ export const studentQuizApi = {
         status: string;
         startedAt: string;
         submittedAt: string | null;
-        deadline: string | null;
+        questionStartedAt: string;
+        currentQuestionIndex: number;
+        serverTime: string;
         questions?: BackendQuestion[];
       } | null;
     }>(`/student/quizzes/${quizId}/attempt`),
@@ -93,7 +95,7 @@ export const studentQuizApi = {
     api.post<{
       attempt: { id: string; quizId: string; status: string; startedAt: string };
       serverTime: string;
-      deadline: string | null;
+      questionStartedAt: string;
       questions: BackendQuestion[];
     }>(`/student/quizzes/${quizId}/start`),
   getAttempt: (attemptId: string) =>
@@ -104,14 +106,16 @@ export const studentQuizApi = {
         status: string;
         startedAt: string;
         submittedAt: string | null;
-        deadline: string | null;
+        questionStartedAt: string;
+        currentQuestionIndex: number;
+        serverTime: string;
         questions?: BackendQuestion[];
       };
     }>(`/student/attempts/${attemptId}`),
-  submit: (attemptId: string, answers: Array<{ questionId: string; selectedOptionId: string | null }>) =>
-    api.post<{ attempt: { id: string; status: string; submittedAt: string; message: string } }>(
-      `/student/attempts/${attemptId}/submit`,
-      { answers }
+  answer: (attemptId: string, questionId: string, selectedOptionId: string | null) =>
+    api.post<{ attempt: { id: string; quizId: string; status: string; currentQuestionIndex: number; questionStartedAt: string; serverTime: string; timedOut: boolean; message?: string } }>(
+      `/student/attempts/${attemptId}/answer`,
+      { questionId, selectedOptionId }
     ),
 };
 
@@ -145,6 +149,15 @@ export interface BackendGlobalLeaderboardEntry {
   totalCompetitionPoints: number;
   totalCorrectAnswers: number;
   currentStreak: number;
+  monthlyPoints: number;
+  monthlyCorrectAnswers: number;
+  monthlyQuizzesCompleted: number;
+}
+
+export interface BackendMonthlyLeaderboard {
+  leaderboard: BackendGlobalLeaderboardEntry[];
+  period: { startsAt: string; endsAt: string; label: string; key: string };
+  previousMonthTop3: BackendGlobalLeaderboardEntry[];
 }
 
 export interface BackendWeeklyCompetition {
@@ -174,7 +187,7 @@ export interface BackendWeeklyLeaderboard {
 
 export const leaderboardApi = {
   daily: (quizId: string) => api.get<{ leaderboard: BackendDailyLeaderboard }>(`/student/leaderboard/daily/${quizId}`),
-  global: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[] }>("/student/leaderboard/global"),
+  global: () => api.get<BackendMonthlyLeaderboard>("/student/leaderboard/global"),
   weeklyCurrent: () => api.get<BackendWeeklyLeaderboard>("/student/leaderboard/weekly/current"),
 };
 
@@ -289,5 +302,5 @@ export const adminApi = {
   publishQuiz: (quizId: string) => api.post<{ quiz: BackendAdminQuiz }>(`/admin/quizzes/${quizId}/publish`, {}),
   deleteQuiz: (quizId: string) => api.delete<void>(`/admin/quizzes/${quizId}`),
   participants: () => api.get<{ participants: BackendParticipant[] }>("/admin/participants"),
-  leaderboard: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[] }>("/admin/leaderboard/global"),
+  leaderboard: () => api.get<{ leaderboard: BackendGlobalLeaderboardEntry[]; period: BackendMonthlyLeaderboard["period"] }>("/admin/leaderboard/global"),
 };

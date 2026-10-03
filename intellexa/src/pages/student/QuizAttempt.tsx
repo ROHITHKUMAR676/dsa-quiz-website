@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { cn } from "../../lib/utils";
@@ -29,10 +29,12 @@ export default function QuizAttempt() {
   const [quiz, setQuiz] = useState<BackendQuizSummary | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<BackendQuestion[]>([]);
-  const [deadline, setDeadline] = useState<string | null>(null);
+  const [questionStartedAt, setQuestionStartedAt] = useState<string | null>(null);
+  const [serverClockOffsetMs, setServerClockOffsetMs] = useState(0);
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
   const [now, setNow] = useState(Date.now());
+  const answeringRef = useRef(false);
 
   // Load the quiz's public details, and recover any already-in-progress
   // attempt so a page refresh mid-quiz doesn't lose the student's place.
@@ -52,7 +54,9 @@ export default function QuizAttempt() {
         if (attempt && attempt.status === "IN_PROGRESS" && attempt.questions) {
           setAttemptId(attempt.id);
           setQuestions(attempt.questions);
-          setDeadline(attempt.deadline);
+          setQuestionStartedAt(attempt.questionStartedAt);
+          setServerClockOffsetMs(Date.now() - new Date(attempt.serverTime).getTime());
+          setQIndex(attempt.currentQuestionIndex);
           setStage("playing");
         } else if (attempt && attempt.status !== "IN_PROGRESS") {
           // Already attempted - send them to the results page, which shows
@@ -74,19 +78,19 @@ export default function QuizAttempt() {
     };
   }, [quizId, navigate]);
 
-  // Tick once a second while an attempt is in progress, purely to drive the
-  // countdown display - the backend, not this timer, is what actually
-  // enforces the deadline.
+  // Tick smoothly for the circular countdown. The server timestamp is the
+  // source of truth for scoring and timeout enforcement.
   useEffect(() => {
     if (stage !== "playing") return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => setNow(Date.now()), 100);
     return () => clearInterval(t);
   }, [stage]);
 
-  const secondsRemaining = useMemo(() => {
-    if (!deadline) return null;
-    return Math.max(0, Math.floor((new Date(deadline).getTime() - now) / 1000));
-  }, [deadline, now]);
+  const remainingMs = useMemo(() => {
+    if (!questionStartedAt) return null;
+    return Math.max(0, 30_000 - (now - serverClockOffsetMs - new Date(questionStartedAt).getTime()));
+  }, [questionStartedAt, serverClockOffsetMs, now]);
+  const secondsRemaining = remainingMs === null ? null : Math.ceil(remainingMs / 1000);
 
   const question = questions[qIndex];
 
@@ -97,7 +101,8 @@ export default function QuizAttempt() {
       const result = await studentQuizApi.start(quizId);
       setAttemptId(result.attempt.id);
       setQuestions(result.questions);
-      setDeadline(result.deadline);
+      setQuestionStartedAt(result.questionStartedAt);
+      setServerClockOffsetMs(Date.now() - new Date(result.serverTime).getTime());
       setAnswers({});
       setQIndex(0);
       setStage("playing");
@@ -112,28 +117,39 @@ export default function QuizAttempt() {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  const submit = useCallback(async () => {
-    if (!attemptId) return;
+  const submitCurrentAnswer = useCallback(async (selectedOptionId: string | null) => {
+    if (!attemptId || !question || answeringRef.current) return;
+    answeringRef.current = true;
+    // Stop the visible timer the moment the student submits.
     setStage("submitting");
     try {
-      const payload = questions.map((q) => ({ questionId: q.id, selectedOptionId: answers[q.id] ?? null }));
-      const result = await studentQuizApi.submit(attemptId, payload);
-      showToast(result.attempt.message, "success");
-      setStage("done");
+      const { attempt: result } = await studentQuizApi.answer(attemptId, question.id, selectedOptionId);
+      setServerClockOffsetMs(Date.now() - new Date(result.serverTime).getTime());
+      if (result.status === "SUBMITTED") {
+        showToast(result.message ?? "Quiz submitted", "success");
+        setStage("done");
+      } else {
+        setQIndex(result.currentQuestionIndex);
+        setQuestionStartedAt(result.questionStartedAt);
+        setNow(Date.now());
+        setStage("playing");
+      }
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : "Couldn't submit your quiz. Please try again.";
+      const message = error instanceof ApiError ? error.message : "Couldn't save your answer. Please try again.";
       showToast(message, "error");
       setStage("playing");
+    } finally {
+      answeringRef.current = false;
     }
-  }, [attemptId, answers, questions, showToast]);
+  }, [attemptId, question, showToast]);
 
-  // Auto-submit once the deadline is hit so an answered-but-unsubmitted
-  // attempt isn't silently lost to expiry.
+  // Send a null answer at timeout. The server independently checks its own
+  // clock and awards zero once 30 seconds have elapsed.
   useEffect(() => {
-    if (stage === "playing" && secondsRemaining === 0) {
-      void submit();
+    if (stage === "playing" && remainingMs === 0) {
+      void submitCurrentAnswer(null);
     }
-  }, [stage, secondsRemaining, submit]);
+  }, [stage, remainingMs, submitCurrentAnswer]);
 
   if (stage === "loading") {
     return (
@@ -205,8 +221,7 @@ export default function QuizAttempt() {
               </div>
               <h1 className="font-display font-bold text-2xl text-ink mb-2">Quiz Submitted!</h1>
               <p className="text-ink-dim text-sm mb-6">
-                Your answers are locked in. Results, XP, and rank will be revealed once the official reveal happens -
-                check the leaderboard then.
+                Your answers are locked in. You can view your quiz results between 9 PM and 12 AM IST today.
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button fullWidth size="lg" variant="secondary" onClick={() => navigate(`/student/quiz/${quizId}/results`)}>
@@ -233,7 +248,9 @@ export default function QuizAttempt() {
 
   const isLast = qIndex === questions.length - 1;
   const selectedOptionId = answers[question.id] ?? null;
-  const answeredCount = Object.values(answers).filter(Boolean).length;
+  const timerColor = secondsRemaining !== null && secondsRemaining <= 10 ? "#ef4444" : secondsRemaining !== null && secondsRemaining <= 20 ? "#eab308" : "#22c55e";
+  const timerCircumference = 2 * Math.PI * 20;
+  const timerProgress = remainingMs === null ? 0 : remainingMs / 30_000;
 
   return (
     <div className="max-w-2xl mx-auto px-1">
@@ -242,8 +259,12 @@ export default function QuizAttempt() {
           Question {qIndex + 1} / {questions.length}
         </span>
         {secondsRemaining !== null && (
-          <div className={cn("flex items-center gap-1.5 text-xs font-mono", secondsRemaining < 60 ? "text-state-danger" : "text-ink-dim")}>
-            <Clock className="w-3.5 h-3.5" /> {Math.floor(secondsRemaining / 60)}:{String(secondsRemaining % 60).padStart(2, "0")}
+          <div className="flex items-center gap-2" aria-label={`${secondsRemaining} seconds remaining`}>
+            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48" role="img" aria-hidden="true">
+              <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" className="text-surface-border" strokeWidth="4" />
+              <circle cx="24" cy="24" r="20" fill="none" stroke={timerColor} strokeWidth="4" strokeLinecap="round" strokeDasharray={timerCircumference} strokeDashoffset={timerCircumference * (1 - timerProgress)} className="transition-[stroke-dashoffset,stroke] duration-100" />
+            </svg>
+            <span className="font-mono font-bold text-xl tabular-nums" style={{ color: timerColor }}>{secondsRemaining}s</span>
           </div>
         )}
       </div>
@@ -269,6 +290,7 @@ export default function QuizAttempt() {
                   <motion.button
                     key={opt.id}
                     onClick={() => selectOption(question.id, opt.id)}
+                    disabled={stage !== "playing" || remainingMs === 0}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
@@ -287,17 +309,10 @@ export default function QuizAttempt() {
       </AnimatePresence>
 
       <div className="flex items-center gap-2">
-        <Button variant="secondary" onClick={() => setQIndex((i) => Math.max(0, i - 1))} disabled={qIndex === 0}>
-          Previous
+        <div className="flex-1 text-center text-xs text-ink-faint font-mono">{qIndex + 1} of {questions.length}</div>
+        <Button onClick={() => void submitCurrentAnswer(selectedOptionId)} disabled={stage !== "playing" || remainingMs === 0}>
+          {stage === "submitting" ? "Saving..." : isLast ? "Submit Quiz" : "Lock Answer & Continue"}
         </Button>
-        <div className="flex-1 text-center text-xs text-ink-faint font-mono">{answeredCount} / {questions.length} answered</div>
-        {isLast ? (
-          <Button onClick={submit} disabled={stage === "submitting"}>
-            {stage === "submitting" ? "Submitting..." : "Submit Quiz"}
-          </Button>
-        ) : (
-          <Button onClick={() => setQIndex((i) => Math.min(questions.length - 1, i + 1))}>Next</Button>
-        )}
       </div>
     </div>
   );

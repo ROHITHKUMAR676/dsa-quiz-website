@@ -50,6 +50,6 @@ export async function participantsController(_req: Request, res: Response) {
 }
 
 export async function adminGlobalLeaderboardController(_req: Request, res: Response) {
-  const leaderboard = await getGlobalLeaderboard();
-  return res.json({ leaderboard });
+  const result = await getGlobalLeaderboard();
+  return res.json({ leaderboard: result.leaderboard, period: result.period });
 }

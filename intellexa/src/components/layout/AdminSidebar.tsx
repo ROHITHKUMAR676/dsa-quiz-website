@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   FilePlus2,
-  CalendarClock,
   Users,
   Trophy,
   BarChart3,
@@ -19,7 +18,6 @@ import BrandMark from "../brand/BrandMark";
 const links = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/create-quiz", icon: FilePlus2, label: "Create Quiz" },
-  { to: "/admin/scheduled", icon: CalendarClock, label: "Scheduled Quizzes" },
   { to: "/admin/participants", icon: Users, label: "Participants" },
   { to: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { to: "/admin/analytics", icon: BarChart3, label: "Analytics" },

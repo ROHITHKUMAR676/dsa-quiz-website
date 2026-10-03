@@ -12,6 +12,7 @@ const attemptRepository = vi.hoisted(() => ({
   createAttempt: vi.fn(),
   markAttemptExpired: vi.fn(),
   submitAttempt: vi.fn(),
+  recordQuestionAnswer: vi.fn(),
 }));
 
 const rewardService = vi.hoisted(() => ({
@@ -22,7 +23,7 @@ vi.mock("../src/repositories/quiz.repository.js", () => quizRepository);
 vi.mock("../src/repositories/attempt.repository.js", () => attemptRepository);
 vi.mock("../src/services/reward.service.js", () => rewardService);
 
-const { startAttempt, submitAttempt, getAttemptForStudent } = await import(
+const { startAttempt, answerQuestion, getAttemptForStudent } = await import(
   "../src/services/studentAttempt.service.js"
 );
 
@@ -136,164 +137,52 @@ describe("startAttempt", () => {
   });
 });
 
-describe("submitAttempt", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe("answerQuestion", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-  it("computes an authoritative server-side score and never trusts a client-sent score", async () => {
-    const quiz = buildLiveQuiz();
-    const startedAt = new Date(Date.now() - 30_000);
-
+  function setupAttempt(startedAt: Date, quiz = buildLiveQuiz()) {
     attemptRepository.findAttemptById.mockResolvedValue({
-      id: "attempt-1",
-      quizId: "quiz-1",
-      userId: "user-1",
-      status: AttemptStatus.IN_PROGRESS,
-      startedAt,
-      submittedAt: null,
-      quiz,
+      id: "attempt-1", quizId: "quiz-1", userId: "user-1", status: AttemptStatus.IN_PROGRESS,
+      startedAt, submittedAt: null, answers: [], quiz,
     });
     quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
-    attemptRepository.submitAttempt.mockResolvedValue({});
+    attemptRepository.recordQuestionAnswer.mockResolvedValue({});
+  }
 
-    const result = await submitAttempt("attempt-1", "user-1", [
-      { questionId: "q1", selectedOptionId: "q1-b" }, // correct
-      { questionId: "q2", selectedOptionId: "q2-b" }, // incorrect
-    ]);
-
-    expect(result.status).toBe(AttemptStatus.SUBMITTED);
-    // Score is intentionally NOT returned to the student before result release.
-    expect(result).not.toHaveProperty("score");
-    expect(result).not.toHaveProperty("correctAnswers");
-
-    expect(attemptRepository.submitAttempt).toHaveBeenCalledWith(
-      expect.objectContaining({
-        attemptId: "attempt-1",
-        totalQuestions: 2,
-        correctAnswers: 1,
-        incorrectAnswers: 1,
-        unansweredQuestions: 0,
-        score: 10,
-      })
-    );
+  it("records 100 points for a correct answer using server elapsed time, regardless of question points", async () => {
+    setupAttempt(new Date(Date.now() - 1_000));
+    const result = await answerQuestion("attempt-1", "user-1", "q1", "q1-b");
+    expect(result.status).toBe(AttemptStatus.IN_PROGRESS);
+    expect(attemptRepository.recordQuestionAnswer).toHaveBeenCalledWith(expect.objectContaining({
+      questionId: "q1", selectedOptionId: "q1-b", isCorrect: true, pointsAwarded: 100,
+    }));
   });
 
-  it("treats an unanswered question as unanswered, not incorrect", async () => {
-    const quiz = buildLiveQuiz();
+  it("records an incorrect answer as zero", async () => {
+    setupAttempt(new Date(Date.now() - 1_000));
+    await answerQuestion("attempt-1", "user-1", "q1", "q1-a");
+    expect(attemptRepository.recordQuestionAnswer).toHaveBeenCalledWith(expect.objectContaining({ isCorrect: false, pointsAwarded: 0 }));
+  });
+
+  it("forces answers received at or after 30 seconds to unanswered and zero", async () => {
+    setupAttempt(new Date(Date.now() - 30_000));
+    await answerQuestion("attempt-1", "user-1", "q1", "q1-b");
+    expect(attemptRepository.recordQuestionAnswer).toHaveBeenCalledWith(expect.objectContaining({
+      selectedOptionId: null, isCorrect: false, pointsAwarded: 0, responseTimeMs: expect.any(Number),
+    }));
+  });
+
+  it("rejects an attempt belonging to a different user", async () => {
     attemptRepository.findAttemptById.mockResolvedValue({
-      id: "attempt-1",
-      quizId: "quiz-1",
-      userId: "user-1",
-      status: AttemptStatus.IN_PROGRESS,
-      startedAt: new Date(Date.now() - 10_000),
-      submittedAt: null,
-      quiz,
+      id: "attempt-1", quizId: "quiz-1", userId: "someone-else", status: AttemptStatus.IN_PROGRESS,
+      startedAt: new Date(), submittedAt: null, answers: [], quiz: buildLiveQuiz(),
     });
-    quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
-    attemptRepository.submitAttempt.mockResolvedValue({});
-
-    await submitAttempt("attempt-1", "user-1", [{ questionId: "q1", selectedOptionId: "q1-b" }]);
-
-    expect(attemptRepository.submitAttempt).toHaveBeenCalledWith(
-      expect.objectContaining({
-        correctAnswers: 1,
-        incorrectAnswers: 0,
-        unansweredQuestions: 1,
-        score: 10,
-      })
-    );
+    await expect(answerQuestion("attempt-1", "user-1", "q1", "q1-b")).rejects.toMatchObject({ statusCode: 404, code: "ATTEMPT_NOT_FOUND" });
   });
 
-  it("rejects an attempt belonging to a different user (404, not 403, to avoid confirming existence)", async () => {
-    attemptRepository.findAttemptById.mockResolvedValue({
-      id: "attempt-1",
-      quizId: "quiz-1",
-      userId: "someone-else",
-      status: AttemptStatus.IN_PROGRESS,
-      startedAt: new Date(),
-      submittedAt: null,
-      quiz: buildLiveQuiz(),
-    });
-
-    await expect(submitAttempt("attempt-1", "user-1", [])).rejects.toMatchObject({
-      statusCode: 404,
-      code: "ATTEMPT_NOT_FOUND",
-    });
-  });
-
-  it("rejects a second submission of an already-submitted attempt", async () => {
-    attemptRepository.findAttemptById.mockResolvedValue({
-      id: "attempt-1",
-      quizId: "quiz-1",
-      userId: "user-1",
-      status: AttemptStatus.SUBMITTED,
-      startedAt: new Date(Date.now() - 10_000),
-      submittedAt: new Date(),
-      quiz: buildLiveQuiz(),
-    });
-
-    await expect(submitAttempt("attempt-1", "user-1", [])).rejects.toMatchObject({
-      statusCode: 409,
-      code: "ATTEMPT_ALREADY_SUBMITTED",
-    });
-  });
-
-  it("rejects submission after the quiz window has closed and marks the attempt EXPIRED", async () => {
-  const quiz = buildLiveQuiz({
-    startsAt: new Date(Date.now() - 2 * 60 * 60_000),
-    endsAt: new Date(Date.now() - 60 * 60_000),
-  });
-
-  const attempt = {
-    id: "attempt-1",
-    quizId: "quiz-1",
-    userId: "user-1",
-    status: AttemptStatus.IN_PROGRESS,
-    startedAt: new Date(Date.now() - 2 * 60 * 60_000),
-    submittedAt: null,
-    quiz,
-  };
-
-  attemptRepository.findAttemptById.mockResolvedValue(attempt);
-
-  attemptRepository.markAttemptExpired.mockResolvedValue({
-    ...attempt,
-    status: AttemptStatus.EXPIRED,
-  });
-
-  quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
-
-  await expect(
-    submitAttempt("attempt-1", "user-1", [])
-  ).rejects.toMatchObject({
-    statusCode: 409,
-    code: "SUBMISSION_WINDOW_CLOSED",
-  });
-
-  expect(attemptRepository.markAttemptExpired).toHaveBeenCalledWith(
-    "attempt-1"
-  );
-
-  expect(attemptRepository.submitAttempt).not.toHaveBeenCalled();
-});
-
-  it("rejects an answer that references a question outside the quiz", async () => {
-    const quiz = buildLiveQuiz();
-    attemptRepository.findAttemptById.mockResolvedValue({
-      id: "attempt-1",
-      quizId: "quiz-1",
-      userId: "user-1",
-      status: AttemptStatus.IN_PROGRESS,
-      startedAt: new Date(Date.now() - 10_000),
-      submittedAt: null,
-      quiz,
-    });
-    quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
-
-    await expect(
-      submitAttempt("attempt-1", "user-1", [{ questionId: "not-in-quiz", selectedOptionId: "q1-b" }])
-    ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_ANSWER_QUESTION" });
+  it("rejects answering questions out of order", async () => {
+    setupAttempt(new Date());
+    await expect(answerQuestion("attempt-1", "user-1", "q2", "q2-a")).rejects.toMatchObject({ statusCode: 409, code: "QUESTION_OUT_OF_ORDER" });
   });
 });
 
