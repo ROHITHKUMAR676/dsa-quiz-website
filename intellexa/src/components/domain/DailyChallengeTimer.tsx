@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Timer, Flag, CalendarClock, Sparkles, CheckCircle2, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,11 @@ function timeAgo(iso: string) {
   return `${hours}h ago`;
 }
 
+function isIstResultsWindow(date: Date) {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hourCycle: "h23" }).format(date));
+  return hour >= 21;
+}
+
 /**
  * "Daily Timer Challenge" widget for the student dashboard.
  * Priority: a live quiz counting down to close > the next upcoming quiz
@@ -37,9 +42,16 @@ function timeAgo(iso: string) {
 export default function DailyChallengeTimer({ liveQuiz, upcomingQuiz, closedQuiz, onLiveQuizClosed }: DailyChallengeTimerProps) {
   const navigate = useNavigate();
   const firedRef = useRef(false);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { msRemaining: liveMsRemaining, isDone: liveIsDone } = useCountdown(liveQuiz?.endsAt);
   const { msRemaining: upcomingMsRemaining } = useCountdown(!liveQuiz ? upcomingQuiz?.startsAt : null);
+  const resultsWindow = isIstResultsWindow(now);
 
   useEffect(() => {
     if (liveQuiz && liveIsDone && !firedRef.current) {
@@ -75,6 +87,31 @@ export default function DailyChallengeTimer({ liveQuiz, upcomingQuiz, closedQuiz
           </div>
           <Button onClick={() => navigate(`/student/quiz/${liveQuiz.id}`)} className="shrink-0">
             <Sparkles className="w-4 h-4" /> Enter Challenge
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  if (closedQuiz && resultsWindow) {
+    return (
+      <Card className="p-5 sm:p-6 relative overflow-hidden">
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="w-14 h-14 rounded-2xl bg-surface-light flex items-center justify-center shrink-0 border border-surface-border">
+            <CheckCircle2 className="w-7 h-7 text-state-success" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-display font-semibold text-ink">Daily Timer Challenge</h3>
+              <BadgePill variant="neutral" size="sm">Closed</BadgePill>
+            </div>
+            <p className="text-ink-dim text-xs truncate">
+              {closedQuiz.title} closed {closedQuiz.endsAt ? timeAgo(closedQuiz.endsAt) : "recently"}.
+              {closedQuiz.hasAttempted ? " Check your results below." : " You didn't get an attempt in this time."}
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => navigate(`/student/quiz/${closedQuiz.id}/results`)} className="shrink-0">
+            <Trophy className="w-4 h-4" /> View Results
           </Button>
         </div>
       </Card>

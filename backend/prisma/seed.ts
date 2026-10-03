@@ -1,26 +1,25 @@
 import { PrismaClient, Role, BadgeRuleType } from "@prisma/client";
-import { ADMIN_EMAIL, ADMIN_NAME } from "../src/config/admin.js";
+import { ADMIN_EMAILS } from "../src/config/admin.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.user.upsert({
-    where: { email: ADMIN_EMAIL },
-    update: {
-      fullName: ADMIN_NAME,
-      role: Role.ADMIN,
-    },
-    create: {
-      fullName: ADMIN_NAME,
-      email: ADMIN_EMAIL,
-      role: Role.ADMIN,
-      department: "Platform",
-      settings: { create: {} },
-    },
-  });
+  for (const email of ADMIN_EMAILS) {
+    await prisma.user.upsert({
+      where: { email },
+      update: { role: Role.ADMIN },
+      create: {
+        fullName: email.split("@")[0],
+        email,
+        role: Role.ADMIN,
+        department: "Platform",
+        settings: { create: {} },
+      },
+    });
+  }
 
   await prisma.user.updateMany({
-    where: { role: Role.ADMIN, email: { not: ADMIN_EMAIL } },
+    where: { role: Role.ADMIN, email: { notIn: [...ADMIN_EMAILS] } },
     data: { role: Role.STUDENT },
   });
 

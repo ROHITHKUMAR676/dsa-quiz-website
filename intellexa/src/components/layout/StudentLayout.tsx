@@ -5,7 +5,7 @@ import BottomNav from "./BottomNav";
 
 export default function StudentLayout() {
   return (
-    <div className="flex min-h-dvh bg-void-100">
+    <div className="student-layout flex min-h-dvh bg-void-100">
       <StudentSidebar />
       <div className="flex-1 min-w-0 flex flex-col">
         <TopBar />

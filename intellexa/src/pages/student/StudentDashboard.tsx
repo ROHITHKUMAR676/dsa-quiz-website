@@ -18,6 +18,15 @@ import { mapBackendMonthlyEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { mapBackendBadgeToLegacy } from "../../lib/badgeAdapter";
 import type { Quiz, LeaderboardEntry, Badge } from "../../types";
 
+function istDateKey(date: Date | string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date instanceof Date ? date : new Date(date));
+}
+
 // XP-to-level curve is presentational only - the backend tracks raw XP,
 // not a "level" concept, so this derives one client-side for the UI.
 function levelFromXp(xp: number) {
@@ -34,6 +43,12 @@ export default function StudentDashboard() {
   const [topRanks, setTopRanks] = useState<LeaderboardEntry[]>([]);
   const [recentBadges, setRecentBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 15_000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +100,38 @@ export default function StudentDashboard() {
   };
 
   const liveQuiz = quizzes.find((q) => q.status === "live");
-  const upcomingQuizzes = quizzes.filter((q) => q.status === "upcoming");
+  const upcomingQuizzes = quizzes
+    .filter((q) => q.status === "upcoming" && q.startsAt && istDateKey(q.startsAt) === istDateKey(now))
+    .sort((a, b) => new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime())
+    .slice(0, 1);
+
+  // Refresh at today's scheduled opening so the server's LIVE availability
+  // replaces the disabled upcoming card without requiring a page reload.
+  useEffect(() => {
+    const nextQuiz = upcomingQuizzes[0];
+    if (!nextQuiz?.startsAt) return;
+
+    const delay = new Date(nextQuiz.startsAt).getTime() - Date.now();
+    if (delay < 0) return;
+
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      try {
+        const { quizzes: backendQuizzes } = await studentQuizApi.list();
+        if (!cancelled) {
+          setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
+          setNow(new Date());
+        }
+      } catch {
+        // A later visit or manual refresh will retry if the request fails.
+      }
+    }, delay + 1_000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [upcomingQuizzes[0]?.id, upcomingQuizzes[0]?.startsAt]);
   // Most recently closed quiz, kept visible in the daily timer widget for a
   // full day after it closes (or until a new quiz is scheduled, whichever
   // comes first - once `upcomingQuizzes` has something, that takes over).
@@ -168,13 +214,13 @@ export default function StudentDashboard() {
               <Loader2 className="w-5 h-5 text-neon-blue animate-spin" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {liveQuiz && (
                 <div>
                   <QuizCard quiz={liveQuiz} />
                 </div>
               )}
-              {upcomingQuizzes.slice(0, 2).map((q) => <QuizCard key={q.id} quiz={q} />)}
+              {upcomingQuizzes.map((q) => <QuizCard key={q.id} quiz={q} />)}
               {!liveQuiz && upcomingQuizzes.length === 0 && (
                 <p className="text-ink-faint text-sm col-span-2 py-6 text-center">No quizzes scheduled right now - check back soon.</p>
               )}

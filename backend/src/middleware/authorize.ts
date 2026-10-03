@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { Role } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
-import { ADMIN_EMAIL } from "../config/admin.js";
+import { isAdminEmail } from "../config/admin.js";
 import { ApiError } from "../utils/apiError.js";
 
 export function authorize(...roles: Role[]) {
@@ -22,7 +22,8 @@ export function authorize(...roles: Role[]) {
         });
         if (
           user?.role !== Role.ADMIN ||
-          user.email.trim().toLowerCase() !== ADMIN_EMAIL
+          !user?.email ||
+          !isAdminEmail(user.email)
         ) {
           return next(new ApiError(403, "You do not have permission to perform this action", "FORBIDDEN"));
         }

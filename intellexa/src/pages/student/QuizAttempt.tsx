@@ -317,7 +317,7 @@ export default function QuizAttempt() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-1">
+    <div className="quiz-arena max-w-2xl mx-auto px-1">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs text-ink-dim font-mono">
           Question {qIndex + 1} / {questions.length}

@@ -170,6 +170,17 @@ h1 {
 @media (min-width: 640px) {
   h1 { font-size: 1.3rem !important; }
 }
+.student-layout,
+.student-layout * {
+  font-family: "Pixelify Sans", sans-serif !important;
+}
+.student-layout h1 {
+  font-family: "Press Start 2P", "VT323", monospace !important;
+}
+.student-layout .quiz-arena,
+.student-layout .quiz-arena * {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
 .admin-layout,
 .admin-layout .font-display,
 .admin-layout h1,
