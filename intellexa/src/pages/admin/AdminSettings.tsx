@@ -61,13 +61,6 @@ export default function AdminSettings() {
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-ink font-medium">Auto-publish scheduled quizzes</p>
-            <p className="text-xs text-ink-faint">Release quizzes automatically at scheduled time</p>
-          </div>
-          <Toggle checked />
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
             <p className="text-sm text-ink font-medium">Email notifications</p>
             <p className="text-xs text-ink-faint">Notify admins of new registrations</p>
           </div>

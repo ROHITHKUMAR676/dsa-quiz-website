@@ -83,14 +83,21 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleUpcomingQuizOpened = async () => {
+    try {
+      const { quizzes: backendQuizzes } = await studentQuizApi.list();
+      setQuizzes(backendQuizzes.map(mapBackendQuizToLegacy));
+    } catch {
+      // The quiz page still checks availability on the server before entry.
+    }
+  };
+
   const liveQuiz = quizzes.find((q) => q.status === "live");
   const upcomingQuizzes = quizzes.filter((q) => q.status === "upcoming");
-  // Most recently closed quiz, kept visible in the daily timer widget for a
-  // full day after it closes (or until a new quiz is scheduled, whichever
-  // comes first - once `upcomingQuizzes` has something, that takes over).
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  // Keep the previous quiz in the timer until the next day's 8 PM opening.
+  const RESULTS_WINDOW_MS = 24 * 60 * 60 * 1000;
   const recentlyClosedQuiz = quizzes
-    .filter((q) => q.status === "completed" && q.endsAt && Date.now() - new Date(q.endsAt).getTime() < ONE_DAY_MS)
+    .filter((q) => q.status === "completed" && q.endsAt && Date.now() - new Date(q.endsAt).getTime() < RESULTS_WINDOW_MS)
     .sort((a, b) => new Date(b.endsAt as string).getTime() - new Date(a.endsAt as string).getTime())[0];
 
   const displayName = user?.fullName ?? "Student";
@@ -148,6 +155,7 @@ export default function StudentDashboard() {
           upcomingQuiz={upcomingQuizzes[0]}
           closedQuiz={recentlyClosedQuiz}
           onLiveQuizClosed={handleLiveQuizClosed}
+          onUpcomingQuizOpened={handleUpcomingQuizOpened}
         />
       </motion.div>
 
@@ -199,7 +207,7 @@ export default function StudentDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-ink truncate">{entry.name}</p>
                 </div>
-                <span className="font-mono text-xs text-neon-cyan">{entry.xp.toLocaleString()}</span>
+                <span className="font-mono text-xs text-neon-cyan">{entry.points.toLocaleString()}</span>
               </div>
             ))}
             {!loading && topRanks.length === 0 && <p className="text-ink-faint text-xs text-center py-4">No rankings yet.</p>}
