@@ -19,8 +19,17 @@ export default function Splash() {
   const navigate = useNavigate();
   const { markSplashSeen } = useApp();
   const [phase, setPhase] = useState<"logo" | "zoom">("logo");
+  const [ready, setReady] = useState(false);
 
+  // Safety net: if the logo is slow or fails to load, start anyway after 2s
   useEffect(() => {
+    const fallback = setTimeout(() => setReady(true), 2000);
+    return () => clearTimeout(fallback);
+  }, []);
+
+  // Timers only start once the logo is ready
+  useEffect(() => {
+    if (!ready) return;
     const zoomTimer = setTimeout(() => setPhase("zoom"), 3000);
     const navigationTimer = setTimeout(() => {
       markSplashSeen();
@@ -30,11 +39,13 @@ export default function Splash() {
       clearTimeout(zoomTimer);
       clearTimeout(navigationTimer);
     };
-  }, []);
+  }, [ready]);
 
   return (
     <div className="fixed inset-0 bg-void-100 overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 bg-grid-glow" />
+
+      {/* Floating code snippets */}
       {codeSnippets.map((code, i) => (
         <motion.span
           key={code}
@@ -47,6 +58,7 @@ export default function Splash() {
         </motion.span>
       ))}
 
+      {/* Lines that draw themselves */}
       <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <motion.line x1="10%" y1="20%" x2="45%" y2="55%" stroke="#6c90c6" strokeWidth="1"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.2 }} />
@@ -56,6 +68,7 @@ export default function Splash() {
           initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.8 }} />
       </svg>
 
+      {/* Logo: pops in once loaded, then zooms out */}
       <motion.div
         animate={phase === "zoom" ? { scale: 8, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.9, ease: "easeIn" }}
@@ -63,11 +76,11 @@ export default function Splash() {
       >
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          animate={ready ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }}
           transition={{ duration: 0.7, ease: "backOut" }}
           className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]"
         >
-          <BrandMark className="w-full" />
+          <BrandMark className="w-full" onLoad={() => setReady(true)} />
         </motion.div>
       </motion.div>
     </div>
