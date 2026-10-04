@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import BrandMark from "../components/brand/BrandMark";
-import PacReveal from "../components/pixel/PacReveal";
 import PixelSprite, { type PixelKind } from "../components/pixel/PixelSprite";
 
 const codeSnippets = [
@@ -84,17 +83,20 @@ export default function Splash() {
       ))}
 
 
-      {/* Logo: pops in once loaded, then zooms out */}
+      {/* Logo: fades in once loaded, then zooms out */}
       <motion.div
         animate={phase === "zoom" ? { scale: 8, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.9, ease: "easeIn" }}
         className="relative z-10 flex flex-col items-center px-4"
       >
-        <div className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]">
-          <PacReveal play={ready}>
-            <BrandMark className="w-full" onLoad={() => setReady(true)} />
-          </PacReveal>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: ready ? 1 : 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]"
+        >
+          <BrandMark className="w-full" onLoad={() => setReady(true)} />
+        </motion.div>
       </motion.div>
     </div>
   );

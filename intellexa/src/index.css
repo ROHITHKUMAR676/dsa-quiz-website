@@ -213,36 +213,3 @@ h2, h3, h4 { letter-spacing: 0; }
     2px 2px 0 0 var(--pixel-btn-shadow);
 }
 
-/* Pac-Man logo reveal (splash) */
-.pac-clip { clip-path: inset(0 100% 0 0); }
-.pac-play .pac-clip { animation: pac-reveal 1.7s steps(16, end) forwards; }
-.pac-dots {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 6px;
-  transform: translateY(-50%);
-  pointer-events: none;
-  background-image: linear-gradient(90deg, rgb(var(--color-neon-blue)) 6px, transparent 6px);
-  background-size: 22px 6px;
-  animation: pac-eat 1.7s steps(16, end) forwards;
-}
-.pac-mover {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 45px;
-  height: 45px;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  animation: pac-move 1.7s steps(16, end) forwards, pac-gone 0.01s steps(1, end) 1.75s forwards;
-}
-.pac-open { animation: pac-open 0.28s steps(1, end) infinite; }
-.pac-closed { animation: pac-closed 0.28s steps(1, end) infinite; }
-@keyframes pac-reveal { to { clip-path: inset(0 0 0 0); } }
-@keyframes pac-eat { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 0 0 100%); } }
-@keyframes pac-move { from { left: 0%; } to { left: 100%; } }
-@keyframes pac-gone { to { opacity: 0; } }
-@keyframes pac-open { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes pac-closed { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
