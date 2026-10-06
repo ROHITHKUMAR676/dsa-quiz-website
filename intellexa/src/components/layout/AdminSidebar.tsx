@@ -10,7 +10,7 @@ import {
   Settings,
   LogOut,
   Menu,
-} from "lucide-react";
+} from "../pixel/PixelLucide";
 import { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "../../lib/utils";

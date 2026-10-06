@@ -1,4 +1,4 @@
-import { Clock, Users, Radio, CalendarClock, CheckCircle2 } from "lucide-react";
+import { Clock, Users, Radio, CalendarClock, CheckCircle2 } from "../pixel/PixelLucide";
 import { useNavigate } from "react-router-dom";
 import Card from "../ui/Card";
 import DifficultyBadge from "../ui/DifficultyBadge";

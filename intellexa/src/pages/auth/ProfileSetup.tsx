@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "../../components/pixel/PixelLucide";
 import Button from "../../components/ui/Button";
 import AvatarPicker from "../../components/auth/AvatarPicker";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import { ApiError } from "../../lib/api";
 import { authApi } from "../../lib/backend";
+import { parseCollegeEmail } from "../../lib/emailProfile";
 
-const departments = ["Computer Science", "Information Technology", "Electronics", "AI & Data Science", "Mechanical", "Civil"];
+const departments = ["Aeronautical Engineering","Automobile Engineering","Biomedical Engineering","Civil Engineering","Computer Science and Engineering","CSE(Cyber Security)","Computer Science and Design","Electrical and Electronics Engineering","Electronics and Communication Engineering","Mechanical Engineering","Mechatronics Engineering","Robotics and Automation","AI & Data Science","AI & Machine Learning","Biotechnoloy","Chemical Engineering","Computer Science and Business Systems","Food Technology","Information Technology"]
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-const languages = ["C++", "Python", "Java", "JavaScript", "Go", "Rust"];
+const languages = ["C","C++", "Python", "Java", "JavaScript", "Go", "Rust"];
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
@@ -19,16 +20,26 @@ export default function ProfileSetup() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const fromEmail = parseCollegeEmail(user?.email);
+  const validDept = (d?: string) => (d && departments.includes(d) ? d : undefined);
   const [form, setForm] = useState({
     fullName: user?.fullName ?? "",
-    department: user?.department ?? departments[0],
-    year: user?.year ?? years[0],
+    department: validDept(fromEmail.department) ?? user?.department ?? departments[0],
+    year: fromEmail.year ?? user?.year ?? years[0],
     registerNumber: user?.registerNumber ?? "",
     email: user?.email ?? "",
     phone: user?.phone ?? "",
     bio: user?.bio ?? "",
     preferredLanguage: user?.preferredLanguage ?? languages[0],
   });
+
+  // fill department/year from the college email (the user can still change them)
+  useEffect(() => {
+    const detected = parseCollegeEmail(user?.email);
+    const dept = validDept(detected.department);
+    if (!dept && !detected.year) return;
+    setForm((f) => ({ ...f, department: dept ?? f.department, year: detected.year ?? f.year }));
+  }, [user?.email]);
 
   const update = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -125,26 +136,29 @@ export default function ProfileSetup() {
               </select>
             </div>
           </div>
+          {(validDept(fromEmail.department) || fromEmail.year) && (
+            <p className="-mt-2 text-[11px] text-ink-faint">Department and year were filled in from your college email. You can change them.</p>
+          )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-ink-dim mb-1 block">Register number</label>
+              <label className="text-sm text-ink-dim mb-1.5 block">Register number</label>
               <input
                 required
                 value={form.registerNumber}
                 onChange={(e) => update("registerNumber", e.target.value)}
                 placeholder="21CS1042"
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint outline-none focus:border-neon-blue/50"
+                className="w-full px-4 py-3.5 rounded-xl bg-surface-light border-2 border-surface-border text-ink text-lg tracking-wide placeholder:text-ink-faint outline-none focus:border-neon-blue/60"
               />
             </div>
             <div>
-              <label className="text-xs text-ink-dim mb-1 block">Phone</label>
+              <label className="text-sm text-ink-dim mb-1.5 block">Phone</label>
               <input
                 required
                 value={form.phone}
                 onChange={(e) => update("phone", e.target.value)}
                 placeholder="+91 98765 43210"
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-light border border-surface-border text-ink text-sm placeholder:text-ink-faint outline-none focus:border-neon-blue/50"
+                className="w-full px-4 py-3.5 rounded-xl bg-surface-light border-2 border-surface-border text-ink text-lg tracking-wide placeholder:text-ink-faint outline-none focus:border-neon-blue/60"
               />
             </div>
           </div>

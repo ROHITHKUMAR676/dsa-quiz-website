@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Loader2, TriangleAlert } from "lucide-react";
+import { BarChart3, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 import Card from "../../components/ui/Card";
 import { adminApi, type BackendPlatformStats } from "../../lib/backend";
@@ -66,13 +66,13 @@ export default function Analytics() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={stats.weeklyActivity}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#323E5C" />
-                <XAxis dataKey="day" stroke="#6e7a9c" fontSize={12} />
-                <YAxis stroke="#6e7a9c" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#1E2334", border: "1px solid #38425C", borderRadius: 12, fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
+                <XAxis dataKey="day" stroke="#8895B8" fontSize={12} />
+                <YAxis stroke="#8895B8" fontSize={12} />
+                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="users" stroke="#6c90c6" strokeWidth={2} name="Active Users" />
-                <Line type="monotone" dataKey="submissions" stroke="#568CB3" strokeWidth={2} name="Submissions" />
+                <Line type="monotone" dataKey="users" stroke="#7DA5E4" strokeWidth={2} name="Active Users" />
+                <Line type="monotone" dataKey="submissions" stroke="#64ACDA" strokeWidth={2} name="Submissions" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -83,11 +83,11 @@ export default function Analytics() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.categoryPerformance}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#323E5C" />
-                <XAxis dataKey="category" stroke="#6e7a9c" fontSize={12} />
-                <YAxis stroke="#6e7a9c" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#1E2334", border: "1px solid #38425C", borderRadius: 12, fontSize: 12 }} />
-                <Bar dataKey="avgScore" fill="#8778ED" radius={[6, 6, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
+                <XAxis dataKey="category" stroke="#8895B8" fontSize={12} />
+                <YAxis stroke="#8895B8" fontSize={12} />
+                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
+                <Bar dataKey="avgScore" fill="#988AFC" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, Info, TriangleAlert, XCircle, X } from "lucide-react";
+import { CheckCircle2, Info, TriangleAlert, XCircle, X } from "../components/pixel/PixelLucide";
 import { cn } from "../lib/utils";
 
 type ToastVariant = "success" | "error" | "info" | "warning";

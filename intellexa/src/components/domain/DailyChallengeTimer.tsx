@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Timer, Flag, CalendarClock, Sparkles, CheckCircle2, Trophy } from "lucide-react";
+import { Timer, Flag, CalendarClock, Sparkles, CheckCircle2, Trophy } from "../pixel/PixelLucide";
 import { useNavigate } from "react-router-dom";
 import Card from "../ui/Card";
 import Button from "../ui/Button";

@@ -5,43 +5,44 @@
 @layer base {
   :root {
     color-scheme: dark;
-    --color-void: 13 15 24;
-    --color-void-100: 22 25 37;
-    --color-void-200: 27 31 45;
-    --color-void-300: 32 37 53;
-    --color-void-400: 38 44 62;
-    --color-void-500: 45 52 73;
-    --color-surface: 30 35 52;
-    --color-surface-light: 40 47 68;
-    --color-surface-border: 56 66 92;
-    --color-neon-blue: 108 144 198;
-    --color-neon-blue2: 6 86 164;
-    --color-neon-purple: 135 120 237;
-    --color-neon-violet: 30 16 125;
-    --color-neon-cyan: 86 140 179;
+    --color-void: 18 21 33;
+    --color-void-100: 28 33 50;
+    --color-void-200: 34 40 60;
+    --color-void-300: 40 47 70;
+    --color-void-400: 47 56 82;
+    --color-void-500: 56 66 96;
+    --color-surface: 38 45 66;
+    --color-surface-light: 49 58 84;
+    --color-surface-border: 72 86 120;
+    --color-neon-blue: 125 165 228;
+    --color-neon-blue2: 16 105 196;
+    --color-neon-purple: 152 138 252;
+    --color-neon-violet: 52 34 170;
+    --color-neon-cyan: 100 172 218;
     --color-state-success: 52 211 153;
     --color-state-warning: 251 191 36;
     --color-state-danger: 248 113 113;
     --color-state-gold: 255 201 77;
     --color-state-silver: 201 211 224;
     --color-state-bronze: 224 164 103;
-    --color-ink: 230 235 245;
-    --color-ink-dim: 150 163 192;
-    --color-ink-faint: 110 122 156;
+    --color-ink: 242 246 253;
+    --color-ink-dim: 176 188 216;
+    --color-ink-faint: 136 149 184;
     --body-wash:
-      radial-gradient(circle at 20% -10%, rgba(108,144,198,0.14), transparent 45%),
-      radial-gradient(circle at 85% 0%, rgba(30,16,125,0.35), transparent 42%);
-    --selection-bg: rgba(108,144,198,0.40);
+      radial-gradient(circle at 20% -10%, rgba(125,165,228,0.18), transparent 45%),
+      radial-gradient(circle at 85% 0%, rgba(52,34,170,0.45), transparent 42%);
+    --selection-bg: rgba(125,165,228,0.40);
     --selection-text: #ffffff;
-    --focus-ring: #6c90c6;
-    --scrollbar-thumb: #323E5C;
-    --scrollbar-thumb-hover: #406e8e;
+    --focus-ring: #7DA5E4;
+    --scrollbar-thumb: #3E4C70;
+    --scrollbar-thumb-hover: #5a8ec8;
     --glass-shadow: 4px 4px 0 0 rgba(0,0,0,0.38);
     --pixel-btn-shadow: rgba(0,0,0,0.55);
-    --pixel-grid: rgba(108,144,198,0.05);
-    --aurora-1: 30 16 125;
-    --aurora-2: 6 86 164;
-    --aurora-3: 108 144 198;
+    --pixel-icon-shadow: rgba(0,0,0,0.45);
+    --pixel-grid: rgba(125,165,228,0.07);
+    --aurora-1: 52 34 170;
+    --aurora-2: 16 105 196;
+    --aurora-3: 125 165 228;
     --shimmer-highlight: rgba(255,255,255,0.06);
   }
 
@@ -56,11 +57,11 @@
     --color-surface: 255 255 255;
     --color-surface-light: 243 246 251;
     --color-surface-border: 206 218 234;
-    --color-neon-blue: 6 86 164;
-    --color-neon-blue2: 30 16 125;
-    --color-neon-purple: 30 16 125;
-    --color-neon-violet: 30 16 125;
-    --color-neon-cyan: 64 110 142;
+    --color-neon-blue: 10 104 196;
+    --color-neon-blue2: 52 34 170;
+    --color-neon-purple: 70 48 200;
+    --color-neon-violet: 70 48 200;
+    --color-neon-cyan: 30 120 172;
     --color-state-success: 5 150 105;
     --color-state-warning: 217 119 6;
     --color-state-danger: 220 38 38;
@@ -72,16 +73,17 @@
     --color-ink-faint: 104 115 140;
     --body-wash:
       linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,252,0.96)),
-      radial-gradient(circle at 22% -8%, rgba(108,144,198,0.22), transparent 42%),
-      radial-gradient(circle at 86% 4%, rgba(30,16,125,0.08), transparent 38%);
-    --selection-bg: rgba(6,86,164,0.18);
+      radial-gradient(circle at 22% -8%, rgba(125,165,228,0.28), transparent 42%),
+      radial-gradient(circle at 86% 4%, rgba(52,34,170,0.10), transparent 38%);
+    --selection-bg: rgba(10,104,196,0.20);
     --selection-text: #161925;
-    --focus-ring: #0656a4;
+    --focus-ring: #0a68c4;
     --scrollbar-thumb: #C3D1E6;
-    --scrollbar-thumb-hover: #6c90c6;
+    --scrollbar-thumb-hover: #7DA5E4;
     --glass-shadow: 4px 4px 0 0 rgba(64,110,142,0.22);
     --pixel-btn-shadow: rgba(22,25,37,0.40);
-    --pixel-grid: rgba(6,86,164,0.06);
+    --pixel-icon-shadow: rgba(22,25,37,0.28);
+    --pixel-grid: rgba(10,104,196,0.07);
     --shimmer-highlight: rgba(255,255,255,0.68);
   }
 
@@ -172,7 +174,7 @@ h1 {
 }
 .student-layout,
 .student-layout * {
-  font-family: "Pixelify Sans", sans-serif !important;
+  font-family: "Pixel Digits", "Pixelify Sans", sans-serif !important;
 }
 .student-layout h1 {
   font-family: "Press Start 2P", "VT323", monospace !important;
@@ -204,7 +206,7 @@ h1 {
 }
 h2, h3, h4 { letter-spacing: 0; }
 .font-mono { font-size-adjust: 0.45; }
-.recharts-wrapper text, svg text { font-family: "Pixelify Sans", sans-serif; }
+.recharts-wrapper text, svg text { font-family: "Pixel Digits", "Pixelify Sans", sans-serif; }
 /* Gamified bevel for badges and achievement frames */
 .badge-pixel {
   box-shadow:
@@ -213,3 +215,31 @@ h2, h3, h4 { letter-spacing: 0; }
     2px 2px 0 0 var(--pixel-btn-shadow);
 }
 
+
+/* Gamified pixel icons */
+.pixel-ico { filter: drop-shadow(1px 1px 0 var(--pixel-icon-shadow)); }
+
+/* Dark theme: the Codexa gradient text is too dark to see, so show it in white */
+:root:not(.theme-light) .text-gradient {
+  background: none;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+/* Clear pixel numerals (0-9 and percent), embedded so they always load */
+@font-face {
+  font-family: "Pixel Digits";
+  src: url(data:font/woff;base64,d09GRgABAAAAAAOwAAoAAAAAB8QAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABPUy8yAAABZAAAAC4AAABgRVBEzWNtYXAAAAGkAAAANgAAAEQAOADNZ2x5ZgAAAfgAAAEvAAAFEtHB/fBoZWFkAAAA9AAAADYAAAA2LwvjSmhoZWEAAAEsAAAAHwAAACQFhAI8aG10eAAAAZQAAAANAAAAHAKUAABsb2NhAAAB3AAAABwAAAAcBtIIVW1heHAAAAFMAAAAFgAAACAAGwA2bmFtZQAAAygAAABdAAAAb3lD1Q9wb3N0AAADiAAAACYAAAA8AIoAewABAAAAAQAAB0Z+Vl8PPPUAAQPoAAAAAOboz7QAAAAA5ujPtAAAAAACJgMCAAAAAwACAAAAAAAAeJxjYGRgYI75b8HAwDSFgYEhj0mNASiCAhgBSr8CxgB4nGNgZGBg4GUwAWIQYGJAAwAH/wBSAAB4nGNgZprCOIGBlYGFgTBgRObYAwGQUmCwZI75b8HAwNzCcAdNvQIDAwDiSAWjAAB4nGOawoATAAAP8ACXAAAAeJxjYGBgYmBgYAZiESDJCKZZGAyANAcQguQUGFQZLP//h7IM/v////D/8/+XwGrBAADUkwr/AAAAAAAAAAAAUAB+ALIA7QEnAVwBlwHEAgwCRwKJeJyNlE1qwzAQhZ8UiltCKcGILrIopuAsuuhC5A4mh9Fpepbgs4S5SkRHimUUWz+WsGTGRm++p5HwDm6y30ns0GCPD7T4xBFf+MYJP/iFBtpzp17OWnX8uFlHs17EHv90yoiLHXgw95sh4sG1+43IBThsB3GRf6bSOCcDiHGVH+ekVZN8OkWsGFagnAzwmmV/Ik4pzHQs8Oiyz9HgreDxSsm9q5yXxtjrNgNRVhWR2vMOdjMnaxDZqxMdmNAOsneuljQLjh4mTueeitQDo+xdjYjRV0mNr0LXTmuH3YprN+h5NHKKc5nWTW0yqp4uXY2ayUKRmKx9vFb5HK7OYOBIxeKzN0Fth9zkb1q3ifZ1ncPobOD6LfhbdeGwqNel1/E3f9UQmbmTv4oq5P+4OUCdAHicLYgxCoAwEAQnGhBBbGws09v7Ah8g+UGKcBykigo+31Nc2GV2AM+K441j+PZNQ2evxfnezMz0c8PIsuudS9hU9Dxilqukyo5ykykENmOxnhxEc8JlPlEfLXkPmAAAAHicY2BiwA94gZiZQZhBhEGUQYxBnEGCQZJBikGaQYaBAwAMvQEGAAA=) format("woff");
+  font-weight: 100 500;
+  font-style: normal;
+  unicode-range: U+0030-0039, U+0025;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pixel Digits";
+  src: url(data:font/woff;base64,d09GRgABAAAAAAPoAAoAAAAAB9gAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABPUy8yAAABZAAAAC4AAABgRnxFC2NtYXAAAAGkAAAANgAAAEQAOADNZ2x5ZgAAAfgAAAFvAAAFLj109YFoZWFkAAAA9AAAADYAAAA2L0rjSmhoZWEAAAEsAAAAHwAAACQFwgJ6aG10eAAAAZQAAAANAAAAHALSAABsb2NhAAAB3AAAABwAAAAcBvIIfm1heHAAAAFMAAAAFgAAACAAGwA2bmFtZQAAA2gAAABYAAAAZqEucbBwb3N0AAADwAAAACYAAAA8AIoAewABAAAAAQAA2/1UZV8PPPUAAQPoAAAAAOboz7QAAAAA5ujPtAAA/+wCZAMWAAAAAwACAAAAAAAAeJxjYGRgYI75b8HAwHSJgYEhjymFASiCAhgBVWcDQgB4nGNgZGBg4GUwAWIQYGJAAwAH/wBSAAB4nGNgZrrEtIeBlYGFgTBgRObYAwGQUmCwZI75b8HAwNzCcAdNvQIDAwAI3QYOAAB4nGO6xIATAAAWegDVAAAAeJxjYGBgYmBgYAZiESDJCKZZGAyANAcQguQUGFQZLP//h7IM/v////D/8/+XwGrBAADUkwr/AAAAAAAAAAAAUQCAALYA8gEtAWIBngHNAhUCUQKXeJyNVL1ugzAQvnOEaNNWVRTRSnSorA4dOrQSypoH6HMwM2fsmCdgingCP1LmTpnZQnqGwz+AacBnsC35u++7H3gAuJxEvniCBcRwB4+whmd4gVd4g3f4gE/IANYbmUSbLJFk+pvxOmOLaJ3xmeR1gftmqfBenQ+qwpTmL3rPB0wrvUUHzRL34qcsi7J0p8EGeVVcTliPPCSvOqSYvq7pvaNqfjFV/NB/jzQYcBPk77GOmZ01h6EGMEPkLicP63ZG6wk0aVBHmhLiDtNtQEgzOth5XOS7IxNLG9OIfcHvVs5mRxEkByqaRE5slbKqDuHnlF2Zu6UTNctT5ERMYb0lhBHFMcGrdO3x3Dzu8Y4tN00Ia5O0AVQvM6dxW37DjOl5itxJF+VJ6CUL3TdfmaOqlE7UhntuNTKxAFEvjldnUcgXq8KUD3UnBaXyFDgL8a8OK9N9bBdyzXYrmXTdR89OyXJ/qjo3QnVErvwBASuMBwB4nC2IQQqAIBQFx3JR4KJlS5edoANEB/AQinwQXOjC4/eLBt5jGMByYngxuO9fJu2OGWNXLTvb7xMLR5CRir8lS29XLZGAMEgUPLd61nUaF1VbfACOQgzneJxjYGLAD3iBmJlBmEGEQZRBjEGcQYJBkkGKQZpBhoEDAAy9AQYAAA==) format("woff");
+  font-weight: 600 900;
+  font-style: normal;
+  unicode-range: U+0030-0039, U+0025;
+  font-display: swap;
+}

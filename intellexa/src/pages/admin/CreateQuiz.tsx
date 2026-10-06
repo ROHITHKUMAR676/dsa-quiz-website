@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Send, CalendarClock, FilePlus2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Send, CalendarClock, FilePlus2, Loader2 } from "../../components/pixel/PixelLucide";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useToast } from "../../context/ToastContext";

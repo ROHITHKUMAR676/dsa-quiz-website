@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Search, Loader2, TriangleAlert } from "lucide-react";
+import { Users, Search, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import Card from "../../components/ui/Card";
 import BadgePill from "../../components/ui/BadgePill";
 import EmptyState from "../../components/ui/EmptyState";

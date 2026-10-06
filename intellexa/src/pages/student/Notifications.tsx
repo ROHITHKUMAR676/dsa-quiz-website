@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bell, Trophy, Award, TrendingUp, Flame, Radio, BellOff, Loader2, TriangleAlert } from "lucide-react";
+import { Bell, Trophy, Award, TrendingUp, Flame, Radio, BellOff, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { useEffect, useState } from "react";

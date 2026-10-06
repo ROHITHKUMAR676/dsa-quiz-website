@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, ListChecks, Pencil, Trash2, Loader2, TriangleAlert } from "lucide-react";
+import { CalendarClock, ListChecks, Pencil, Trash2, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import Card from "../../components/ui/Card";
 import DifficultyBadge from "../../components/ui/DifficultyBadge";
 import BadgePill from "../../components/ui/BadgePill";

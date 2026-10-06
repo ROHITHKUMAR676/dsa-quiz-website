@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trophy, Loader2, TriangleAlert } from "lucide-react";
+import { Trophy, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import Podium from "../../components/domain/Podium";
 import LeaderboardRow from "../../components/domain/LeaderboardRow";
 import Card from "../../components/ui/Card";

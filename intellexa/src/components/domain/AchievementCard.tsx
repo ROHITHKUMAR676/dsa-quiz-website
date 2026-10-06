@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock } from "../pixel/PixelLucide";
 import type { Badge } from "../../types";
 import { cn } from "../../lib/utils";
 import PixelIcon, { type PixelIconName } from "../pixel/PixelIcon";

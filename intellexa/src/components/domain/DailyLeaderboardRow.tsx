@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock3 } from "lucide-react";
+import { CheckCircle2, Clock3 } from "../pixel/PixelLucide";
 import type { BackendDailyLeaderboardEntry } from "../../lib/backend";
 import { cn } from "../../lib/utils";
 import { resolveApiAsset } from "../../lib/api";

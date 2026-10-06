@@ -93,7 +93,7 @@ export default function Splash() {
           initial={{ opacity: 0 }}
           animate={{ opacity: ready ? 1 : 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(108,144,198,0.22)]"
+          className="w-[min(78vw,420px)] drop-shadow-[0_0_32px_rgba(125,165,228,0.25)]"
         >
           <BrandMark className="w-full" onLoad={() => setReady(true)} />
         </motion.div>

@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check } from "../pixel/PixelLucide";
 import { cn } from "../../lib/utils";
 
 export function ThemeSwatch({

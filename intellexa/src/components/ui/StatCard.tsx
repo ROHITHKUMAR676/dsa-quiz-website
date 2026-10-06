@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "../pixel/PixelLucide";
 import Card from "./Card";
 import AnimatedCounter from "./AnimatedCounter";
 import { cn } from "../../lib/utils";

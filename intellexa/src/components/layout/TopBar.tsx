@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Flame, Coins } from "lucide-react";
+import { Bell, Flame, Coins } from "../pixel/PixelLucide";
 import { useApp } from "../../context/AppContext";
 import { studentGamificationApi } from "../../lib/backend";
 import ThemeToggle from "../ui/ThemeToggle";
@@ -37,7 +37,7 @@ export default function TopBar() {
           <span className="font-sans text-lg font-black tracking-tight text-neon-cyan sm:text-xl">C</span>
         </div>
         <div className="min-w-0">
-          <div className="font-sans text-xl font-extrabold leading-none tracking-tight text-gradient sm:text-2xl">Codexa</div>
+          <div className="font-sans text-xl  leading-none tracking-tight text-gradient sm:text-2xl">Codexa</div>
           <div className="mt-1 font-sans text-[10px] font-semibold uppercase leading-none tracking-[0.12em] text-ink-dim sm:text-[11px]">Your DSA partner</div>
         </div>
       </div>

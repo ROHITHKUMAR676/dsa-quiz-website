@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, LogOut, Palette } from "lucide-react";
+import { Settings as SettingsIcon, LogOut, Palette } from "../../components/pixel/PixelLucide";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { ThemeSwatch } from "../../components/ui/ThemeSwatch";
@@ -37,8 +37,8 @@ export default function AdminSettings() {
             active={theme === "dark"}
             label="Nebula"
             sublabel="Current dark design"
-            previewBg="linear-gradient(135deg, #161925, #1E2334)"
-            previewAccent="#568CB3"
+            previewBg="linear-gradient(135deg, #161925, #262D42)"
+            previewAccent="#64ACDA"
             onClick={() => setTheme("dark")}
           />
           <ThemeSwatch
@@ -46,7 +46,7 @@ export default function AdminSettings() {
             label="White Smokey"
             sublabel="Clean bright system"
             previewBg="linear-gradient(135deg, #FFFFFF, #EAF0F7)"
-            previewAccent="#0656a4"
+            previewAccent="#0a68c4"
             onClick={() => setTheme("light")}
           />
         </div>

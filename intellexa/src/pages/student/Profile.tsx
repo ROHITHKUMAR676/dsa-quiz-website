@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Award, CheckSquare, Pencil, Target, TrendingUp, Loader2, TriangleAlert } from "lucide-react";
+import { Award, CheckSquare, Pencil, Target, TrendingUp, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";

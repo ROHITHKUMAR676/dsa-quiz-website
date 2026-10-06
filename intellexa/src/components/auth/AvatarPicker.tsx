@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Camera, UserRound } from "lucide-react";
+import { Camera, UserRound } from "../pixel/PixelLucide";
 import { resolveApiAsset } from "../../lib/api";
 
 interface AvatarPickerProps {

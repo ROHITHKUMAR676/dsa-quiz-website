@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown } from "lucide-react";
+import { Crown } from "../pixel/PixelLucide";
 import type { LeaderboardEntry } from "../../types";
 import { cn } from "../../lib/utils";
 

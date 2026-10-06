@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Zap, Trophy, Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { cn } from "../../lib/utils";

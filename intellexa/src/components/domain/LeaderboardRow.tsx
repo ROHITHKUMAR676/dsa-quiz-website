@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowDown, Minus, Flame, Award } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, Flame, Award } from "../pixel/PixelLucide";
 import type { LeaderboardEntry } from "../../types";
 import { cn } from "../../lib/utils";
 import BadgePill from "../ui/BadgePill";

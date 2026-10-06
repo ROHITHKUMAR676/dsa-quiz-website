@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trophy, TrendingUp, Award, Flame } from "lucide-react";
+import { Trophy, TrendingUp, Award, Flame } from "../pixel/PixelLucide";
 import Button from "../ui/Button";
 import { useApp } from "../../context/AppContext";
 

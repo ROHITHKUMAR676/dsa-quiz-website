@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "../pixel/PixelLucide";
 import { useTheme } from "../../context/ThemeContext";
 import { cn } from "../../lib/utils";
 

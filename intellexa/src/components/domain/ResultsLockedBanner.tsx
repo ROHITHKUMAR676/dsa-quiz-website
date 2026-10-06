@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lock, Hourglass } from "lucide-react";
+import { Lock, Hourglass } from "../pixel/PixelLucide";
 import Card from "../ui/Card";
 import { useCountdown, formatCountdown } from "../../lib/useCountdown";
 

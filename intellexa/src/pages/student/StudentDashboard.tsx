@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Podium, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { Zap, Podium, ChevronRight, Sparkles, Loader2 } from "../../components/pixel/PixelLucide";
 import { useNavigate } from "react-router-dom";
 import ProgressRing from "../../components/ui/ProgressRing";
 import XPBar from "../../components/ui/XPBar";

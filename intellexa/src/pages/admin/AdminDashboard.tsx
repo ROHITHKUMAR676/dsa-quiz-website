@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Users, Radio, Activity, CheckSquare, CalendarClock, TrendingUp, Clock } from "lucide-react";
+import { Users, Radio, Activity, CheckSquare, CalendarClock, TrendingUp, Clock } from "../../components/pixel/PixelLucide";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import StatCard from "../../components/ui/StatCard";
 import Card from "../../components/ui/Card";
 import BadgePill from "../../components/ui/BadgePill";
-import { Loader2, TriangleAlert } from "lucide-react";
+import { Loader2, TriangleAlert } from "../../components/pixel/PixelLucide";
 import { adminApi, type BackendAdminQuiz, type BackendPlatformStats } from "../../lib/backend";
 import { mapBackendMonthlyEntryToLegacy } from "../../lib/leaderboardAdapter";
 import { ApiError } from "../../lib/api";
@@ -91,20 +91,20 @@ export default function AdminDashboard() {
               <AreaChart data={stats.weeklyActivity}>
                 <defs>
                   <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6c90c6" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#6c90c6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#7DA5E4" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#7DA5E4" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorSubs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8778ED" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#8778ED" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#988AFC" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#988AFC" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#323E5C" />
-                <XAxis dataKey="day" stroke="#6e7a9c" fontSize={12} />
-                <YAxis stroke="#6e7a9c" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#1E2334", border: "1px solid #38425C", borderRadius: 12, fontSize: 12 }} />
-                <Area type="monotone" dataKey="users" stroke="#6c90c6" fill="url(#colorUsers)" strokeWidth={2} />
-                <Area type="monotone" dataKey="submissions" stroke="#8778ED" fill="url(#colorSubs)" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
+                <XAxis dataKey="day" stroke="#8895B8" fontSize={12} />
+                <YAxis stroke="#8895B8" fontSize={12} />
+                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
+                <Area type="monotone" dataKey="users" stroke="#7DA5E4" fill="url(#colorUsers)" strokeWidth={2} />
+                <Area type="monotone" dataKey="submissions" stroke="#988AFC" fill="url(#colorSubs)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: "#1E2334", border: "1px solid #38425C", borderRadius: 12, fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

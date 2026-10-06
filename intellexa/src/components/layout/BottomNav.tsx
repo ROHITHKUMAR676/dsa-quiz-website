@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Trophy, Bell, User, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Trophy, Bell, User, Settings, LogOut } from "../pixel/PixelLucide";
 import { useApp } from "../../context/AppContext";
 import { cn } from "../../lib/utils";
 
