@@ -174,8 +174,8 @@ export default function ProfileSetup() {
                 value={form.registerNumber}
                 onChange={(e) => update("registerNumber", sanitizeRegisterNumberInput(e.target.value))}
                 onBlur={() => touch("registerNumber")}
-                placeholder="21CS1042"
-                maxLength={15}
+                placeholder="21162515799"
+                maxLength={13}
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
