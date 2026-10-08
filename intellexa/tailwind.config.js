@@ -39,32 +39,35 @@ export default {
         },
       },
       fontFamily: {
-        display: ["'Pixel Digits'", "'Pixelify Sans'", "sans-serif"],
-        body: ["'Pixel Digits'", "'Pixelify Sans'", "sans-serif"],
-        mono: ["'Pixel Digits'", "'VT323'", "monospace"],
-        pixel: ["'Press Start 2P'", "monospace"],
+        // Silkscreen for headings and labels, VT323 for everything you read.
+        // Both are bundled in src/assets/fonts so they never depend on a CDN.
+        display: ["'Silkscreen'", "'VT323'", "monospace"],
+        body: ["'VT323'", "monospace"],
+        mono: ["'VT323'", "monospace"],
+        pixel: ["'Silkscreen'", "'VT323'", "monospace"],
       },
       backgroundImage: {
-        "grid-glow": "radial-gradient(circle at 50% 0%, rgba(125,165,228,0.18), transparent 60%)",
+        "grid-glow": "none",
         aurora: "linear-gradient(120deg, rgb(var(--aurora-1)) 0%, rgb(var(--aurora-2)) 55%, rgb(var(--aurora-3)) 100%)",
         "aurora-soft": "linear-gradient(120deg, rgb(var(--color-neon-blue) / 0.25) 0%, rgb(var(--color-neon-purple) / 0.25) 50%, rgb(var(--color-neon-cyan) / 0.25) 100%)",
       },
       boxShadow: {
-        glow: "0 0 24px rgba(16,105,196,0.50)",
-        "glow-purple": "0 0 24px rgba(152,138,252,0.40)",
-        "glow-cyan": "0 0 24px rgba(100,172,218,0.40)",
+        glow: "0 0 0 2px rgb(var(--color-ink) / 0.35)",
+        "glow-purple": "0 0 0 2px rgb(var(--color-ink) / 0.25)",
+        "glow-cyan": "0 0 0 2px rgb(var(--color-ink) / 0.25)",
         card: "var(--glass-shadow)",
         pixel: "3px 3px 0 0 var(--pixel-btn-shadow)",
         "pixel-sm": "2px 2px 0 0 var(--pixel-btn-shadow)",
         "pixel-pressed": "1px 1px 0 0 var(--pixel-btn-shadow)",
       },
       borderRadius: {
-        xl2: "6px",
-        md: "3px",
-        lg: "4px",
-        xl: "4px",
-        "2xl": "6px",
-        "3xl": "6px",
+        // square corners everywhere: pixel art has no rounded edges
+        xl2: "0px",
+        md: "0px",
+        lg: "0px",
+        xl: "0px",
+        "2xl": "0px",
+        "3xl": "0px",
       },
       keyframes: {
         "pixel-twinkle": {
@@ -74,6 +77,22 @@ export default {
         "pixel-bob": {
           "0%,100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-4px)" },
+        },
+        "drift-x": {
+          from: { transform: "translate3d(-20vw, 0, 0)" },
+          to: { transform: "translate3d(120vw, 0, 0)" },
+        },
+        "ship-fly": {
+          from: { transform: "translate3d(-10vw, 20vh, 0)" },
+          to: { transform: "translate3d(95vw, -35vh, 0)" },
+        },
+        "star-drift": {
+          from: { backgroundPosition: "0 0" },
+          to: { backgroundPosition: "0 512px" },
+        },
+        "flame": {
+          "0%,100%": { opacity: 1 },
+          "50%": { opacity: 0 },
         },
         float: {
           "0%,100%": { transform: "translateY(0px)" },

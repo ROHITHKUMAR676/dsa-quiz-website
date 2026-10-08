@@ -85,7 +85,7 @@ export default function Profile() {
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden">
-        <div className="h-28 sm:h-36 bg-aurora relative">
+        <div className="h-28 sm:h-36 bg-void-300 border-b-2 border-surface-border relative">
           <div className="absolute inset-0 bg-void-100/20" />
         </div>
         <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-14 relative">

@@ -86,4 +86,4 @@ export interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-}
+}

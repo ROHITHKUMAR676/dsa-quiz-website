@@ -2,89 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "VT323";
+  src: url("./assets/fonts/vt323-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Silkscreen";
+  src: url("./assets/fonts/silkscreen-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Silkscreen";
+  src: url("./assets/fonts/silkscreen-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     color-scheme: dark;
-    --color-void: 18 21 33;
-    --color-void-100: 28 33 50;
-    --color-void-200: 34 40 60;
-    --color-void-300: 40 47 70;
-    --color-void-400: 47 56 82;
-    --color-void-500: 56 66 96;
-    --color-surface: 38 45 66;
-    --color-surface-light: 49 58 84;
-    --color-surface-border: 72 86 120;
-    --color-neon-blue: 125 165 228;
-    --color-neon-blue2: 16 105 196;
-    --color-neon-purple: 152 138 252;
-    --color-neon-violet: 52 34 170;
-    --color-neon-cyan: 100 172 218;
-    --color-state-success: 52 211 153;
-    --color-state-warning: 251 191 36;
-    --color-state-danger: 248 113 113;
-    --color-state-gold: 255 201 77;
-    --color-state-silver: 201 211 224;
-    --color-state-bronze: 224 164 103;
-    --color-ink: 242 246 253;
-    --color-ink-dim: 176 188 216;
-    --color-ink-faint: 136 149 184;
-    --body-wash:
-      radial-gradient(circle at 20% -10%, rgba(125,165,228,0.18), transparent 45%),
-      radial-gradient(circle at 85% 0%, rgba(52,34,170,0.45), transparent 42%);
-    --selection-bg: rgba(125,165,228,0.40);
-    --selection-text: #ffffff;
-    --focus-ring: #7DA5E4;
-    --scrollbar-thumb: #3E4C70;
-    --scrollbar-thumb-hover: #5a8ec8;
-    --glass-shadow: 4px 4px 0 0 rgba(0,0,0,0.38);
-    --pixel-btn-shadow: rgba(0,0,0,0.55);
-    --pixel-icon-shadow: rgba(0,0,0,0.45);
-    --pixel-grid: rgba(125,165,228,0.07);
-    --aurora-1: 52 34 170;
-    --aurora-2: 16 105 196;
-    --aurora-3: 125 165 228;
-    --shimmer-highlight: rgba(255,255,255,0.06);
+    /* Deep space: pure black with white pixels */
+    --color-void: 0 0 0;
+    --color-void-100: 0 0 0;
+    --color-void-200: 10 10 10;
+    --color-void-300: 18 18 18;
+    --color-void-400: 30 30 30;
+    --color-void-500: 44 44 44;
+    --color-surface: 8 8 8;
+    --color-surface-light: 22 22 22;
+    --color-surface-border: 170 170 170;
+    --color-neon-blue: 255 255 255;
+    --color-neon-blue2: 215 215 215;
+    --color-neon-purple: 230 230 230;
+    --color-neon-violet: 170 170 170;
+    --color-neon-cyan: 200 200 200;
+    --color-state-success: 120 235 150;
+    --color-state-warning: 255 215 110;
+    --color-state-danger: 255 120 120;
+    --color-state-gold: 255 255 255;
+    --color-state-silver: 190 190 190;
+    --color-state-bronze: 130 130 130;
+    --color-ink: 255 255 255;
+    --color-ink-dim: 205 205 205;
+    --color-ink-faint: 150 150 150;
+    --body-wash: none;
+    --selection-bg: #ffffff;
+    --selection-text: #000000;
+    --focus-ring: #ffffff;
+    --scrollbar-thumb: #8a8a8a;
+    --scrollbar-thumb-hover: #ffffff;
+    --glass-shadow: 4px 4px 0 0 rgba(255,255,255,0.18);
+    --pixel-btn-shadow: rgba(255,255,255,0.35);
+    --pixel-icon-shadow: rgba(0,0,0,0.6);
+    --pixel-grid: rgba(255,255,255,0.04);
+    --aurora-1: 255 255 255;
+    --aurora-2: 255 255 255;
+    --aurora-3: 255 255 255;
+    --shimmer-highlight: rgba(255,255,255,0.08);
+    --star-opacity: 1;
   }
 
+  /* Light mode: the same star chart, printed black on white */
   .theme-light {
     color-scheme: light;
     --color-void: 255 255 255;
-    --color-void-100: 247 249 252;
-    --color-void-200: 241 245 250;
-    --color-void-300: 234 240 247;
-    --color-void-400: 224 232 242;
-    --color-void-500: 210 221 235;
+    --color-void-100: 255 255 255;
+    --color-void-200: 246 246 246;
+    --color-void-300: 236 236 236;
+    --color-void-400: 222 222 222;
+    --color-void-500: 204 204 204;
     --color-surface: 255 255 255;
-    --color-surface-light: 243 246 251;
-    --color-surface-border: 206 218 234;
-    --color-neon-blue: 10 104 196;
-    --color-neon-blue2: 52 34 170;
-    --color-neon-purple: 70 48 200;
-    --color-neon-violet: 70 48 200;
-    --color-neon-cyan: 30 120 172;
-    --color-state-success: 5 150 105;
-    --color-state-warning: 217 119 6;
-    --color-state-danger: 220 38 38;
-    --color-state-gold: 202 138 4;
-    --color-state-silver: 100 116 139;
-    --color-state-bronze: 180 83 9;
-    --color-ink: 22 25 37;
-    --color-ink-dim: 66 74 97;
-    --color-ink-faint: 104 115 140;
-    --body-wash:
-      linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,252,0.96)),
-      radial-gradient(circle at 22% -8%, rgba(125,165,228,0.28), transparent 42%),
-      radial-gradient(circle at 86% 4%, rgba(52,34,170,0.10), transparent 38%);
-    --selection-bg: rgba(10,104,196,0.20);
-    --selection-text: #161925;
-    --focus-ring: #0a68c4;
-    --scrollbar-thumb: #C3D1E6;
-    --scrollbar-thumb-hover: #7DA5E4;
-    --glass-shadow: 4px 4px 0 0 rgba(64,110,142,0.22);
-    --pixel-btn-shadow: rgba(22,25,37,0.40);
-    --pixel-icon-shadow: rgba(22,25,37,0.28);
-    --pixel-grid: rgba(10,104,196,0.07);
-    --shimmer-highlight: rgba(255,255,255,0.68);
+    --color-surface-light: 240 240 240;
+    --color-surface-border: 60 60 60;
+    --color-neon-blue: 0 0 0;
+    --color-neon-blue2: 40 40 40;
+    --color-neon-purple: 25 25 25;
+    --color-neon-violet: 90 90 90;
+    --color-neon-cyan: 60 60 60;
+    --color-state-success: 5 130 70;
+    --color-state-warning: 180 110 0;
+    --color-state-danger: 200 30 30;
+    --color-state-gold: 0 0 0;
+    --color-state-silver: 90 90 90;
+    --color-state-bronze: 140 140 140;
+    --color-ink: 0 0 0;
+    --color-ink-dim: 55 55 55;
+    --color-ink-faint: 105 105 105;
+    --body-wash: none;
+    --selection-bg: #000000;
+    --selection-text: #ffffff;
+    --focus-ring: #000000;
+    --scrollbar-thumb: #8a8a8a;
+    --scrollbar-thumb-hover: #000000;
+    --glass-shadow: 4px 4px 0 0 rgba(0,0,0,0.22);
+    --pixel-btn-shadow: rgba(0,0,0,0.45);
+    --pixel-icon-shadow: rgba(0,0,0,0.25);
+    --pixel-grid: rgba(0,0,0,0.04);
+    --shimmer-highlight: rgba(255,255,255,0.7);
+    --aurora-1: 0 0 0;
+    --aurora-2: 0 0 0;
+    --aurora-3: 0 0 0;
+    --star-opacity: 0.55;
   }
 
   * {
@@ -92,36 +113,61 @@
   }
   html {
     scroll-behavior: smooth;
+    font-size: 18px;
   }
   body {
     @apply bg-void-100 text-ink font-body antialiased;
     background-image: var(--body-wash);
     background-attachment: fixed;
     min-height: 100dvh;
+    letter-spacing: 0.01em;
   }
   h1, h2, h3, h4 {
-    @apply font-display tracking-tight;
+    @apply font-display;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
-  body::before {
+
+  /* Pixel starfield: three layers of square stars, drifting slowly */
+  body::before,
+  body::after {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: -2;
     pointer-events: none;
-    background-image:
-      linear-gradient(var(--pixel-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--pixel-grid) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-color: rgb(var(--color-ink));
+    opacity: var(--star-opacity);
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+  }
+  body::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' shape-rendering='crispEdges'%3E%3Crect x='136' y='64' width='2' height='2'/%3E%3Crect x='260' y='120' width='2' height='2'/%3E%3Crect x='506' y='460' width='2' height='2'/%3E%3Crect x='482' y='388' width='2' height='2'/%3E%3Crect x='214' y='96' width='2' height='2'/%3E%3Crect x='498' y='28' width='2' height='2'/%3E%3Crect x='398' y='442' width='2' height='2'/%3E%3Crect x='2' y='456' width='2' height='2'/%3E%3Crect x='272' y='234' width='2' height='2'/%3E%3Crect x='104' y='324' width='2' height='2'/%3E%3Crect x='30' y='22' width='2' height='2'/%3E%3Crect x='26' y='8' width='2' height='2'/%3E%3Crect x='390' y='220' width='2' height='2'/%3E%3Crect x='432' y='28' width='2' height='2'/%3E%3Crect x='226' y='448' width='2' height='2'/%3E%3Crect x='506' y='238' width='2' height='2'/%3E%3Crect x='352' y='236' width='2' height='2'/%3E%3Crect x='224' y='470' width='2' height='2'/%3E%3Crect x='296' y='22' width='2' height='2'/%3E%3Crect x='426' y='102' width='2' height='2'/%3E%3Crect x='190' y='302' width='2' height='2'/%3E%3Crect x='122' y='340' width='2' height='2'/%3E%3Crect x='432' y='194' width='2' height='2'/%3E%3Crect x='310' y='290' width='2' height='2'/%3E%3Crect x='510' y='402' width='2' height='2'/%3E%3Crect x='34' y='490' width='2' height='2'/%3E%3Crect x='248' y='412' width='2' height='2'/%3E%3Crect x='424' y='176' width='2' height='2'/%3E%3Crect x='374' y='382' width='2' height='2'/%3E%3Crect x='88' y='448' width='2' height='2'/%3E%3Crect x='110' y='166' width='2' height='2'/%3E%3Crect x='402' y='378' width='2' height='2'/%3E%3Crect x='500' y='30' width='2' height='2'/%3E%3Crect x='480' y='44' width='2' height='2'/%3E%3Crect x='314' y='402' width='2' height='2'/%3E%3Crect x='174' y='172' width='2' height='2'/%3E%3Crect x='232' y='12' width='2' height='2'/%3E%3Crect x='204' y='236' width='2' height='2'/%3E%3Crect x='414' y='352' width='2' height='2'/%3E%3Crect x='360' y='470' width='2' height='2'/%3E%3Crect x='274' y='4' width='2' height='2'/%3E%3Crect x='392' y='132' width='2' height='2'/%3E%3Crect x='210' y='436' width='2' height='2'/%3E%3Crect x='56' y='492' width='2' height='2'/%3E%3Crect x='372' y='204' width='2' height='2'/%3E%3Crect x='422' y='496' width='2' height='2'/%3E%3Crect x='364' y='424' width='2' height='2'/%3E%3Crect x='354' y='0' width='2' height='2'/%3E%3Crect x='338' y='468' width='2' height='2'/%3E%3Crect x='28' y='234' width='2' height='2'/%3E%3Crect x='180' y='184' width='2' height='2'/%3E%3Crect x='92' y='260' width='2' height='2'/%3E%3Crect x='32' y='72' width='2' height='2'/%3E%3Crect x='84' y='16' width='2' height='2'/%3E%3Crect x='462' y='14' width='2' height='2'/%3E%3Crect x='286' y='254' width='2' height='2'/%3E%3Crect x='274' y='112' width='2' height='2'/%3E%3Crect x='188' y='352' width='2' height='2'/%3E%3Crect x='296' y='70' width='2' height='2'/%3E%3Crect x='170' y='162' width='2' height='2'/%3E%3Crect x='260' y='172' width='2' height='2'/%3E%3Crect x='278' y='300' width='2' height='2'/%3E%3Crect x='464' y='328' width='2' height='2'/%3E%3Crect x='508' y='484' width='2' height='2'/%3E%3Crect x='116' y='24' width='2' height='2'/%3E%3Crect x='318' y='394' width='2' height='2'/%3E%3Crect x='350' y='430' width='2' height='2'/%3E%3Crect x='192' y='264' width='2' height='2'/%3E%3Crect x='110' y='258' width='2' height='2'/%3E%3Crect x='214' y='442' width='2' height='2'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='384' height='384' shape-rendering='crispEdges'%3E%3Crect x='42' y='69' width='3' height='3'/%3E%3Crect x='63' y='276' width='3' height='3'/%3E%3Crect x='129' y='234' width='3' height='3'/%3E%3Crect x='192' y='162' width='3' height='3'/%3E%3Crect x='27' y='120' width='3' height='3'/%3E%3Crect x='330' y='300' width='3' height='3'/%3E%3Crect x='285' y='339' width='3' height='3'/%3E%3Crect x='204' y='27' width='3' height='3'/%3E%3Crect x='21' y='279' width='3' height='3'/%3E%3Crect x='357' y='243' width='3' height='3'/%3E%3Crect x='291' y='324' width='3' height='3'/%3E%3Crect x='126' y='135' width='3' height='3'/%3E%3Crect x='180' y='177' width='3' height='3'/%3E%3Crect x='18' y='135' width='3' height='3'/%3E%3Crect x='249' y='132' width='3' height='3'/%3E%3Crect x='102' y='276' width='3' height='3'/%3E%3Crect x='138' y='342' width='3' height='3'/%3E%3Crect x='318' y='279' width='3' height='3'/%3E%3Crect x='270' y='276' width='3' height='3'/%3E%3Crect x='342' y='123' width='3' height='3'/%3E%3Crect x='306' y='354' width='3' height='3'/%3E%3Crect x='189' y='375' width='3' height='3'/%3E%3Crect x='213' y='381' width='3' height='3'/%3E%3Crect x='270' y='348' width='3' height='3'/%3E%3Crect x='354' y='267' width='3' height='3'/%3E%3Crect x='348' y='372' width='3' height='3'/%3E%3Crect x='168' y='249' width='3' height='3'/%3E%3Crect x='126' y='204' width='3' height='3'/%3E%3Crect x='366' y='237' width='3' height='3'/%3E%3Crect x='231' y='312' width='3' height='3'/%3E%3Crect x='237' y='159' width='3' height='3'/%3E%3Crect x='375' y='279' width='3' height='3'/%3E%3Crect x='57' y='261' width='3' height='3'/%3E%3Crect x='6' y='144' width='3' height='3'/%3E%3Crect x='81' y='45' width='3' height='3'/%3E%3Crect x='36' y='207' width='3' height='3'/%3E%3Crect x='174' y='81' width='3' height='3'/%3E%3Crect x='102' y='204' width='3' height='3'/%3E%3Crect x='186' y='159' width='3' height='3'/%3E%3Crect x='45' y='324' width='3' height='3'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' shape-rendering='crispEdges'%3E%3Crect x='136' y='64' width='2' height='2'/%3E%3Crect x='260' y='120' width='2' height='2'/%3E%3Crect x='506' y='460' width='2' height='2'/%3E%3Crect x='482' y='388' width='2' height='2'/%3E%3Crect x='214' y='96' width='2' height='2'/%3E%3Crect x='498' y='28' width='2' height='2'/%3E%3Crect x='398' y='442' width='2' height='2'/%3E%3Crect x='2' y='456' width='2' height='2'/%3E%3Crect x='272' y='234' width='2' height='2'/%3E%3Crect x='104' y='324' width='2' height='2'/%3E%3Crect x='30' y='22' width='2' height='2'/%3E%3Crect x='26' y='8' width='2' height='2'/%3E%3Crect x='390' y='220' width='2' height='2'/%3E%3Crect x='432' y='28' width='2' height='2'/%3E%3Crect x='226' y='448' width='2' height='2'/%3E%3Crect x='506' y='238' width='2' height='2'/%3E%3Crect x='352' y='236' width='2' height='2'/%3E%3Crect x='224' y='470' width='2' height='2'/%3E%3Crect x='296' y='22' width='2' height='2'/%3E%3Crect x='426' y='102' width='2' height='2'/%3E%3Crect x='190' y='302' width='2' height='2'/%3E%3Crect x='122' y='340' width='2' height='2'/%3E%3Crect x='432' y='194' width='2' height='2'/%3E%3Crect x='310' y='290' width='2' height='2'/%3E%3Crect x='510' y='402' width='2' height='2'/%3E%3Crect x='34' y='490' width='2' height='2'/%3E%3Crect x='248' y='412' width='2' height='2'/%3E%3Crect x='424' y='176' width='2' height='2'/%3E%3Crect x='374' y='382' width='2' height='2'/%3E%3Crect x='88' y='448' width='2' height='2'/%3E%3Crect x='110' y='166' width='2' height='2'/%3E%3Crect x='402' y='378' width='2' height='2'/%3E%3Crect x='500' y='30' width='2' height='2'/%3E%3Crect x='480' y='44' width='2' height='2'/%3E%3Crect x='314' y='402' width='2' height='2'/%3E%3Crect x='174' y='172' width='2' height='2'/%3E%3Crect x='232' y='12' width='2' height='2'/%3E%3Crect x='204' y='236' width='2' height='2'/%3E%3Crect x='414' y='352' width='2' height='2'/%3E%3Crect x='360' y='470' width='2' height='2'/%3E%3Crect x='274' y='4' width='2' height='2'/%3E%3Crect x='392' y='132' width='2' height='2'/%3E%3Crect x='210' y='436' width='2' height='2'/%3E%3Crect x='56' y='492' width='2' height='2'/%3E%3Crect x='372' y='204' width='2' height='2'/%3E%3Crect x='422' y='496' width='2' height='2'/%3E%3Crect x='364' y='424' width='2' height='2'/%3E%3Crect x='354' y='0' width='2' height='2'/%3E%3Crect x='338' y='468' width='2' height='2'/%3E%3Crect x='28' y='234' width='2' height='2'/%3E%3Crect x='180' y='184' width='2' height='2'/%3E%3Crect x='92' y='260' width='2' height='2'/%3E%3Crect x='32' y='72' width='2' height='2'/%3E%3Crect x='84' y='16' width='2' height='2'/%3E%3Crect x='462' y='14' width='2' height='2'/%3E%3Crect x='286' y='254' width='2' height='2'/%3E%3Crect x='274' y='112' width='2' height='2'/%3E%3Crect x='188' y='352' width='2' height='2'/%3E%3Crect x='296' y='70' width='2' height='2'/%3E%3Crect x='170' y='162' width='2' height='2'/%3E%3Crect x='260' y='172' width='2' height='2'/%3E%3Crect x='278' y='300' width='2' height='2'/%3E%3Crect x='464' y='328' width='2' height='2'/%3E%3Crect x='508' y='484' width='2' height='2'/%3E%3Crect x='116' y='24' width='2' height='2'/%3E%3Crect x='318' y='394' width='2' height='2'/%3E%3Crect x='350' y='430' width='2' height='2'/%3E%3Crect x='192' y='264' width='2' height='2'/%3E%3Crect x='110' y='258' width='2' height='2'/%3E%3Crect x='214' y='442' width='2' height='2'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='384' height='384' shape-rendering='crispEdges'%3E%3Crect x='42' y='69' width='3' height='3'/%3E%3Crect x='63' y='276' width='3' height='3'/%3E%3Crect x='129' y='234' width='3' height='3'/%3E%3Crect x='192' y='162' width='3' height='3'/%3E%3Crect x='27' y='120' width='3' height='3'/%3E%3Crect x='330' y='300' width='3' height='3'/%3E%3Crect x='285' y='339' width='3' height='3'/%3E%3Crect x='204' y='27' width='3' height='3'/%3E%3Crect x='21' y='279' width='3' height='3'/%3E%3Crect x='357' y='243' width='3' height='3'/%3E%3Crect x='291' y='324' width='3' height='3'/%3E%3Crect x='126' y='135' width='3' height='3'/%3E%3Crect x='180' y='177' width='3' height='3'/%3E%3Crect x='18' y='135' width='3' height='3'/%3E%3Crect x='249' y='132' width='3' height='3'/%3E%3Crect x='102' y='276' width='3' height='3'/%3E%3Crect x='138' y='342' width='3' height='3'/%3E%3Crect x='318' y='279' width='3' height='3'/%3E%3Crect x='270' y='276' width='3' height='3'/%3E%3Crect x='342' y='123' width='3' height='3'/%3E%3Crect x='306' y='354' width='3' height='3'/%3E%3Crect x='189' y='375' width='3' height='3'/%3E%3Crect x='213' y='381' width='3' height='3'/%3E%3Crect x='270' y='348' width='3' height='3'/%3E%3Crect x='354' y='267' width='3' height='3'/%3E%3Crect x='348' y='372' width='3' height='3'/%3E%3Crect x='168' y='249' width='3' height='3'/%3E%3Crect x='126' y='204' width='3' height='3'/%3E%3Crect x='366' y='237' width='3' height='3'/%3E%3Crect x='231' y='312' width='3' height='3'/%3E%3Crect x='237' y='159' width='3' height='3'/%3E%3Crect x='375' y='279' width='3' height='3'/%3E%3Crect x='57' y='261' width='3' height='3'/%3E%3Crect x='6' y='144' width='3' height='3'/%3E%3Crect x='81' y='45' width='3' height='3'/%3E%3Crect x='36' y='207' width='3' height='3'/%3E%3Crect x='174' y='81' width='3' height='3'/%3E%3Crect x='102' y='204' width='3' height='3'/%3E%3Crect x='186' y='159' width='3' height='3'/%3E%3Crect x='45' y='324' width='3' height='3'/%3E%3C/svg%3E");
+    -webkit-mask-size: 512px 512px, 384px 384px;
+    mask-size: 512px 512px, 384px 384px;
+    -webkit-mask-position: 0 0, 130px 90px;
+    mask-position: 0 0, 130px 90px;
+    opacity: calc(var(--star-opacity) * 0.7);
+  }
+  body::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' shape-rendering='crispEdges'%3E%3Crect x='240' y='132' width='4' height='4'/%3E%3Crect x='376' y='484' width='4' height='4'/%3E%3Crect x='64' y='12' width='4' height='4'/%3E%3Crect x='480' y='264' width='4' height='4'/%3E%3Crect x='236' y='196' width='4' height='4'/%3E%3Crect x='480' y='484' width='4' height='4'/%3E%3Crect x='404' y='152' width='4' height='4'/%3E%3Crect x='236' y='152' width='4' height='4'/%3E%3Crect x='396' y='12' width='4' height='4'/%3E%3Crect x='64' y='160' width='4' height='4'/%3E%3Crect x='40' y='308' width='4' height='4'/%3E%3Crect x='28' y='272' width='4' height='4'/%3E%3Crect x='484' y='396' width='4' height='4'/%3E%3Crect x='436' y='404' width='4' height='4'/%3E%3Crect x='452' y='136' width='4' height='4'/%3E%3Crect x='372' y='96' width='4' height='4'/%3E%3Crect x='36' y='136' width='4' height='4'/%3E%3Crect x='504' y='220' width='4' height='4'/%3E%3Crect x='264' y='444' width='4' height='4'/%3E%3Crect x='308' y='428' width='4' height='4'/%3E%3Crect x='392' y='356' width='4' height='4'/%3E%3Crect x='416' y='236' width='4' height='4'/%3E%3Crect x='344' y='28' width='4' height='4'/%3E%3Crect x='284' y='164' width='4' height='4'/%3E%3Crect x='332' y='104' width='4' height='4'/%3E%3Crect x='216' y='272' width='4' height='4'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' shape-rendering='crispEdges'%3E%3Crect x='240' y='132' width='4' height='4'/%3E%3Crect x='376' y='484' width='4' height='4'/%3E%3Crect x='64' y='12' width='4' height='4'/%3E%3Crect x='480' y='264' width='4' height='4'/%3E%3Crect x='236' y='196' width='4' height='4'/%3E%3Crect x='480' y='484' width='4' height='4'/%3E%3Crect x='404' y='152' width='4' height='4'/%3E%3Crect x='236' y='152' width='4' height='4'/%3E%3Crect x='396' y='12' width='4' height='4'/%3E%3Crect x='64' y='160' width='4' height='4'/%3E%3Crect x='40' y='308' width='4' height='4'/%3E%3Crect x='28' y='272' width='4' height='4'/%3E%3Crect x='484' y='396' width='4' height='4'/%3E%3Crect x='436' y='404' width='4' height='4'/%3E%3Crect x='452' y='136' width='4' height='4'/%3E%3Crect x='372' y='96' width='4' height='4'/%3E%3Crect x='36' y='136' width='4' height='4'/%3E%3Crect x='504' y='220' width='4' height='4'/%3E%3Crect x='264' y='444' width='4' height='4'/%3E%3Crect x='308' y='428' width='4' height='4'/%3E%3Crect x='392' y='356' width='4' height='4'/%3E%3Crect x='416' y='236' width='4' height='4'/%3E%3Crect x='344' y='28' width='4' height='4'/%3E%3Crect x='284' y='164' width='4' height='4'/%3E%3Crect x='332' y='104' width='4' height='4'/%3E%3Crect x='216' y='272' width='4' height='4'/%3E%3C/svg%3E");
+    -webkit-mask-size: 512px 512px;
+    mask-size: 512px 512px;
+    -webkit-mask-position: 200px 260px;
+    mask-position: 200px 260px;
+    animation: pixel-twinkle 2.4s steps(2, end) infinite;
   }
   ::selection {
     background: var(--selection-bg);
     color: var(--selection-text);
   }
   :focus-visible {
-    outline: 2px solid var(--focus-ring);
+    outline: 2px dashed var(--focus-ring);
     outline-offset: 2px;
   }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 0; }
   ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
@@ -129,15 +175,15 @@
 
 @layer components {
   .glass {
-    @apply bg-surface/60 backdrop-blur-xl border border-surface-border;
+    @apply bg-surface/90 border-2 border-surface-border;
     box-shadow: var(--glass-shadow);
   }
   .glass-strong {
-    @apply bg-surface/85 backdrop-blur-2xl border border-surface-border;
+    @apply bg-surface/95 border-2 border-surface-border;
     box-shadow: var(--glass-shadow);
   }
   .text-gradient {
-    @apply bg-aurora bg-clip-text text-transparent;
+    @apply text-ink;
   }
   .skeleton {
     @apply relative overflow-hidden bg-surface-light rounded-lg;
@@ -160,53 +206,13 @@
   }
 }
 
-/* Pixel accents: page titles only */
-h1 {
-  font-family: "Press Start 2P", "VT323", monospace !important;
-  font-size: 1.05rem !important;
-  line-height: 1.55 !important;
-  letter-spacing: 0 !important;
-  font-weight: 400 !important;
-  overflow-wrap: anywhere;
-}
-@media (min-width: 640px) {
-  h1 { font-size: 1.3rem !important; }
-}
-.student-layout,
-.student-layout * {
-  font-family: "Pixel Digits", "Pixelify Sans", sans-serif !important;
-}
-.student-layout h1 {
-  font-family: "Press Start 2P", "VT323", monospace !important;
-}
-.student-layout .quiz-arena,
-.student-layout .quiz-arena * {
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
-}
-.admin-layout,
-.admin-layout .font-display,
-.admin-layout h1,
-.admin-layout h2,
-.admin-layout h3,
-.admin-layout h4 {
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
-}
-.admin-layout h1 {
-  font-size: clamp(1.5rem, 2vw, 1.875rem) !important;
-  line-height: 1.25 !important;
-  letter-spacing: -0.025em !important;
-  font-weight: 700 !important;
-  overflow-wrap: normal;
-}
-.admin-layout .recharts-wrapper text,
-.admin-layout svg text { font-family: Inter, ui-sans-serif, system-ui, sans-serif !important; }
 .pixel-bar {
   -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
   mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
 }
 h2, h3, h4 { letter-spacing: 0; }
 .font-mono { font-size-adjust: 0.45; }
-.recharts-wrapper text, svg text { font-family: "Pixel Digits", "Pixelify Sans", sans-serif; }
+
 /* Gamified bevel for badges and achievement frames */
 .badge-pixel {
   box-shadow:
@@ -226,20 +232,21 @@ h2, h3, h4 { letter-spacing: 0; }
   -webkit-text-fill-color: #ffffff;
 }
 
-/* Clear pixel numerals (0-9 and percent), embedded so they always load */
-@font-face {
-  font-family: "Pixel Digits";
-  src: url(data:font/woff;base64,d09GRgABAAAAAAOwAAoAAAAAB8QAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABPUy8yAAABZAAAAC4AAABgRVBEzWNtYXAAAAGkAAAANgAAAEQAOADNZ2x5ZgAAAfgAAAEvAAAFEtHB/fBoZWFkAAAA9AAAADYAAAA2LwvjSmhoZWEAAAEsAAAAHwAAACQFhAI8aG10eAAAAZQAAAANAAAAHAKUAABsb2NhAAAB3AAAABwAAAAcBtIIVW1heHAAAAFMAAAAFgAAACAAGwA2bmFtZQAAAygAAABdAAAAb3lD1Q9wb3N0AAADiAAAACYAAAA8AIoAewABAAAAAQAAB0Z+Vl8PPPUAAQPoAAAAAOboz7QAAAAA5ujPtAAAAAACJgMCAAAAAwACAAAAAAAAeJxjYGRgYI75b8HAwDSFgYEhj0mNASiCAhgBSr8CxgB4nGNgZGBg4GUwAWIQYGJAAwAH/wBSAAB4nGNgZprCOIGBlYGFgTBgRObYAwGQUmCwZI75b8HAwNzCcAdNvQIDAwDiSAWjAAB4nGOawoATAAAP8ACXAAAAeJxjYGBgYmBgYAZiESDJCKZZGAyANAcQguQUGFQZLP//h7IM/v////D/8/+XwGrBAADUkwr/AAAAAAAAAAAAUAB+ALIA7QEnAVwBlwHEAgwCRwKJeJyNlE1qwzAQhZ8UiltCKcGILrIopuAsuuhC5A4mh9Fpepbgs4S5SkRHimUUWz+WsGTGRm++p5HwDm6y30ns0GCPD7T4xBFf+MYJP/iFBtpzp17OWnX8uFlHs17EHv90yoiLHXgw95sh4sG1+43IBThsB3GRf6bSOCcDiHGVH+ekVZN8OkWsGFagnAzwmmV/Ik4pzHQs8Oiyz9HgreDxSsm9q5yXxtjrNgNRVhWR2vMOdjMnaxDZqxMdmNAOsneuljQLjh4mTueeitQDo+xdjYjRV0mNr0LXTmuH3YprN+h5NHKKc5nWTW0yqp4uXY2ayUKRmKx9vFb5HK7OYOBIxeKzN0Fth9zkb1q3ifZ1ncPobOD6LfhbdeGwqNel1/E3f9UQmbmTv4oq5P+4OUCdAHicLYgxCoAwEAQnGhBBbGws09v7Ah8g+UGKcBykigo+31Nc2GV2AM+K441j+PZNQ2evxfnezMz0c8PIsuudS9hU9Dxilqukyo5ykykENmOxnhxEc8JlPlEfLXkPmAAAAHicY2BiwA94gZiZQZhBhEGUQYxBnEGCQZJBikGaQYaBAwAMvQEGAAA=) format("woff");
-  font-weight: 100 500;
-  font-style: normal;
-  unicode-range: U+0030-0039, U+0025;
-  font-display: swap;
+
+/* One clear pixel typeface family everywhere (admin and quiz arena included) */
+/* VT323 has a short x-height, so size-adjust scales it up to read like a normal body font */
+html, body, button, input, select, textarea { font-family: "VT323", monospace; font-size-adjust: 0.5; }
+h1, h2, h3, h4, .font-display, .font-pixel { font-family: "Silkscreen", "VT323", monospace; font-size-adjust: none; }
+h1 {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
-@font-face {
-  font-family: "Pixel Digits";
-  src: url(data:font/woff;base64,d09GRgABAAAAAAPoAAoAAAAAB9gAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABPUy8yAAABZAAAAC4AAABgRnxFC2NtYXAAAAGkAAAANgAAAEQAOADNZ2x5ZgAAAfgAAAFvAAAFLj109YFoZWFkAAAA9AAAADYAAAA2L0rjSmhoZWEAAAEsAAAAHwAAACQFwgJ6aG10eAAAAZQAAAANAAAAHALSAABsb2NhAAAB3AAAABwAAAAcBvIIfm1heHAAAAFMAAAAFgAAACAAGwA2bmFtZQAAA2gAAABYAAAAZqEucbBwb3N0AAADwAAAACYAAAA8AIoAewABAAAAAQAA2/1UZV8PPPUAAQPoAAAAAOboz7QAAAAA5ujPtAAA/+wCZAMWAAAAAwACAAAAAAAAeJxjYGRgYI75b8HAwHSJgYEhjymFASiCAhgBVWcDQgB4nGNgZGBg4GUwAWIQYGJAAwAH/wBSAAB4nGNgZrrEtIeBlYGFgTBgRObYAwGQUmCwZI75b8HAwNzCcAdNvQIDAwAI3QYOAAB4nGO6xIATAAAWegDVAAAAeJxjYGBgYmBgYAZiESDJCKZZGAyANAcQguQUGFQZLP//h7IM/v////D/8/+XwGrBAADUkwr/AAAAAAAAAAAAUQCAALYA8gEtAWIBngHNAhUCUQKXeJyNVL1ugzAQvnOEaNNWVRTRSnSorA4dOrQSypoH6HMwM2fsmCdgingCP1LmTpnZQnqGwz+AacBnsC35u++7H3gAuJxEvniCBcRwB4+whmd4gVd4g3f4gE/IANYbmUSbLJFk+pvxOmOLaJ3xmeR1gftmqfBenQ+qwpTmL3rPB0wrvUUHzRL34qcsi7J0p8EGeVVcTliPPCSvOqSYvq7pvaNqfjFV/NB/jzQYcBPk77GOmZ01h6EGMEPkLicP63ZG6wk0aVBHmhLiDtNtQEgzOth5XOS7IxNLG9OIfcHvVs5mRxEkByqaRE5slbKqDuHnlF2Zu6UTNctT5ERMYb0lhBHFMcGrdO3x3Dzu8Y4tN00Ia5O0AVQvM6dxW37DjOl5itxJF+VJ6CUL3TdfmaOqlE7UhntuNTKxAFEvjldnUcgXq8KUD3UnBaXyFDgL8a8OK9N9bBdyzXYrmXTdR89OyXJ/qjo3QnVErvwBASuMBwB4nC2IQQqAIBQFx3JR4KJlS5edoANEB/AQinwQXOjC4/eLBt5jGMByYngxuO9fJu2OGWNXLTvb7xMLR5CRir8lS29XLZGAMEgUPLd61nUaF1VbfACOQgzneJxjYGLAD3iBmJlBmEGEQZRBjEGcQYJBkkGKQZpBhoEDAAy9AQYAAA==) format("woff");
-  font-weight: 600 900;
-  font-style: normal;
-  unicode-range: U+0030-0039, U+0025;
-  font-display: swap;
-}
+@media (min-width: 640px) { h1 { font-size: 1.4rem; } }
+svg text, .recharts-wrapper text { font-family: "VT323", monospace; }
+input, textarea, select { font-size: 1.1rem; }
+.text-gradient { background: none !important; color: rgb(var(--color-ink)) !important; -webkit-text-fill-color: rgb(var(--color-ink)) !important; }
+
+@keyframes drift-x { from { transform: translate3d(-20vw,0,0); } to { transform: translate3d(120vw,0,0); } }
+@keyframes ship-fly { from { transform: translate3d(-10vw,20vh,0); } to { transform: translate3d(95vw,-35vh,0); } }

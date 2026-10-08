@@ -100,7 +100,7 @@ export default function AvatarPicker({
         </div>
         <label
           title={label}
-          className={`absolute -bottom-1 -right-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-void-100 bg-neon-blue text-white shadow-md transition-colors hover:bg-neon-blue2 ${disabled || preparing ? "pointer-events-none opacity-60" : ""}`}
+          className={`absolute -bottom-1 -right-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-void-100 bg-neon-blue text-void shadow-md transition-colors hover:bg-neon-blue2 ${disabled || preparing ? "pointer-events-none opacity-60" : ""}`}
         >
           <Camera className="h-4 w-4" aria-hidden="true" />
           <input

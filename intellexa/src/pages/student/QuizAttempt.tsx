@@ -267,7 +267,7 @@ export default function QuizAttempt() {
             <div className="absolute inset-0 bg-aurora-soft opacity-20" />
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-aurora mx-auto flex items-center justify-center mb-4 shadow-glow">
-                <Trophy className="w-8 h-8 text-white" />
+                <Trophy className="w-8 h-8 text-void" />
               </div>
               <h1 className="font-display font-bold text-2xl text-ink mb-2">Quiz Submitted!</h1>
               <p className="text-ink-dim text-sm mb-6">

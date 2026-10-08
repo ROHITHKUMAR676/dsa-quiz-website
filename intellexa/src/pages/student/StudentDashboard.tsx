@@ -162,8 +162,6 @@ export default function StudentDashboard() {
       {/* Greeting + hero stats */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <Card data-tour="dashboard-hero" className="p-5 sm:p-7 relative overflow-hidden">
-          <div className="absolute -top-16 -right-16 w-56 h-56 bg-neon-purple/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 w-56 h-56 bg-neon-blue/15 rounded-full blur-3xl" />
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="flex-1">
               <p className="text-ink-dim text-sm mb-1">Welcome back,</p>

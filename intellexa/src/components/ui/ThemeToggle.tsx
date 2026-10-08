@@ -42,15 +42,15 @@ export default function ThemeToggle({ className, compact = false }: { className?
         <motion.span
           className={cn(
             "absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center",
-            isLight ? "bg-state-gold" : "bg-neon-cyan"
+            isLight ? "bg-ink" : "bg-ink"
           )}
           animate={{ x: isLight ? 16 : 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 26 }}
         >
-          {isLight ? <Sun className="w-2.5 h-2.5 text-white" /> : <Moon className="w-2.5 h-2.5 text-void" />}
+          {isLight ? <Sun className="w-2.5 h-2.5 text-void" /> : <Moon className="w-2.5 h-2.5 text-void" />}
         </motion.span>
       </span>
-      {isLight ? "White Smokey theme" : "Nebula (dark) theme"}
+      {isLight ? "Paper (light) theme" : "Deep Space (dark) theme"}
     </button>
   );
-}
+}

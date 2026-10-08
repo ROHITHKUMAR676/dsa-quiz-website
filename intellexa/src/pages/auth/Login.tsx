@@ -29,16 +29,6 @@ export default function Login() {
   return (
     <div className="min-h-dvh flex items-center justify-center relative overflow-hidden px-4 py-10">
       <div className="absolute inset-0 bg-grid-glow" />
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-[10%] left-[8%] w-40 h-40 sm:w-64 sm:h-64 bg-neon-blue/20 rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ y: [0, 24, 0] }}
-        transition={{ duration: 9, repeat: Infinity }}
-        className="absolute bottom-[10%] right-[8%] w-48 h-48 sm:w-72 sm:h-72 bg-neon-purple/20 rounded-full blur-3xl"
-      />
       {/* floating shapes */}
       {[...Array(6)].map((_, i) => (
         <motion.div
@@ -68,7 +58,7 @@ export default function Login() {
       >
         <div className="flex flex-col items-center mb-8">
           <BrandMark className="mb-5 w-52 max-w-full" />
-          <h1 className="font-display font-bold text-2xl text-ink">Enter the Arena</h1>
+          <h1 className="font-display font-bold text-2xl text-ink text-center">Enter the Arena</h1>
           <p className="text-ink-dim text-sm mt-1 text-center">
             Continue with your Rajalakshmi Engineering College Google account to compete, climb ranks, and level up.
           </p>

@@ -53,7 +53,6 @@ export default function PrivacyPolicy() {
   return (
     <main className="min-h-dvh relative overflow-hidden px-4 py-8 sm:py-12">
       <div className="absolute inset-0 bg-grid-glow pointer-events-none" />
-      <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-neon-blue/10 blur-3xl pointer-events-none" />
       <div className="relative z-10 mx-auto max-w-4xl">
         <Link to="/login" className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-neon-cyan transition-colors">
           <ArrowLeft className="h-4 w-4" /> Back to sign in
@@ -61,7 +60,7 @@ export default function PrivacyPolicy() {
 
         <header className="glass-strong mt-6 rounded-2xl p-6 sm:p-10">
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-aurora shadow-glow">
-            <ShieldCheck className="h-6 w-6 text-white" />
+            <ShieldCheck className="h-6 w-6 text-void" />
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neon-cyan">Codexa · Your DSA partner</p>
           <h1 className="mt-2 font-display text-3xl font-bold text-ink sm:text-4xl">Privacy Policy</h1>

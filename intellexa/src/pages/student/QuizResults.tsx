@@ -113,4 +113,4 @@ export default function QuizResults() {
       </AnimatePresence>
     </div>
   );
-}
+}

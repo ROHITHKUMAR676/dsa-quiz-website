@@ -26,7 +26,7 @@ export function ThemeSwatch({
     >
       {active && (
         <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-neon-blue flex items-center justify-center z-10">
-          <Check className="w-3 h-3 text-white" />
+          <Check className="w-3 h-3 text-void" />
         </span>
       )}
       <div
@@ -40,4 +40,4 @@ export function ThemeSwatch({
       <p className="text-xs text-ink-faint">{sublabel}</p>
     </button>
   );
-}
+}

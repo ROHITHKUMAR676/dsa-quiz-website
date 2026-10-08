@@ -33,11 +33,11 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 z-40 glass border-b border-surface-border px-4 sm:px-6 py-3 flex items-center justify-between">
       <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/20 to-neon-blue/10 shadow-[0_0_18px_rgba(72,211,255,0.12)] sm:h-10 sm:w-10">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-ink/40 bg-ink/10 sm:h-10 sm:w-10">
           <span className="font-sans text-lg font-black tracking-tight text-neon-cyan sm:text-xl">C</span>
         </div>
         <div className="min-w-0">
-          <div className="font-sans text-xl  leading-none tracking-tight text-gradient sm:text-2xl">Codexa</div>
+          <div className="font-display font-semibold text-lg text-ink">Codexa</div>
           <div className="mt-1 font-sans text-[10px] font-semibold uppercase leading-none tracking-[0.12em] text-ink-dim sm:text-[11px]">Your DSA partner</div>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function TopBar() {
         >
           <Bell className="w-4.5 h-4.5 text-ink-dim" />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-state-danger text-white text-[9px] flex items-center justify-center font-bold">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-state-danger text-void text-[9px] flex items-center justify-center font-bold">
               {unread}
             </span>
           )}

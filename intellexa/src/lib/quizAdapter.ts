@@ -25,4 +25,4 @@ export function mapBackendQuizToLegacy(quiz: BackendQuizSummary): Quiz {
     hasAttempted: quiz.hasAttempted,
     questions: [],
   };
-}
+}

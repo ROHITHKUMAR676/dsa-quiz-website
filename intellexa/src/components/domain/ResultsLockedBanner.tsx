@@ -55,4 +55,4 @@ export default function ResultsLockedBanner({ resultsAvailableAt, resultState }:
       </div>
     </Card>
   );
-}
+}

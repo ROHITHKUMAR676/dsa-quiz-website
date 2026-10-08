@@ -55,16 +55,16 @@ export default function Settings() {
             active={theme === "dark"}
             label="Nebula"
             sublabel="Current dark design"
-            previewBg="linear-gradient(135deg, #161925, #262D42)"
-            previewAccent="#64ACDA"
+            previewBg="linear-gradient(135deg, #000000, #1c1c1c)"
+            previewAccent="#FFFFFF"
             onClick={() => setTheme("dark")}
           />
           <ThemeSwatch
             active={theme === "light"}
             label="White Smokey"
             sublabel="Clean bright system"
-            previewBg="linear-gradient(135deg, #FFFFFF, #EAF0F7)"
-            previewAccent="#0a68c4"
+            previewBg="linear-gradient(135deg, #FFFFFF, #e6e6e6)"
+            previewAccent="#000000"
             onClick={() => setTheme("light")}
           />
         </div>

@@ -66,13 +66,13 @@ export default function Analytics() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={stats.weeklyActivity}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
-                <XAxis dataKey="day" stroke="#8895B8" fontSize={12} />
-                <YAxis stroke="#8895B8" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--color-surface-border))" />
+                <XAxis dataKey="day" stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <YAxis stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <Tooltip contentStyle={{ background: "rgb(var(--color-surface))", border: "2px solid rgb(var(--color-surface-border))", borderRadius: 0, fontSize: 12 }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="users" stroke="#7DA5E4" strokeWidth={2} name="Active Users" />
-                <Line type="monotone" dataKey="submissions" stroke="#64ACDA" strokeWidth={2} name="Submissions" />
+                <Line type="monotone" dataKey="users" stroke="rgb(var(--color-ink))" strokeWidth={2} name="Active Users" />
+                <Line type="monotone" dataKey="submissions" stroke="rgb(var(--color-ink-dim))" strokeWidth={2} name="Submissions" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -83,11 +83,11 @@ export default function Analytics() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.categoryPerformance}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
-                <XAxis dataKey="category" stroke="#8895B8" fontSize={12} />
-                <YAxis stroke="#8895B8" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
-                <Bar dataKey="avgScore" fill="#988AFC" radius={[6, 6, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--color-surface-border))" />
+                <XAxis dataKey="category" stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <YAxis stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <Tooltip contentStyle={{ background: "rgb(var(--color-surface))", border: "2px solid rgb(var(--color-surface-border))", borderRadius: 0, fontSize: 12 }} />
+                <Bar dataKey="avgScore" fill="rgb(var(--color-ink-dim))" radius={[0, 0, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

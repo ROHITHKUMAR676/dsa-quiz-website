@@ -91,20 +91,20 @@ export default function AdminDashboard() {
               <AreaChart data={stats.weeklyActivity}>
                 <defs>
                   <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7DA5E4" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#7DA5E4" stopOpacity={0} />
+                    <stop offset="5%" stopColor="rgb(var(--color-ink))" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="rgb(var(--color-ink))" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorSubs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#988AFC" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#988AFC" stopOpacity={0} />
+                    <stop offset="5%" stopColor="rgb(var(--color-ink-dim))" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="rgb(var(--color-ink-dim))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#3E4C70" />
-                <XAxis dataKey="day" stroke="#8895B8" fontSize={12} />
-                <YAxis stroke="#8895B8" fontSize={12} />
-                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
-                <Area type="monotone" dataKey="users" stroke="#7DA5E4" fill="url(#colorUsers)" strokeWidth={2} />
-                <Area type="monotone" dataKey="submissions" stroke="#988AFC" fill="url(#colorSubs)" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--color-surface-border))" />
+                <XAxis dataKey="day" stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <YAxis stroke="rgb(var(--color-ink-faint))" fontSize={12} />
+                <Tooltip contentStyle={{ background: "rgb(var(--color-surface))", border: "2px solid rgb(var(--color-surface-border))", borderRadius: 0, fontSize: 12 }} />
+                <Area type="monotone" dataKey="users" stroke="rgb(var(--color-ink))" fill="url(#colorUsers)" strokeWidth={2} />
+                <Area type="monotone" dataKey="submissions" stroke="rgb(var(--color-ink-dim))" fill="url(#colorSubs)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: "#262D42", border: "1px solid #3E4C70", borderRadius: 12, fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: "rgb(var(--color-surface))", border: "2px solid rgb(var(--color-surface-border))", borderRadius: 0, fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

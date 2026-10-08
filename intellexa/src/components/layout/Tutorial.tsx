@@ -169,7 +169,7 @@ export default function Tutorial() {
             left: highlightStyle.left,
             width: highlightStyle.width,
             height: highlightStyle.height,
-            boxShadow: "0 0 0 9999px rgba(13,15,24,0.82)",
+            boxShadow: "0 0 0 9999px rgba(0,0,0,0.88)",
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -201,7 +201,7 @@ export default function Tutorial() {
           )}
 
           <div className="w-11 h-11 rounded-xl bg-aurora flex items-center justify-center mb-3 shadow-glow">
-            <Icon className="w-5 h-5 text-white" />
+            <Icon className="w-5 h-5 text-void" />
           </div>
 
           <p className="text-[11px] font-mono text-neon-cyan tracking-wider mb-1">

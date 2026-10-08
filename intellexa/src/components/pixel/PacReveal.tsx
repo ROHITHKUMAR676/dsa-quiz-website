@@ -3,8 +3,8 @@ import type { ReactElement, ReactNode } from "react";
 // 9x9 Pac-Man frames: 1 = body, 0 = empty
 const CLOSED = ["..xxxxx..", ".xxxxxxx.", "xxxxxxxxx", "xxxxxxxxx", "xxxxxxxxx", "xxxxxxxxx", "xxxxxxxxx", ".xxxxxxx.", "..xxxxx.."];
 const OPEN = ["..xxxxx..", ".xxxxxxx.", "xxxxxxx..", "xxxxxx...", "xxxx.....", "xxxxxx...", "xxxxxxx..", ".xxxxxxx.", "..xxxxx.."];
-const GOLD = "#F5B93A";
-const OUTLINE = "#161925";
+const GOLD = "#FFFFFF";
+const OUTLINE = "#000000";
 
 function frame(rows: string[], className: string) {
   const rects: ReactElement[] = [];

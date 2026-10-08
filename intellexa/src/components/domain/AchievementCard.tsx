@@ -43,7 +43,7 @@ export default function AchievementCard({ badge }: { badge: Badge }) {
       </p>
       <div
         className={cn(
-          "w-14 h-14 rounded-sm border-2 flex items-center justify-center mb-2 bg-[#161925] shadow-[inset_0_0_0_2px_rgba(255,255,255,0.07),inset_0_-4px_0_0_rgba(0,0,0,0.35)]",
+          "w-14 h-14 rounded-sm border-2 flex items-center justify-center mb-2 bg-void-200 shadow-[inset_0_0_0_2px_rgba(255,255,255,0.07),inset_0_-4px_0_0_rgba(0,0,0,0.35)]",
           badge.earned ? r.card : "border-surface-border"
         )}
       >

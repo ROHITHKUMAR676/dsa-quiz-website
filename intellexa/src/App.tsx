@@ -5,6 +5,7 @@ import { AppProvider, useApp } from "./context/AppContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 
+import SpaceBackground from "./components/pixel/SpaceBackground";
 import Splash from "./pages/Splash";
 import Login from "./pages/auth/Login";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -140,6 +141,7 @@ export default function App() {
       <ThemeProvider>
         <AppProvider>
           <ToastProvider>
+            <SpaceBackground />
             <AnimatedRoutes />
           </ToastProvider>
         </AppProvider>

@@ -10,11 +10,11 @@ interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
 }
 
 const variants: Record<string, string> = {
-  primary: "bg-aurora text-white shadow-pixel active:shadow-pixel-pressed",
-  secondary: "bg-surface-light text-ink border border-surface-border hover:border-neon-blue/50",
+  primary: "bg-ink text-void border-2 border-ink shadow-pixel active:shadow-pixel-pressed hover:bg-ink-dim",
+  secondary: "bg-surface-light text-ink border-2 border-surface-border hover:border-ink",
   ghost: "bg-transparent text-ink-dim hover:text-ink hover:bg-surface-light",
   danger: "bg-state-danger/15 text-state-danger border border-state-danger/30 hover:bg-state-danger/25",
-  outline: "bg-transparent border border-neon-blue/40 text-neon-blue hover:bg-neon-blue/10",
+  outline: "bg-transparent border-2 border-ink/60 text-ink hover:bg-ink/10",
 };
 
 const sizes: Record<string, string> = {
@@ -38,7 +38,7 @@ export default function Button({
       whileTap={{ x: 2, y: 2 }}
       transition={{ duration: 0.08 }}
       className={cn(
-        "relative font-medium inline-flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none",
+        "relative font-display tracking-wide uppercase inline-flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none",
         variants[variant],
         sizes[size],
         fullWidth && "w-full",

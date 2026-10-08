@@ -9,6 +9,13 @@ import { useToast } from "../../context/ToastContext";
 import { ApiError } from "../../lib/api";
 import { authApi } from "../../lib/backend";
 import { parseCollegeEmail } from "../../lib/emailProfile";
+import {
+  formatPhone,
+  sanitizePhoneInput,
+  sanitizeRegisterNumberInput,
+  validatePhone,
+  validateRegisterNumber,
+} from "../../lib/validators";
 
 const departments = ["Aeronautical Engineering","Automobile Engineering","Biomedical Engineering","Civil Engineering","Computer Science and Engineering","CSE(Cyber Security)","Computer Science and Design","Electrical and Electronics Engineering","Electronics and Communication Engineering","Mechanical Engineering","Mechatronics Engineering","Robotics and Automation","AI & Data Science","AI & Machine Learning","Biotechnoloy","Chemical Engineering","Computer Science and Business Systems","Food Technology","Information Technology"]
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
@@ -43,6 +50,19 @@ export default function ProfileSetup() {
 
   const update = (key: keyof typeof form, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
+  // Validation: errors show once a field has been touched (blurred) or a submit was attempted
+  const [touched, setTouched] = useState({ registerNumber: false, phone: false });
+  const errors = {
+    registerNumber: validateRegisterNumber(form.registerNumber),
+    phone: validatePhone(form.phone),
+  };
+  const showError = (key: "registerNumber" | "phone") => (touched[key] ? errors[key] : null);
+  const touch = (key: "registerNumber" | "phone") => setTouched((t) => ({ ...t, [key]: true }));
+  const fieldClass = (invalid: boolean) =>
+    `w-full px-4 py-3.5 bg-surface-light border-2 text-ink text-lg tracking-wide placeholder:text-ink-faint outline-none ${
+      invalid ? "border-state-danger" : "border-surface-border focus:border-ink"
+    }`;
+
   const uploadAvatar = async (file: File) => {
     setAvatarLoading(true);
     try {
@@ -59,14 +79,19 @@ export default function ProfileSetup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ registerNumber: true, phone: true });
+    if (errors.registerNumber || errors.phone) {
+      showToast(errors.registerNumber ?? errors.phone ?? "Please fix the highlighted fields.", "error");
+      return;
+    }
     setLoading(true);
     try {
       const { user: updatedUser } = await authApi.updateProfile({
         fullName: form.fullName.trim(),
         department: form.department,
         year: form.year,
-        registerNumber: form.registerNumber.trim(),
-        phone: form.phone.trim(),
+        registerNumber: form.registerNumber.trim().toUpperCase(),
+        phone: formatPhone(form.phone),
         bio: form.bio.trim() || null,
         preferredLanguage: form.preferredLanguage,
       });
@@ -99,7 +124,7 @@ export default function ProfileSetup() {
           <p className="text-ink-dim text-sm mt-1">This helps us personalize your competitive experience.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="flex min-w-0 items-center gap-4">
             <AvatarPicker value={user?.avatar} onSelect={uploadAvatar} label="Upload profile photo" size="setup" disabled={avatarLoading} />
             <div className="flex-1">
@@ -142,24 +167,46 @@ export default function ProfileSetup() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-ink-dim mb-1.5 block">Register number</label>
+              <label htmlFor="registerNumber" className="text-sm text-ink-dim mb-1.5 block">Register number</label>
               <input
+                id="registerNumber"
                 required
                 value={form.registerNumber}
-                onChange={(e) => update("registerNumber", e.target.value)}
+                onChange={(e) => update("registerNumber", sanitizeRegisterNumberInput(e.target.value))}
+                onBlur={() => touch("registerNumber")}
                 placeholder="21CS1042"
-                className="w-full px-4 py-3.5 rounded-xl bg-surface-light border-2 border-surface-border text-ink text-lg tracking-wide placeholder:text-ink-faint outline-none focus:border-neon-blue/60"
+                maxLength={15}
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                aria-invalid={Boolean(showError("registerNumber"))}
+                aria-describedby="registerNumber-error"
+                className={fieldClass(Boolean(showError("registerNumber")))}
               />
+              <p id="registerNumber-error" role="alert" className="mt-1 min-h-[1.25rem] text-sm text-state-danger">
+                {showError("registerNumber")}
+              </p>
             </div>
             <div>
-              <label className="text-sm text-ink-dim mb-1.5 block">Phone</label>
+              <label htmlFor="phone" className="text-sm text-ink-dim mb-1.5 block">Phone</label>
               <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
                 required
                 value={form.phone}
-                onChange={(e) => update("phone", e.target.value)}
+                onChange={(e) => update("phone", sanitizePhoneInput(e.target.value))}
+                onBlur={() => touch("phone")}
                 placeholder="+91 98765 43210"
-                className="w-full px-4 py-3.5 rounded-xl bg-surface-light border-2 border-surface-border text-ink text-lg tracking-wide placeholder:text-ink-faint outline-none focus:border-neon-blue/60"
+                maxLength={17}
+                autoComplete="tel"
+                aria-invalid={Boolean(showError("phone"))}
+                aria-describedby="phone-error"
+                className={fieldClass(Boolean(showError("phone")))}
               />
+              <p id="phone-error" role="alert" className="mt-1 min-h-[1.25rem] text-sm text-state-danger">
+                {showError("phone")}
+              </p>
             </div>
           </div>
 

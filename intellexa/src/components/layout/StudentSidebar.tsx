@@ -31,7 +31,7 @@ export default function StudentSidebar() {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors relative",
-                isActive ? "text-white" : "text-ink-dim hover:text-ink hover:bg-surface-light"
+                isActive ? "text-void" : "text-ink-dim hover:text-ink hover:bg-surface-light"
               )
             }
           >

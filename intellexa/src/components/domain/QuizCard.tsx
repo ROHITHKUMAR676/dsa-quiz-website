@@ -69,4 +69,4 @@ export default function QuizCard({ quiz }: { quiz: Quiz }) {
       </Button>
     </Card>
   );
-}
+}

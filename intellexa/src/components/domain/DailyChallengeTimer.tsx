@@ -65,10 +65,9 @@ export default function DailyChallengeTimer({ liveQuiz, upcomingQuiz, closedQuiz
     const urgent = liveMsRemaining !== null && liveMsRemaining < 5 * 60 * 1000;
     return (
       <Card glow="blue" className="p-5 sm:p-6 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-cyan/15 rounded-full blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-aurora flex items-center justify-center shrink-0 shadow-glow">
-            <Timer className="w-7 h-7 text-white" />
+            <Timer className="w-7 h-7 text-void" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -121,7 +120,6 @@ export default function DailyChallengeTimer({ liveQuiz, upcomingQuiz, closedQuiz
   if (upcomingQuiz && upcomingMsRemaining !== null) {
     return (
       <Card className="p-5 sm:p-6 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-neon-purple/10 rounded-full blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-surface-light flex items-center justify-center shrink-0 border border-surface-border">
             <CalendarClock className="w-7 h-7 text-neon-blue" />
@@ -142,7 +140,6 @@ export default function DailyChallengeTimer({ liveQuiz, upcomingQuiz, closedQuiz
   if (closedQuiz) {
     return (
       <Card className="p-5 sm:p-6 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-state-success/10 rounded-full blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="w-14 h-14 rounded-2xl bg-surface-light flex items-center justify-center shrink-0 border border-surface-border">
             <CheckCircle2 className="w-7 h-7 text-state-success" />
