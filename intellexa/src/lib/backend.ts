@@ -88,7 +88,7 @@ export const studentQuizApi = {
         deadline: string | null;
         serverTime?: string;
         questions?: BackendQuestion[];
-        questionStates?: Array<{ questionId: string; selectedOptionId: string | null; responseTimeMs: number | null; startedAt: string; deadline: string }>;
+        questionStates?: Array<{ questionId: string; selectedOptionId: string | null; correctOptionId?: string; responseTimeMs: number | null; startedAt: string; deadline: string }>;
       } | null;
     }>(`/student/quizzes/${quizId}/attempt`),
   start: (quizId: string) =>
@@ -101,7 +101,7 @@ export const studentQuizApi = {
   startQuestion: (attemptId: string, questionId: string) =>
     api.post<{ questionId: string; startedAt: string; deadline: string; serverTime: string }>(`/student/attempts/${attemptId}/questions/${questionId}/start`, {}),
   answerQuestion: (attemptId: string, questionId: string, selectedOptionId: string | null) =>
-    api.post<{ questionId: string; answered: boolean; timedOut?: boolean; remainingMs?: number; serverTime: string }>(`/student/attempts/${attemptId}/questions/${questionId}/answer`, { selectedOptionId }),
+    api.post<{ questionId: string; answered: boolean; timedOut?: boolean; remainingMs?: number; correctOptionId?: string; serverTime: string }>(`/student/attempts/${attemptId}/questions/${questionId}/answer`, { selectedOptionId }),
   getAttempt: (attemptId: string) =>
     api.get<{
       attempt: {

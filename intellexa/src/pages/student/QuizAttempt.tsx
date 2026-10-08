@@ -12,12 +12,9 @@ import { useToast } from "../../context/ToastContext";
 type Stage = "loading" | "intro" | "playing" | "submitting" | "done" | "unavailable" | "error";
 
 /**
- * Real-backend quiz attempt flow. Unlike the old mock version, this never
- * reveals correctness locally - the backend withholds isCorrect from every
- * question (spec section 24) and withholds the score from the submit
- * response too (spec sections 9-10: results only surface after the
- * official release). So there is no per-question "correct!" flash here by
- * design - only a confirmation that the attempt was recorded.
+ * Real-backend quiz attempt flow. Questions never include answer keys; the
+ * server reveals the correct option only after a student's answer is locked.
+ * Scores remain hidden until the official results release.
  */
 export default function QuizAttempt() {
   const { id: quizId } = useParams();
@@ -32,6 +29,7 @@ export default function QuizAttempt() {
   const [deadline, setDeadline] = useState<string | null>(null);
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
+  const [correctOptionIds, setCorrectOptionIds] = useState<Record<string, string>>({});
   const [questionDeadlines, setQuestionDeadlines] = useState<Record<string, string>>({});
   const [completedQuestions, setCompletedQuestions] = useState<Record<string, boolean>>({});
   const [frozenSeconds, setFrozenSeconds] = useState<Record<string, number>>({});
@@ -61,6 +59,9 @@ export default function QuizAttempt() {
           if (attempt.serverTime) setServerOffsetMs(new Date(attempt.serverTime).getTime() - Date.now());
           const states = attempt.questionStates ?? [];
           setAnswers(Object.fromEntries(states.map((state) => [state.questionId, state.selectedOptionId])));
+          setCorrectOptionIds(Object.fromEntries(
+            states.flatMap((state) => state.correctOptionId ? [[state.questionId, state.correctOptionId]] : [])
+          ));
           setQuestionDeadlines(Object.fromEntries(states.map((state) => [state.questionId, state.deadline])));
           setCompletedQuestions(Object.fromEntries(states.filter((state) => state.selectedOptionId || state.responseTimeMs !== null).map((state) => [state.questionId, true])));
           const questionList = attempt.questions;
@@ -121,6 +122,7 @@ export default function QuizAttempt() {
       setQuestions(result.questions);
       setDeadline(result.deadline);
       setAnswers({});
+      setCorrectOptionIds({});
       setCompletedQuestions({});
       const firstTimer = await studentQuizApi.startQuestion(result.attempt.id, result.questions[0].id);
       setServerOffsetMs(new Date(firstTimer.serverTime).getTime() - Date.now());
@@ -142,10 +144,17 @@ export default function QuizAttempt() {
     setCompletedQuestions((prev) => ({ ...prev, [questionId]: true }));
     setFrozenSeconds((prev) => ({ ...prev, [questionId]: secondsLeft }));
     try {
-      await studentQuizApi.answerQuestion(attemptId, questionId, optionId);
+      const result = await studentQuizApi.answerQuestion(attemptId, questionId, optionId);
+      const correctOptionId = result.correctOptionId;
+      if (correctOptionId) {
+        setCorrectOptionIds((prev) => ({ ...prev, [questionId]: correctOptionId }));
+      }
     } catch (error) {
       setAnswers((prev) => ({ ...prev, [questionId]: null }));
       setCompletedQuestions((prev) => ({ ...prev, [questionId]: false }));
+      setCorrectOptionIds((prev) => Object.fromEntries(
+        Object.entries(prev).filter(([id]) => id !== questionId)
+      ));
       showToast(error instanceof ApiError ? error.message : "Couldn't record that answer.", "error");
     } finally {
       timeoutInFlight.current.delete(questionId);
@@ -348,17 +357,23 @@ export default function QuizAttempt() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {question.options.map((opt) => {
                 const isSelected = selectedOptionId === opt.id;
+                const correctOptionId = correctOptionIds[question.id];
+                const isCorrectOption = correctOptionId === opt.id;
+                const isIncorrectSelection = isSelected && correctOptionId !== undefined && !isCorrectOption;
                 return (
                   <motion.button
                     key={opt.id}
                     onClick={() => void selectOption(question.id, opt.id)}
                     disabled={completedQuestions[question.id] || questionSecondsRemaining <= 0}
+                    aria-pressed={isSelected}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
                       "relative text-left px-4 py-3.5 rounded-xl border text-sm font-medium font-sans transition-colors",
                       "bg-surface-light border-surface-border text-ink hover:border-neon-blue/50 hover:bg-surface-light/80",
-                      isSelected && "bg-neon-blue/15 border-neon-blue text-neon-blue"
+                      isSelected && !correctOptionId && "bg-neon-blue/15 border-neon-blue text-neon-blue",
+                      isCorrectOption && "bg-state-success/20 border-state-success text-state-success",
+                      isIncorrectSelection && "bg-state-danger/20 border-state-danger text-state-danger"
                     )}
                   >
                     {opt.optionText}

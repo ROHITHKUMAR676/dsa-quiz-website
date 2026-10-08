@@ -312,9 +312,93 @@ describe("submitAttempt", () => {
   });
 });
 
+describe("answerQuestion", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns the correct option only after saving a selected answer", async () => {
+    const quiz = buildLiveQuiz();
+    attemptRepository.findAttemptById.mockResolvedValue({
+      id: "attempt-1",
+      quizId: "quiz-1",
+      userId: "user-1",
+      status: AttemptStatus.IN_PROGRESS,
+      startedAt: new Date(Date.now() - 10_000),
+      submittedAt: null,
+      quiz,
+    });
+    quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
+    attemptRepository.findAttemptAnswer.mockResolvedValue({
+      id: "answer-1",
+      attemptId: "attempt-1",
+      questionId: "q1",
+      selectedOptionId: null,
+      answeredAt: new Date(Date.now() - 1_000),
+    });
+    attemptRepository.saveQuestionAnswer.mockResolvedValue({ count: 1 });
+
+    const result = await answerQuestion("attempt-1", "user-1", "q1", "q1-a");
+
+    expect(attemptRepository.saveQuestionAnswer).toHaveBeenCalledWith("answer-1", expect.objectContaining({
+      selectedOptionId: "q1-a",
+      isCorrect: false,
+    }));
+    expect(result).toMatchObject({
+      questionId: "q1",
+      answered: true,
+      correctOptionId: "q1-b",
+    });
+  });
+});
+
 describe("getAttemptForStudent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("restores correctness only for previously selected answers", async () => {
+    const quiz = buildLiveQuiz();
+    attemptRepository.findAttemptById.mockResolvedValue({
+      id: "attempt-1",
+      quizId: "quiz-1",
+      userId: "user-1",
+      status: AttemptStatus.IN_PROGRESS,
+      startedAt: new Date(),
+      submittedAt: null,
+      quiz,
+    });
+    quizRepository.findQuizForAttempt.mockResolvedValue(quiz);
+    attemptRepository.findAttemptAnswers.mockResolvedValue([
+      {
+        questionId: "q1",
+        selectedOptionId: "q1-a",
+        isCorrect: false,
+        pointsAwarded: 0,
+        responseTimeMs: 1_000,
+        answeredAt: new Date(),
+      },
+      {
+        questionId: "q2",
+        selectedOptionId: null,
+        isCorrect: false,
+        pointsAwarded: 0,
+        responseTimeMs: 30_000,
+        answeredAt: new Date(),
+      },
+    ]);
+
+    const attempt = await getAttemptForStudent("attempt-1", "user-1");
+
+    if (!("questionStates" in attempt) || !("questions" in attempt)) {
+      throw new Error("Expected an in-progress attempt with question states");
+    }
+    expect(attempt.questionStates?.[0]).toMatchObject({
+      selectedOptionId: "q1-a",
+      correctOptionId: "q1-b",
+    });
+    expect(attempt.questionStates?.[1]).not.toHaveProperty("correctOptionId");
+    expect(attempt.questions?.[0].options[1]).not.toHaveProperty("isCorrect");
   });
 
   it("never exposes questions or answer keys once an attempt is submitted", async () => {

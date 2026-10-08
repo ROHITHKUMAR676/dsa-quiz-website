@@ -28,10 +28,9 @@ export function sanitizeUser(user: User) {
 type QuestionWithOptions = Question & { options: QuestionOption[] };
 
 /**
- * Strips every answer-key secret (isCorrect, and nothing else that could
- * leak it) before a question is sent to a student. See spec section 24
- * "Question security" - students must never receive isCorrect / the
- * correct option id while attempting a quiz.
+ * Strips answer-key fields from question objects sent to students. The
+ * correct option is disclosed separately only after that question is
+ * answered and locked.
  */
 export function sanitizeQuestionForAttempt(question: QuestionWithOptions) {
   return {

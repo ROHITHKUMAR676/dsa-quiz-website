@@ -201,12 +201,19 @@ async function buildAttemptResponse(
   return {
     ...base,
     questions: sanitizeQuestionsForAttempt(quiz.questions),
-    questionStates: answers.map((answer) => ({
-      questionId: answer.questionId, selectedOptionId: answer.selectedOptionId,
-      responseTimeMs: answer.responseTimeMs,
-      startedAt: answer.answeredAt,
-      deadline: new Date(answer.answeredAt.getTime() + QUESTION_TIME_LIMIT_MS),
-    })),
+    questionStates: answers.map((answer) => {
+      const correctOption = answer.selectedOptionId
+        ? quiz.questions.find((question) => question.id === answer.questionId)?.options.find((option) => option.isCorrect)
+        : undefined;
+      return {
+        questionId: answer.questionId,
+        selectedOptionId: answer.selectedOptionId,
+        responseTimeMs: answer.responseTimeMs,
+        startedAt: answer.answeredAt,
+        deadline: new Date(answer.answeredAt.getTime() + QUESTION_TIME_LIMIT_MS),
+        ...(correctOption && { correctOptionId: correctOption.id }),
+      };
+    }),
   };
 }
 
@@ -235,7 +242,15 @@ export async function answerQuestion(attemptId: string, userId: string, question
     pointsAwarded: calculateQuestionScore(isCorrect, responseTimeMs), responseTimeMs,
   });
   if (updated.count === 0) throw new ApiError(409, "This question has already been answered", "QUESTION_ALREADY_ANSWERED");
-  return { questionId, answered: true, timedOut, responseTimeMs, serverTime: now };
+  const correctOption = option && question.options.find((item) => item.isCorrect);
+  return {
+    questionId,
+    answered: true,
+    timedOut,
+    responseTimeMs,
+    ...(correctOption && { correctOptionId: correctOption.id }),
+    serverTime: now,
+  };
 }
 
 export async function beginAttemptQuestion(attemptId: string, userId: string, questionId: string) {
