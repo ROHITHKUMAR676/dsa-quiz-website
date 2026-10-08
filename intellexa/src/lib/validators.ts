@@ -45,7 +45,7 @@ export function formatPhone(raw: string): string {
 // 8-15 letters/digits with at least 4 digits, e.g. 21CS1042 or 211623070123.
 // Tweak REGISTER_NUMBER_RULES if your college uses a stricter pattern.
 
-export const REGISTER_NUMBER_RULES = { min: 8, max: 15, minDigits: 4 };
+export const REGISTER_NUMBER_RULES = { min: 13, max: 13};
 
 /** Uppercase and strip everything that can't be part of a register number while typing. */
 export function sanitizeRegisterNumberInput(raw: string): string {
@@ -54,12 +54,11 @@ export function sanitizeRegisterNumberInput(raw: string): string {
 
 export function validateRegisterNumber(raw: string): string | null {
   const value = raw.trim();
-  const { min, max, minDigits } = REGISTER_NUMBER_RULES;
+  const { min, max } = REGISTER_NUMBER_RULES;
   if (!value) return "Register number is required.";
-  if (!/^[A-Za-z0-9]+$/.test(value)) return "Use letters and digits only, no spaces or symbols.";
+  if (!/^[A-Za-z0-9]+$/.test(value)) return "Use  digits only, no letters, spaces or symbols.";
   if (value.length < min) return `Too short. Register numbers have at least ${min} characters.`;
   if (value.length > max) return `Too long. Maximum is ${max} characters.`;
-  if ((value.match(/\d/g) ?? []).length < minDigits) return `It should contain at least ${minDigits} digits.`;
   if (/^(.)\1+$/.test(value)) return "That doesn't look like a real register number.";
   return null;
 }
